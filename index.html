@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zishu AI</title>
+    <title>Zishu AI - Voice Assistant</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -218,6 +218,18 @@
             font-weight: 450;
         }
 
+        .quick-reply {
+            background: #3b82f6;
+            color: white;
+            margin: 6px auto;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            text-align: center;
+            max-width: 85%;
+            font-weight: 450;
+        }
+
         #footer {
             display: flex;
             justify-content: space-between;
@@ -306,7 +318,7 @@
 
     <div id="footer">
         <span>private · local</span>
-        <span>v2.3</span>
+        <span>v2.5</span>
     </div>
 
     <script>
@@ -326,14 +338,13 @@
         let isManualMode = false;
 
         // ============================================================
-        // SYSTEM PROMPT - FEMALE + TOOL AWARE
+        // SYSTEM PROMPT
         // ============================================================
         const SYSTEM_PROMPT = `You are Zishu, a female voice assistant with a warm, helpful personality.
 
         IMPORTANT GENDER RULES:
         - Always refer to yourself as "main" (feminine) in Hindi
         - Use feminine verb endings: "kar sakti hoon", "bol sakti hoon", "de sakti hoon"
-        - Example: "Main aapki madad kar sakti hoon" (not "kar sakta hoon")
 
         RESPONSE STYLE:
         - Give detailed, complete answers
@@ -341,7 +352,6 @@
         - Use Hinglish naturally - mix Hindi and English
 
         TOOLS (use EXACT format):
-        - TOOL: open_website(website_name) - opens any website (YouTube, Google, Gmail, etc.)
         - TOOL: set_reminder(text, time) - sets a reminder
         - TOOL: create_note(text) - saves a note
         - TOOL: get_weather(city) - gets weather
@@ -349,24 +359,7 @@
         - TOOL: calculate(expression) - does math
         - TOOL: translate(text, language) - translates text
 
-        WEBSITE MAPPING (use these exact names):
-        - youtube → https://youtube.com
-        - google → https://google.com
-        - gmail → https://gmail.com
-        - github → https://github.com
-        - reddit → https://reddit.com
-        - twitter → https://twitter.com
-        - instagram → https://instagram.com
-        - whatsapp → https://web.whatsapp.com
-        - maps → https://maps.google.com
-        - drive → https://drive.google.com
-        - docs → https://docs.google.com
-        - translate → https://translate.google.com
-
-        For any website name not in mapping, use: https:// + name + .com
-
-        If user asks to open anything, respond with TOOL: open_website(name)
-        Otherwise respond naturally with complete, helpful answers.`;
+        Note: For opening websites, the system handles it locally. Just respond with confirmation.`;
 
         let conversationHistory = [
             { role: 'system', content: SYSTEM_PROMPT }
@@ -530,7 +523,68 @@
         };
 
         // ============================================================
-        // TOOL SYSTEM - FIXED OPEN WEBSITE
+        // LOCAL COMMAND DETECTION (NO LLM DEPENDENCY)
+        // ============================================================
+        function detectLocalCommand(query) {
+            const lowerQuery = query.toLowerCase().trim();
+
+            // Website patterns
+            const openPatterns = [
+                /(open|kholo|khol|chalao|start|launch)\s+(\w+)/,
+                /(\w+)\s+(open|kholo|khol|chalao|start|launch)/,
+                /(youtube|google|gmail|github|reddit|twitter|instagram|whatsapp|maps|drive|docs|translate|facebook|linkedin|spotify|netflix|amazon|flipkart|zomato|swiggy)\s+(kholo|khol|open)/,
+                /^(youtube|google|gmail|github|reddit|twitter|instagram|whatsapp|maps|drive|docs|translate|facebook|linkedin|spotify|netflix|amazon|flipkart|zomato|swiggy)$/
+            ];
+
+            for (const pattern of openPatterns) {
+                const match = lowerQuery.match(pattern);
+                if (match) {
+                    let site = match[2] || match[1] || match[0];
+                    site = site.replace(/[^a-z]/g, '');
+                    if (WEBSITE_MAP[site]) {
+                        return {
+                            type: 'open_website',
+                            value: site
+                        };
+                    }
+                }
+            }
+
+            // Check if it's a direct website name
+            for (const [key] of Object.entries(WEBSITE_MAP)) {
+                if (lowerQuery.includes(key)) {
+                    return {
+                        type: 'open_website',
+                        value: key
+                    };
+                }
+            }
+
+            return null;
+        }
+
+        // ============================================================
+        // DIRECT WEBSITE NAVIGATION (NO POP-UP BLOCKING)
+        // ============================================================
+        function openWebsiteDirectly(siteName) {
+            const url = WEBSITE_MAP[siteName];
+            if (!url) {
+                addToolMessage('Website not found: ' + siteName);
+                return false;
+            }
+
+            addToolMessage('Opening ' + siteName + '...');
+            
+            // CRITICAL FIX: Use location.href instead of window.open()
+            setTimeout(() => {
+                window.location.href = url;
+            }, 300);
+
+            return true;
+        }
+
+        // ============================================================
+        // TOOL SYSTEM
         // ============================================================
         async function executeTool(toolString) {
             try {
@@ -540,41 +594,21 @@
                 const args = params ? params.split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')) : [];
 
                 switch (toolName) {
-                    case 'open_website': {
-                        let websiteName = args[0] || 'google';
-                        websiteName = websiteName.toLowerCase().trim();
-                        
-                        // Check if it's in mapping
-                        let url = WEBSITE_MAP[websiteName];
-                        if (!url) {
-                            // Try to construct URL
-                            if (websiteName.includes('.')) {
-                                url = 'https://' + websiteName;
-                            } else {
-                                url = 'https://' + websiteName + '.com';
-                            }
-                        }
-                        
-                        // OPEN DIRECTLY
-                        window.open(url, '_blank');
-                        
-                        // Return confirmation for LLM
-                        return 'Opened ' + websiteName + ' in new tab';
-                    }
-
-                    case 'set_reminder':
+                    case 'set_reminder': {
                         const reminder = { text: args[0] || 'reminder', time: args[1] || 'now' };
                         const reminders = JSON.parse(localStorage.getItem('zishu_reminders') || '[]');
                         reminders.push(reminder);
                         localStorage.setItem('zishu_reminders', JSON.stringify(reminders));
                         return 'Reminder set: ' + reminder.text + ' at ' + reminder.time;
+                    }
 
-                    case 'create_note':
+                    case 'create_note': {
                         const note = args[0] || 'empty note';
                         const notes = JSON.parse(localStorage.getItem('zishu_notes') || '[]');
                         notes.push({ text: note, date: new Date().toISOString() });
                         localStorage.setItem('zishu_notes', JSON.stringify(notes));
                         return 'Note saved: ' + note;
+                    }
 
                     case 'get_weather': {
                         const city = args[0] || 'Delhi';
@@ -627,14 +661,6 @@
         }
 
         // ============================================================
-        // MEMORY
-        // ============================================================
-        function updateMemory(key, value) {
-            memory[key] = value;
-            localStorage.setItem('zishu_memory', JSON.stringify(memory));
-        }
-
-        // ============================================================
         // STREAMING RESPONSE
         // ============================================================
         async function streamResponse(text) {
@@ -664,7 +690,7 @@
         }
 
         // ============================================================
-        // TTS - FEMALE VOICE
+        // TTS
         // ============================================================
         function speakText(text) {
             try {
@@ -716,7 +742,7 @@
         }
 
         // ============================================================
-        // MAIN QUERY HANDLER
+        // MAIN QUERY HANDLER - WITH LOCAL COMMAND DETECTION
         // ============================================================
         async function handleUserQuery(query) {
             if (isProcessing) return;
@@ -737,6 +763,28 @@
             chatContainer.appendChild(userDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
+            // ============================================================
+            // STEP 1: LOCAL COMMAND DETECTION (NO LLM WAIT)
+            // ============================================================
+            const localCommand = detectLocalCommand(query);
+            if (localCommand) {
+                if (localCommand.type === 'open_website') {
+                    // OPEN DIRECTLY - IMMEDIATE RESPONSE
+                    const success = openWebsiteDirectly(localCommand.value);
+                    if (success) {
+                        const reply = 'Main ' + localCommand.value + ' khol rahi hoon.';
+                        conversationHistory.push({ role: 'assistant', content: reply });
+                        await streamResponse(reply);
+                        isProcessing = false;
+                        if (state !== 'listening') setOrbState('idle');
+                        return;
+                    }
+                }
+            }
+
+            // ============================================================
+            // STEP 2: LLM FOR COMPLEX QUERIES
+            // ============================================================
             conversationHistory.push({ role: 'user', content: query });
 
             try {
@@ -840,8 +888,8 @@
         welcomeDiv.appendChild(wc);
         chatContainer.appendChild(welcomeDiv);
 
-        console.log('Zishu AI v2.3 - Direct website opening fixed');
-        console.log('Website mapping:', Object.keys(WEBSITE_MAP).join(', '));
+        console.log('Zishu AI v2.5 - Local Commands + Direct Navigation');
+        console.log('Websites:', Object.keys(WEBSITE_MAP).join(', '));
         console.log('Press Space to toggle listening');
     </script>
 </body>
