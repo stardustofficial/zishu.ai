@@ -6,7 +6,6 @@
     <title>Zishu AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* ===== RESET & BASE ===== */
         * {
             margin: 0;
             padding: 0;
@@ -23,7 +22,6 @@
             overflow: hidden;
         }
 
-        /* ===== HEADER ===== */
         #header {
             display: flex;
             justify-content: space-between;
@@ -72,7 +70,6 @@
             color: white;
         }
 
-        /* ===== ORB ===== */
         #orb-container {
             display: flex;
             flex-direction: column;
@@ -136,7 +133,6 @@
             font-weight: 400;
         }
 
-        /* ===== CHAT CONTAINER (Flexible) ===== */
         #chat-wrapper {
             flex: 1;
             min-height: 0;
@@ -168,15 +164,14 @@
             border-radius: 10px;
         }
 
-        /* ===== MESSAGES ===== */
         .message {
             margin: 8px 0;
             padding: 12px 18px;
             border-radius: 16px;
-            max-width: 75%;
+            max-width: 80%;
             word-wrap: break-word;
             animation: fadeIn 0.25s ease;
-            line-height: 1.6;
+            line-height: 1.7;
             font-size: 15px;
             font-weight: 400;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
@@ -223,18 +218,6 @@
             font-weight: 450;
         }
 
-        .typing-indicator {
-            color: #6b7a8f;
-            font-size: 14px;
-            margin: 6px 0;
-            padding: 8px 16px;
-            background: #f1f4f9;
-            border-radius: 30px;
-            display: inline-block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        /* ===== FOOTER ===== */
         #footer {
             display: flex;
             justify-content: space-between;
@@ -245,7 +228,6 @@
             letter-spacing: 0.2px;
         }
 
-        /* ===== ANIMATIONS ===== */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -257,7 +239,6 @@
             }
         }
 
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
             body {
                 padding: 12px 14px 10px;
@@ -278,7 +259,7 @@
             .message {
                 font-size: 14px;
                 padding: 10px 14px;
-                max-width: 85%;
+                max-width: 88%;
             }
             #chat-container {
                 padding: 14px 16px;
@@ -292,7 +273,6 @@
 </head>
 <body>
 
-    <!-- ===== HEADER ===== -->
     <div id="header">
         <div id="brand">
             <svg viewBox="0 0 24 24" fill="none" stroke="url(#grad)" stroke-width="1.8">
@@ -314,22 +294,19 @@
         <div id="status-badge">● Idle</div>
     </div>
 
-    <!-- ===== ORB ===== -->
     <div id="orb-container">
         <div id="orb"></div>
         <div id="orb-status">Zishu is ready</div>
         <div id="orb-sub">Tap orb or press Space to talk</div>
     </div>
 
-    <!-- ===== CHAT ===== -->
     <div id="chat-wrapper">
         <div id="chat-container"></div>
     </div>
 
-    <!-- ===== FOOTER ===== -->
     <div id="footer">
         <span>private · local</span>
-        <span>v2.1</span>
+        <span>v2.3</span>
     </div>
 
     <script>
@@ -342,26 +319,57 @@
         // ============================================================
         // STATE
         // ============================================================
-        let state = 'idle'; // idle | listening | thinking | speaking
+        let state = 'idle';
         let recognition = null;
         let isProcessing = false;
         let currentUtterance = null;
         let isManualMode = false;
 
+        // ============================================================
+        // SYSTEM PROMPT - FEMALE + TOOL AWARE
+        // ============================================================
+        const SYSTEM_PROMPT = `You are Zishu, a female voice assistant with a warm, helpful personality.
+
+        IMPORTANT GENDER RULES:
+        - Always refer to yourself as "main" (feminine) in Hindi
+        - Use feminine verb endings: "kar sakti hoon", "bol sakti hoon", "de sakti hoon"
+        - Example: "Main aapki madad kar sakti hoon" (not "kar sakta hoon")
+
+        RESPONSE STYLE:
+        - Give detailed, complete answers
+        - Be warm and helpful like a trusted friend
+        - Use Hinglish naturally - mix Hindi and English
+
+        TOOLS (use EXACT format):
+        - TOOL: open_website(website_name) - opens any website (YouTube, Google, Gmail, etc.)
+        - TOOL: set_reminder(text, time) - sets a reminder
+        - TOOL: create_note(text) - saves a note
+        - TOOL: get_weather(city) - gets weather
+        - TOOL: get_time(city) - gets current time
+        - TOOL: calculate(expression) - does math
+        - TOOL: translate(text, language) - translates text
+
+        WEBSITE MAPPING (use these exact names):
+        - youtube → https://youtube.com
+        - google → https://google.com
+        - gmail → https://gmail.com
+        - github → https://github.com
+        - reddit → https://reddit.com
+        - twitter → https://twitter.com
+        - instagram → https://instagram.com
+        - whatsapp → https://web.whatsapp.com
+        - maps → https://maps.google.com
+        - drive → https://drive.google.com
+        - docs → https://docs.google.com
+        - translate → https://translate.google.com
+
+        For any website name not in mapping, use: https:// + name + .com
+
+        If user asks to open anything, respond with TOOL: open_website(name)
+        Otherwise respond naturally with complete, helpful answers.`;
+
         let conversationHistory = [
-            { role: 'system', content: `You are Zishu, a voice assistant. 
-            You have access to these tools:
-            1. open_website(url) - opens any website
-            2. set_reminder(text, time) - sets reminder
-            3. create_note(text) - saves note
-            4. get_weather(city) - gets weather
-            5. get_time(city) - gets current time
-            6. calculate(expression) - does math
-            7. translate(text, language) - translates text
-            
-            If user asks for any action, respond with: TOOL: tool_name(params)
-            Otherwise respond naturally in Hinglish or Hindi.
-            Keep responses concise.` }
+            { role: 'system', content: SYSTEM_PROMPT }
         ];
 
         let memory = JSON.parse(localStorage.getItem('zishu_memory') || '{}');
@@ -398,7 +406,7 @@
         orb.addEventListener('click', toggleListening);
 
         // ============================================================
-        // TOGGLE LISTENING (Manual Mode)
+        // TOGGLE LISTENING
         // ============================================================
         function toggleListening() {
             if (isProcessing) {
@@ -414,7 +422,7 @@
         }
 
         // ============================================================
-        // SPEECH RECOGNITION (Fixed - No Auto Restart)
+        // SPEECH RECOGNITION
         // ============================================================
         function initSpeechRecognition() {
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -424,7 +432,7 @@
             }
             const rec = new SR();
             rec.lang = 'hi-IN';
-            rec.continuous = false; // Single shot - better control
+            rec.continuous = false;
             rec.interimResults = false;
             rec.maxAlternatives = 1;
 
@@ -472,7 +480,6 @@
                 recognition.start();
                 setOrbState('listening');
             } catch (e) {
-                // If already started, stop and restart
                 try {
                     recognition.stop();
                     setTimeout(() => {
@@ -496,7 +503,34 @@
         }
 
         // ============================================================
-        // TOOL SYSTEM
+        // WEBSITE MAPPING
+        // ============================================================
+        const WEBSITE_MAP = {
+            'youtube': 'https://youtube.com',
+            'google': 'https://google.com',
+            'gmail': 'https://gmail.com',
+            'github': 'https://github.com',
+            'reddit': 'https://reddit.com',
+            'twitter': 'https://twitter.com',
+            'x': 'https://twitter.com',
+            'instagram': 'https://instagram.com',
+            'whatsapp': 'https://web.whatsapp.com',
+            'maps': 'https://maps.google.com',
+            'drive': 'https://drive.google.com',
+            'docs': 'https://docs.google.com',
+            'translate': 'https://translate.google.com',
+            'facebook': 'https://facebook.com',
+            'linkedin': 'https://linkedin.com',
+            'spotify': 'https://spotify.com',
+            'netflix': 'https://netflix.com',
+            'amazon': 'https://amazon.in',
+            'flipkart': 'https://flipkart.com',
+            'zomato': 'https://zomato.com',
+            'swiggy': 'https://swiggy.com'
+        };
+
+        // ============================================================
+        // TOOL SYSTEM - FIXED OPEN WEBSITE
         // ============================================================
         async function executeTool(toolString) {
             try {
@@ -505,16 +539,31 @@
                 const [, toolName, params] = match;
                 const args = params ? params.split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')) : [];
 
-                addToolMessage('Executing ' + toolName + '...');
-
                 switch (toolName) {
-                    case 'open_website':
-                        const url = args[0] || 'https://google.com';
+                    case 'open_website': {
+                        let websiteName = args[0] || 'google';
+                        websiteName = websiteName.toLowerCase().trim();
+                        
+                        // Check if it's in mapping
+                        let url = WEBSITE_MAP[websiteName];
+                        if (!url) {
+                            // Try to construct URL
+                            if (websiteName.includes('.')) {
+                                url = 'https://' + websiteName;
+                            } else {
+                                url = 'https://' + websiteName + '.com';
+                            }
+                        }
+                        
+                        // OPEN DIRECTLY
                         window.open(url, '_blank');
-                        return 'Opened ' + url;
+                        
+                        // Return confirmation for LLM
+                        return 'Opened ' + websiteName + ' in new tab';
+                    }
 
                     case 'set_reminder':
-                        const reminder = { text: args[0], time: args[1] || 'now' };
+                        const reminder = { text: args[0] || 'reminder', time: args[1] || 'now' };
                         const reminders = JSON.parse(localStorage.getItem('zishu_reminders') || '[]');
                         reminders.push(reminder);
                         localStorage.setItem('zishu_reminders', JSON.stringify(reminders));
@@ -527,25 +576,29 @@
                         localStorage.setItem('zishu_notes', JSON.stringify(notes));
                         return 'Note saved: ' + note;
 
-                    case 'get_weather':
+                    case 'get_weather': {
                         const city = args[0] || 'Delhi';
                         const weatherData = await fetchWeather(city);
                         return 'Weather in ' + city + ': ' + weatherData;
+                    }
 
-                    case 'get_time':
+                    case 'get_time': {
                         const tz = args[0] || 'Asia/Kolkata';
                         const time = new Date().toLocaleString('en-US', { timeZone: tz, hour: '2-digit', minute: '2-digit' });
                         return 'Current time in ' + tz.split('/').pop() + ': ' + time;
+                    }
 
-                    case 'calculate':
+                    case 'calculate': {
                         const expr = args[0] || '0';
                         const result = Function('"use strict"; return (' + expr + ')')();
                         return 'Result: ' + result;
+                    }
 
-                    case 'translate':
+                    case 'translate': {
                         const text = args[0] || '';
                         const lang = args[1] || 'English';
                         return 'Translated to ' + lang + ': ' + text + ' (demo)';
+                    }
 
                     default:
                         return 'Tool ' + toolName + ' not recognized';
@@ -603,7 +656,7 @@
                 accumulatedText += text[i];
                 contentSpan.textContent = accumulatedText;
                 chatContainer.scrollTop = chatContainer.scrollHeight;
-                await new Promise(r => setTimeout(r, 12 + Math.random() * 8));
+                await new Promise(r => setTimeout(r, 10 + Math.random() * 8));
             }
 
             speakText(text);
@@ -611,7 +664,7 @@
         }
 
         // ============================================================
-        // TTS
+        // TTS - FEMALE VOICE
         // ============================================================
         function speakText(text) {
             try {
@@ -622,12 +675,22 @@
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'hi-IN';
                 utterance.rate = 0.85;
-                utterance.pitch = 1.0;
+                utterance.pitch = 1.1;
                 utterance.volume = 1;
 
                 const voices = window.speechSynthesis.getVoices();
-                const hindiVoice = voices.find(v => v.lang.startsWith('hi'));
-                if (hindiVoice) utterance.voice = hindiVoice;
+                const femaleVoices = voices.filter(v => 
+                    v.lang.startsWith('hi') && 
+                    (v.name.toLowerCase().includes('female') || 
+                     v.name.toLowerCase().includes('swara') ||
+                     v.name.toLowerCase().includes('lekh'))
+                );
+                if (femaleVoices.length > 0) {
+                    utterance.voice = femaleVoices[0];
+                } else {
+                    const hindiVoice = voices.find(v => v.lang.startsWith('hi'));
+                    if (hindiVoice) utterance.voice = hindiVoice;
+                }
 
                 utterance.onstart = () => {
                     setOrbState('speaking');
@@ -686,8 +749,8 @@
                     body: JSON.stringify({
                         model: GROQ_MODEL,
                         messages: conversationHistory,
-                        temperature: 0.3,
-                        max_tokens: 200,
+                        temperature: 0.4,
+                        max_tokens: 500,
                         stream: false
                     })
                 });
@@ -697,10 +760,11 @@
                 }
 
                 const data = await response.json();
-                const reply = data.choices[0].message.content;
+                let reply = data.choices[0].message.content;
 
                 if (reply.startsWith('TOOL:')) {
                     const toolResult = await executeTool(reply);
+                    
                     const toolResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                         method: 'POST',
                         headers: {
@@ -710,12 +774,13 @@
                         body: JSON.stringify({
                             model: GROQ_MODEL,
                             messages: [
+                                { role: 'system', content: SYSTEM_PROMPT },
                                 ...conversationHistory,
                                 { role: 'assistant', content: reply },
-                                { role: 'user', content: 'Tool result: ' + toolResult + '. Now respond naturally.' }
+                                { role: 'user', content: 'Tool result: ' + toolResult + '. Now respond naturally with a complete, helpful answer.' }
                             ],
                             temperature: 0.7,
-                            max_tokens: 150,
+                            max_tokens: 500,
                             stream: false
                         })
                     });
@@ -763,7 +828,6 @@
         // ============================================================
         setOrbState('idle');
 
-        // Add welcome message
         const welcomeDiv = document.createElement('div');
         welcomeDiv.className = 'message assistant-msg';
         const ws = document.createElement('span');
@@ -771,13 +835,13 @@
         ws.textContent = 'Zishu';
         const wc = document.createElement('span');
         wc.className = 'content';
-        wc.textContent = 'Namaste! Main Zishu hoon. Orb dabayein ya Space press karein aur baat karein.';
+        wc.textContent = 'Namaste! Main Zishu hoon. Main aapki madad kar sakti hoon. Orb dabayein ya Space press karein aur baat karein.';
         welcomeDiv.appendChild(ws);
         welcomeDiv.appendChild(wc);
         chatContainer.appendChild(welcomeDiv);
 
-        console.log('Zishu AI v2.1 loaded');
-        console.log('Memory:', memory);
+        console.log('Zishu AI v2.3 - Direct website opening fixed');
+        console.log('Website mapping:', Object.keys(WEBSITE_MAP).join(', '));
         console.log('Press Space to toggle listening');
     </script>
 </body>
