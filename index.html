@@ -5,118 +5,197 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zishu AI - Voice Assistant</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7fc;
             height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
-            color: white;
+            color: #1a2332;
         }
         #header {
             font-size: 28px;
-            font-weight: bold;
-            margin: 20px 0;
-            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            margin: 20px 0 10px;
+            color: #1a2332;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #header span {
+            background: #eef2f7;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #3b82f6;
         }
         #chat-container {
             flex: 1;
             width: 100%;
-            max-width: 600px;
+            max-width: 700px;
             overflow-y: auto;
-            padding: 15px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 20px;
+            padding: 20px 15px;
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             margin-bottom: 20px;
             scroll-behavior: smooth;
+            border: 1px solid #e9edf4;
         }
         .message {
-            margin: 10px 0;
-            padding: 12px 18px;
-            border-radius: 18px;
+            margin: 12px 0;
+            padding: 14px 20px;
+            border-radius: 20px;
             max-width: 80%;
             word-wrap: break-word;
             animation: fadeIn 0.3s ease;
+            line-height: 1.5;
+            font-size: 15px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
         }
         .user-msg {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #3b82f6;
+            color: white;
             margin-left: auto;
-            border-bottom-right-radius: 4px;
+            border-bottom-right-radius: 6px;
         }
         .assistant-msg {
-            background: rgba(255,255,255,0.12);
+            background: #f1f4f9;
+            color: #1a2332;
             margin-right: auto;
-            border-bottom-left-radius: 4px;
+            border-bottom-left-radius: 6px;
         }
         .typing-indicator {
-            color: #aaa;
-            font-style: italic;
+            color: #6b7a8f;
+            font-size: 14px;
             margin: 10px 0;
-            padding: 8px 16px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 18px;
+            padding: 10px 18px;
+            background: #f1f4f9;
+            border-radius: 30px;
             display: inline-block;
         }
         #mic-btn {
-            width: 80px;
-            height: 80px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
             border: none;
-            background: linear-gradient(135deg, #f093fb, #f5576c);
-            color: white;
-            font-size: 40px;
+            background: #ffffff;
+            color: #1a2332;
             cursor: pointer;
-            box-shadow: 0 0 30px rgba(245, 87, 108, 0.4);
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-            position: relative;
+            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.15);
+            transition: all 0.25s ease;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e9edf4;
+        }
+        #mic-btn svg {
+            width: 32px;
+            height: 32px;
+            fill: none;
+            stroke: #1a2332;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke 0.25s ease;
         }
         #mic-btn.listening {
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
-            box-shadow: 0 0 50px rgba(79, 172, 254, 0.6);
-            animation: pulse 1.5s infinite;
+            background: #3b82f6;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2);
         }
-        #mic-btn:active { transform: scale(0.9); }
+        #mic-btn.listening svg {
+            stroke: white;
+        }
+        #mic-btn:active {
+            transform: scale(0.92);
+        }
         @keyframes pulse {
-            0% { box-shadow: 0 0 30px rgba(79, 172, 254, 0.4); }
-            50% { box-shadow: 0 0 80px rgba(79, 172, 254, 0.8); }
-            100% { box-shadow: 0 0 30px rgba(79, 172, 254, 0.4); }
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3);
+            }
+            70% {
+                box-shadow: 0 0 0 16px rgba(59, 130, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+        #mic-btn.listening {
+            animation: pulse 1.6s infinite;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         #status {
             font-size: 14px;
-            color: #aaa;
-            margin-top: 5px;
+            color: #6b7a8f;
+            margin-top: 4px;
+            font-weight: 450;
+            letter-spacing: 0.2px;
         }
         #chat-container::-webkit-scrollbar {
-            width: 6px;
+            width: 5px;
+        }
+        #chat-container::-webkit-scrollbar-track {
+            background: #f1f4f9;
+            border-radius: 10px;
         }
         #chat-container::-webkit-scrollbar-thumb {
-            background: #667eea;
+            background: #d0d8e3;
             border-radius: 10px;
+        }
+        .footer-note {
+            font-size: 12px;
+            color: #9aa9bb;
+            margin-top: 6px;
         }
     </style>
 </head>
 <body>
-    <div id="header">🎙️ Dot Assistant</div>
+    <div id="header">
+        🎙️ Zishu AI
+        <span>Beta</span>
+    </div>
     <div id="chat-container"></div>
-    <button id="mic-btn">🎤</button>
+
+    <!-- New SVG Mic Button -->
+    <button id="mic-btn" aria-label="Microphone">
+        <svg viewBox="0 0 24 24" width="32" height="32">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="23" />
+            <line x1="8" y1="23" x2="16" y2="23" />
+        </svg>
+    </button>
+
     <div id="status">Tap mic to start speaking</div>
+    <div class="footer-note">🔒 Your data stays private</div>
 
     <script>
         // ============================================================
-        // 🔑 YAHAN APNI GROQ API KEY DAALEIN
+        // 🔑 YOUR GROQ API KEY
         // ============================================================
         const GROQ_API_KEY = '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';
-        const GROQ_MODEL = 'llama3-8b-8192';
+        // UPDATED: Using the recommended replacement model
+        const GROQ_MODEL = 'llama-3.1-8b-instant';
 
         // ============================================================
         // STATE
@@ -124,7 +203,7 @@
         let isListening = false;
         let recognition = null;
         let conversationHistory = [
-            { role: 'system', content: 'You are a helpful voice assistant named Dot. Speak naturally and concisely. Always respond in Hinglish or Hindi.' }
+            { role: 'system', content: 'You are a helpful voice assistant named Zishu. Speak naturally and concisely. Always respond in Hinglish or Hindi.' }
         ];
         let isProcessing = false;
 
@@ -133,18 +212,18 @@
         const statusEl = document.getElementById('status');
 
         // ============================================================
-        // SPEECH RECOGNITION (WebView + Chrome compatible)
+        // SPEECH RECOGNITION
         // ============================================================
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
-                statusEl.textContent = '❌ Your browser does not support speech recognition. Use Chrome on Android.';
+                statusEl.textContent = '❌ Browser not supported. Use Chrome on Android.';
                 micBtn.disabled = true;
                 return null;
             }
 
             const rec = new SpeechRecognition();
-            rec.lang = 'hi-IN'; // Hindi + Hinglish support
+            rec.lang = 'hi-IN';
             rec.continuous = false;
             rec.interimResults = false;
             rec.maxAlternatives = 1;
@@ -165,7 +244,7 @@
             rec.onerror = (event) => {
                 console.error('Speech error:', event.error);
                 if (event.error === 'not-allowed') {
-                    statusEl.textContent = '❌ Microphone permission denied. Tap mic & allow.';
+                    statusEl.textContent = '❌ Microphone access denied. Tap mic & allow.';
                 } else if (event.error === 'audio-capture') {
                     statusEl.textContent = '❌ No microphone found.';
                 } else {
@@ -189,7 +268,7 @@
         // ============================================================
         micBtn.addEventListener('click', () => {
             if (isProcessing) {
-                statusEl.textContent = '⏳ Wait, processing...';
+                statusEl.textContent = '⏳ Please wait...';
                 return;
             }
 
@@ -199,15 +278,12 @@
             }
 
             if (isListening) {
-                // Stop listening
                 recognition.stop();
                 stopListening();
             } else {
-                // Start listening
                 try {
                     recognition.start();
                 } catch (e) {
-                    // Sometimes recognition is already started but state is off
                     recognition.stop();
                     setTimeout(() => recognition.start(), 200);
                 }
@@ -223,17 +299,15 @@
         }
 
         // ============================================================
-        // GROQ API CALL
+        // GROQ API CALL (with updated model)
         // ============================================================
         async function processUserQuery(userText) {
             isProcessing = true;
             micBtn.disabled = true;
             statusEl.textContent = '🧠 Thinking...';
 
-            // Add user message to history
             conversationHistory.push({ role: 'user', content: userText });
 
-            // Show typing indicator
             const typingId = showTypingIndicator();
 
             try {
@@ -260,16 +334,10 @@
                 const data = await response.json();
                 const assistantReply = data.choices[0].message.content;
 
-                // Remove typing indicator
                 removeTypingIndicator(typingId);
-
-                // Add assistant message to chat
-                addMessage('Dot', assistantReply, 'assistant-msg');
-
-                // Save to history
+                addMessage('Zishu', assistantReply, 'assistant-msg');
                 conversationHistory.push({ role: 'assistant', content: assistantReply });
 
-                // Speak using Edge TTS
                 await speakText(assistantReply);
 
             } catch (error) {
@@ -287,14 +355,12 @@
         }
 
         // ============================================================
-        // EDGE TTS (100% FREE, NO API KEY)
+        // EDGE TTS (FREE)
         // ============================================================
         async function speakText(text) {
             try {
                 statusEl.textContent = '🔊 Speaking...';
-
-                // Use Microsoft Edge TTS API (free, no auth)
-                const voice = 'hi-IN-SwaraNeural'; // Hindi female voice
+                const voice = 'hi-IN-SwaraNeural';
                 const speechUrl = `https://api.tts.quest/v1/edge/tts?text=${encodeURIComponent(text)}&voice=${voice}`;
 
                 const response = await fetch(speechUrl);
@@ -303,7 +369,6 @@
                 const data = await response.json();
                 if (!data.success || !data.audioUrl) throw new Error('TTS error');
 
-                // Play audio
                 const audio = new Audio(data.audioUrl);
                 audio.play();
 
@@ -318,15 +383,12 @@
             } catch (error) {
                 console.error('TTS Error:', error);
                 statusEl.textContent = '⚠️ TTS error, but text is on screen.';
-                // Fallback: try browser's built-in TTS
                 try {
                     const utterance = new SpeechSynthesisUtterance(text);
                     utterance.lang = 'hi-IN';
                     utterance.rate = 0.9;
                     window.speechSynthesis.speak(utterance);
-                } catch (e) {
-                    // Silent fallback
-                }
+                } catch (e) {}
             }
         }
 
@@ -346,7 +408,7 @@
             const div = document.createElement('div');
             div.id = id;
             div.className = 'typing-indicator';
-            div.textContent = 'Dot is typing...';
+            div.textContent = 'Zishu is typing...';
             chatContainer.appendChild(div);
             chatContainer.scrollTop = chatContainer.scrollHeight;
             return id;
@@ -366,7 +428,7 @@
         // ============================================================
         // INIT
         // ============================================================
-        addMessage('Dot', 'Namaste! Main aapka voice assistant hoon. Mic dabayein aur baat karein.', 'assistant-msg');
+        addMessage('Zishu', 'Namaste! Main aapka voice assistant hoon. Mic dabayein aur baat karein.', 'assistant-msg');
         statusEl.textContent = '🎤 Tap mic to start';
     </script>
 </body>
