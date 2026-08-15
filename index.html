@@ -3,182 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zishu AI - Voice Assistant</title>
+    <title>Zishu AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* ===== CSS VARIABLES ===== */
-        :root {
-            --bg: #f4f7fc;
-            --surface: #ffffff;
-            --surface-border: #e9edf4;
-            --text-primary: #1a2332;
-            --text-secondary: #6b7a8f;
-            --text-muted: #9aa9bb;
-            --orb-idle: #3b82f6;
-            --orb-listening: #4f8ef7;
-            --orb-thinking: #7b6cf7;
-            --orb-speaking: #3b82f6;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-            --bubble-user: #3b82f6;
-            --bubble-user-text: #ffffff;
-            --bubble-assistant: #f1f4f9;
-            --bubble-assistant-text: #1a2332;
-            --scrollbar-track: #f1f4f9;
-            --scrollbar-thumb: #d0d8e3;
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-
-        [data-theme="dark"] {
-            --bg: #0f0f13;
-            --surface: #1a1a24;
-            --surface-border: #2a2a3a;
-            --text-primary: #e8edf5;
-            --text-secondary: #9aa9bb;
-            --text-muted: #6b7a8f;
-            --orb-idle: #4f8ef7;
-            --orb-listening: #6b9cf7;
-            --orb-thinking: #8b7cf7;
-            --orb-speaking: #4f8ef7;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            --bubble-user: #4f8ef7;
-            --bubble-user-text: #ffffff;
-            --bubble-assistant: #2a2a3a;
-            --bubble-assistant-text: #e8edf5;
-            --scrollbar-track: #1a1a24;
-            --scrollbar-thumb: #3a3a4a;
-        }
-
-        /* ===== RESET ===== */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
+            background: #f4f7fc;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            padding: 16px 20px 12px;
-            color: var(--text-primary);
-            transition: background 0.3s ease, color 0.3s ease;
+            padding: 20px 24px 16px;
+            color: #1a2332;
             overflow: hidden;
         }
 
         /* ===== HEADER ===== */
         #header {
-            width: 100%;
-            max-width: 700px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-            padding: 0 4px;
+            margin-bottom: 16px;
             flex-shrink: 0;
+            padding: 0 4px;
         }
         #brand {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
         #brand svg {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
         }
         #brand h1 {
-            font-size: 20px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 800;
             letter-spacing: -0.5px;
-            background: linear-gradient(90deg, var(--orb-idle), var(--orb-thinking));
+            background: linear-gradient(135deg, #3b82f6, #7b6cf7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         #brand .sub {
-            font-size: 11px;
-            font-weight: 450;
-            color: var(--text-secondary);
-            -webkit-text-fill-color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 400;
+            color: #6b7a8f;
+            -webkit-text-fill-color: #6b7a8f;
             background: none;
+            margin-left: 4px;
         }
-        #theme-toggle {
-            background: var(--surface);
-            border: 1px solid var(--surface-border);
-            border-radius: 50%;
-            width: 38px;
-            height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            box-shadow: var(--shadow);
-            flex-shrink: 0;
+        #status-badge {
+            font-size: 13px;
+            font-weight: 500;
+            padding: 6px 16px;
+            border-radius: 30px;
+            background: #e9edf4;
+            color: #6b7a8f;
+            transition: all 0.3s ease;
         }
-        #theme-toggle svg {
-            width: 20px;
-            height: 20px;
-            stroke: var(--text-secondary);
-            fill: none;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            transition: stroke 0.3s ease;
+        #status-badge.active {
+            background: #3b82f6;
+            color: white;
         }
-        #theme-toggle:hover svg { stroke: var(--text-primary); }
 
-        /* ===== ORB CONTAINER ===== */
+        /* ===== ORB ===== */
         #orb-container {
-            width: 100%;
-            max-width: 700px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px 0 12px;
+            padding: 16px 0 20px;
             flex-shrink: 0;
-            position: relative;
         }
         #orb {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, var(--orb-idle), #1a2332);
+            background: radial-gradient(circle at 30% 30%, #3b82f6, #1a2332);
             box-shadow: 0 0 60px rgba(59, 130, 246, 0.15);
-            transition: all 0.5s ease;
-            position: relative;
+            transition: all 0.4s ease;
             cursor: pointer;
+            position: relative;
         }
-        #orb::after {
-            content: '';
-            position: absolute;
-            inset: -8px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            transition: all 0.5s ease;
+        #orb:hover {
+            transform: scale(1.04);
         }
         #orb.listening {
-            background: radial-gradient(circle at 30% 30%, var(--orb-listening), #1a2332);
+            background: radial-gradient(circle at 30% 30%, #4f8ef7, #1a2332);
             box-shadow: 0 0 80px rgba(79, 142, 247, 0.25);
             animation: orbPulse 1.2s ease-in-out infinite;
         }
-        #orb.listening::after {
-            border-color: var(--orb-listening);
-            animation: ringPulse 1.2s ease-in-out infinite;
-        }
         #orb.thinking {
-            background: radial-gradient(circle at 30% 30%, var(--orb-thinking), #1a2332);
+            background: radial-gradient(circle at 30% 30%, #7b6cf7, #1a2332);
             box-shadow: 0 0 80px rgba(123, 108, 247, 0.25);
             animation: orbSpin 2s linear infinite;
         }
         #orb.speaking {
-            background: radial-gradient(circle at 30% 30%, var(--orb-speaking), #1a2332);
+            background: radial-gradient(circle at 30% 30%, #3b82f6, #1a2332);
             box-shadow: 0 0 80px rgba(59, 130, 246, 0.2);
             animation: orbSpeak 0.6s ease-in-out infinite alternate;
         }
         @keyframes orbPulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.04); }
-        }
-        @keyframes ringPulse {
-            0%, 100% { transform: scale(1); opacity: 0.3; }
-            50% { transform: scale(1.15); opacity: 0.8; }
+            50% { transform: scale(1.05); }
         }
         @keyframes orbSpin {
             0% { transform: rotate(0deg); }
@@ -186,133 +119,174 @@
         }
         @keyframes orbSpeak {
             0% { transform: scale(1) translateY(0); }
-            100% { transform: scale(1.06) translateY(-4px); }
+            100% { transform: scale(1.04) translateY(-3px); }
         }
 
         #orb-status {
-            margin-top: 12px;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            letter-spacing: 0.3px;
-            transition: color 0.3s ease;
-            min-height: 22px;
+            margin-top: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a2332;
+            letter-spacing: -0.2px;
         }
         #orb-sub {
-            font-size: 12px;
-            color: var(--text-muted);
+            font-size: 13px;
+            color: #6b7a8f;
             margin-top: 4px;
-            min-height: 18px;
+            font-weight: 400;
         }
 
-        /* ===== CHAT CONTAINER (Compact) ===== */
+        /* ===== CHAT CONTAINER (Flexible) ===== */
+        #chat-wrapper {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e9edf4;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
         #chat-container {
             flex: 1;
-            width: 100%;
-            max-width: 700px;
             overflow-y: auto;
-            padding: 12px 16px;
-            background: var(--surface);
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--surface-border);
-            margin-top: 8px;
+            padding: 20px 24px;
             scroll-behavior: smooth;
-            transition: background 0.3s ease, border-color 0.3s ease;
-            min-height: 0;
         }
-        #chat-container::-webkit-scrollbar { width: 4px; }
-        #chat-container::-webkit-scrollbar-track { background: var(--scrollbar-track); border-radius: 10px; }
-        #chat-container::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 10px; }
+        #chat-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        #chat-container::-webkit-scrollbar-track {
+            background: #f1f4f9;
+        }
+        #chat-container::-webkit-scrollbar-thumb {
+            background: #d0d8e3;
+            border-radius: 10px;
+        }
 
+        /* ===== MESSAGES ===== */
         .message {
-            margin: 6px 0;
-            padding: 10px 16px;
+            margin: 8px 0;
+            padding: 12px 18px;
             border-radius: 16px;
-            max-width: 78%;
+            max-width: 75%;
             word-wrap: break-word;
-            animation: fadeIn 0.2s ease;
-            line-height: 1.5;
-            font-size: 14px;
-            font-weight: 420;
+            animation: fadeIn 0.25s ease;
+            line-height: 1.6;
+            font-size: 15px;
+            font-weight: 400;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-            transition: background 0.3s ease, color 0.3s ease;
         }
         .user-msg {
-            background: var(--bubble-user);
-            color: var(--bubble-user-text);
+            background: #3b82f6;
+            color: white;
             margin-left: auto;
             border-bottom-right-radius: 4px;
         }
         .assistant-msg {
-            background: var(--bubble-assistant);
-            color: var(--bubble-assistant-text);
+            background: #f1f4f9;
+            color: #1a2332;
             margin-right: auto;
             border-bottom-left-radius: 4px;
         }
         .message .sender {
             font-weight: 600;
-            font-size: 11px;
-            opacity: 0.6;
+            font-size: 12px;
+            opacity: 0.7;
             display: block;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
+            letter-spacing: 0.3px;
         }
-        .assistant-msg .sender { color: var(--text-secondary); }
-        .user-msg .sender { color: rgba(255,255,255,0.7); }
+        .assistant-msg .sender {
+            color: #6b7a8f;
+        }
+        .user-msg .sender {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .message .content {
+            display: block;
+        }
 
         .tool-msg {
-            background: var(--surface-border);
-            color: var(--text-secondary);
-            margin: 4px auto;
-            padding: 6px 14px;
+            background: #e9edf4;
+            color: #6b7a8f;
+            margin: 6px auto;
+            padding: 6px 16px;
             border-radius: 30px;
-            font-size: 12px;
+            font-size: 13px;
             text-align: center;
-            max-width: 90%;
+            max-width: 85%;
             font-weight: 450;
         }
 
         .typing-indicator {
-            color: var(--text-secondary);
-            font-size: 13px;
+            color: #6b7a8f;
+            font-size: 14px;
             margin: 6px 0;
             padding: 8px 16px;
-            background: var(--bubble-assistant);
+            background: #f1f4f9;
             border-radius: 30px;
             display: inline-block;
             animation: fadeIn 0.3s ease;
-            transition: background 0.3s ease;
         }
 
         /* ===== FOOTER ===== */
         #footer {
-            width: 100%;
-            max-width: 700px;
             display: flex;
             justify-content: space-between;
-            padding: 8px 4px 0;
+            padding: 10px 4px 0;
             flex-shrink: 0;
-            font-size: 11px;
-            color: var(--text-muted);
+            font-size: 12px;
+            color: #9aa9bb;
             letter-spacing: 0.2px;
         }
 
         /* ===== ANIMATIONS ===== */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
-            #orb { width: 96px; height: 96px; }
-            #brand h1 { font-size: 17px; }
-            #brand .sub { font-size: 10px; }
-            #orb-status { font-size: 13px; }
-            .message { font-size: 13px; padding: 8px 14px; max-width: 86%; }
-            #chat-container { padding: 10px 12px; }
-            #theme-toggle { width: 34px; height: 34px; }
-            #theme-toggle svg { width: 18px; height: 18px; }
+            body {
+                padding: 12px 14px 10px;
+            }
+            #orb {
+                width: 80px;
+                height: 80px;
+            }
+            #brand h1 {
+                font-size: 18px;
+            }
+            #brand .sub {
+                font-size: 10px;
+            }
+            #orb-status {
+                font-size: 14px;
+            }
+            .message {
+                font-size: 14px;
+                padding: 10px 14px;
+                max-width: 85%;
+            }
+            #chat-container {
+                padding: 14px 16px;
+            }
+            #status-badge {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
         }
     </style>
 </head>
@@ -322,38 +296,40 @@
     <div id="header">
         <div id="brand">
             <svg viewBox="0 0 24 24" fill="none" stroke="url(#grad)" stroke-width="1.8">
-                <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#3b82f6"/>
-                    <stop offset="100%" stop-color="#7b6cf7"/>
-                </linearGradient></defs>
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M8 12l2 2 4-4"/>
-                <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                <defs>
+                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#3b82f6" />
+                        <stop offset="100%" stop-color="#7b6cf7" />
+                    </linearGradient>
+                </defs>
+                <circle cx="12" cy="12" r="10" />
+                <path d="M8 12l2 2 4-4" />
+                <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
             </svg>
-            <div>
+            <div style="display:flex;align-items:baseline;gap:6px;">
                 <h1>ZISHU</h1>
                 <span class="sub">voice intelligence</span>
             </div>
         </div>
-        <button id="theme-toggle" aria-label="Toggle theme">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        </button>
+        <div id="status-badge">● Idle</div>
     </div>
 
     <!-- ===== ORB ===== -->
     <div id="orb-container">
         <div id="orb"></div>
-        <div id="orb-status">Tap orb or speak</div>
-        <div id="orb-sub">Zishu is idle</div>
+        <div id="orb-status">Zishu is ready</div>
+        <div id="orb-sub">Tap orb or press Space to talk</div>
     </div>
 
     <!-- ===== CHAT ===== -->
-    <div id="chat-container"></div>
+    <div id="chat-wrapper">
+        <div id="chat-container"></div>
+    </div>
 
     <!-- ===== FOOTER ===== -->
     <div id="footer">
-        <span>your conversations aren't stored</span>
-        <span>v2.0 · local</span>
+        <span>private · local</span>
+        <span>v2.1</span>
     </div>
 
     <script>
@@ -362,14 +338,16 @@
         // ============================================================
         const GROQ_API_KEY = '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';
         const GROQ_MODEL = 'llama-3.1-8b-instant';
-        const WAKE_WORDS = ['zishu', 'zishu', 'hey zishu', 'ok zishu'];
 
         // ============================================================
         // STATE
         // ============================================================
         let state = 'idle'; // idle | listening | thinking | speaking
         let recognition = null;
+        let isProcessing = false;
+        let currentUtterance = null;
         let isManualMode = false;
+
         let conversationHistory = [
             { role: 'system', content: `You are Zishu, a voice assistant. 
             You have access to these tools:
@@ -385,9 +363,8 @@
             Otherwise respond naturally in Hinglish or Hindi.
             Keep responses concise.` }
         ];
+
         let memory = JSON.parse(localStorage.getItem('zishu_memory') || '{}');
-        let isProcessing = false;
-        let currentUtterance = null;
 
         // ============================================================
         // DOM REFS
@@ -396,27 +373,7 @@
         const orbStatus = document.getElementById('orb-status');
         const orbSub = document.getElementById('orb-sub');
         const chatContainer = document.getElementById('chat-container');
-        const themeToggle = document.getElementById('theme-toggle');
-
-        // ============================================================
-        // THEME
-        // ============================================================
-        let currentTheme = 'light';
-        themeToggle.addEventListener('click', () => {
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            currentTheme = newTheme;
-            updateThemeIcon(newTheme);
-        });
-
-        function updateThemeIcon(theme) {
-            const svg = themeToggle.querySelector('svg');
-            if (theme === 'dark') {
-                svg.innerHTML = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
-            } else {
-                svg.innerHTML = `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
-            }
-        }
+        const statusBadge = document.getElementById('status-badge');
 
         // ============================================================
         // ORB CONTROLS
@@ -424,28 +381,40 @@
         function setOrbState(newState) {
             state = newState;
             orb.className = newState;
+
             const statusMap = {
-                idle: ['Zishu is idle', 'Tap orb or speak'],
-                listening: ['Listening...', 'Speak now'],
-                thinking: ['Thinking...', 'Processing your request'],
-                speaking: ['Speaking...', 'Zishu is responding']
+                idle: ['Zishu is ready', 'Tap orb or press Space to talk', '● Idle'],
+                listening: ['Listening...', 'Speak now', '● Listening'],
+                thinking: ['Thinking...', 'Processing your request', '◉ Thinking'],
+                speaking: ['Speaking...', 'Zishu is responding', '● Speaking']
             };
-            const [status, sub] = statusMap[newState] || statusMap.idle;
+            const [status, sub, badge] = statusMap[newState] || statusMap.idle;
             orbStatus.textContent = status;
             orbSub.textContent = sub;
+            statusBadge.textContent = badge;
+            statusBadge.className = newState === 'idle' ? '' : 'active';
         }
 
-        orb.addEventListener('click', () => {
-            if (isProcessing) return;
+        orb.addEventListener('click', toggleListening);
+
+        // ============================================================
+        // TOGGLE LISTENING (Manual Mode)
+        // ============================================================
+        function toggleListening() {
+            if (isProcessing) {
+                orbSub.textContent = 'Please wait...';
+                return;
+            }
+
             if (state === 'idle' || state === 'speaking') {
                 startListening();
             } else if (state === 'listening') {
                 stopListening();
             }
-        });
+        }
 
         // ============================================================
-        // SPEECH RECOGNITION
+        // SPEECH RECOGNITION (Fixed - No Auto Restart)
         // ============================================================
         function initSpeechRecognition() {
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -455,59 +424,38 @@
             }
             const rec = new SR();
             rec.lang = 'hi-IN';
-            rec.continuous = true;
-            rec.interimResults = true;
+            rec.continuous = false; // Single shot - better control
+            rec.interimResults = false;
             rec.maxAlternatives = 1;
 
             rec.onstart = () => {
                 setOrbState('listening');
-                isManualMode = false;
+                isManualMode = true;
             };
 
             rec.onresult = (event) => {
-                let finalText = '';
-                let interimText = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const transcript = event.results[i][0].transcript.toLowerCase().trim();
-                    if (event.results[i].isFinal) {
-                        finalText = transcript;
-                    } else {
-                        interimText = transcript;
-                    }
-                }
-
-                // Wake word detection
-                if (finalText && !isProcessing) {
-                    const hasWakeWord = WAKE_WORDS.some(w => finalText.includes(w));
-                    if (hasWakeWord) {
-                        const query = finalText.replace(new RegExp(WAKE_WORDS.join('|'), 'gi'), '').trim();
-                        if (query.length > 0) {
-                            handleUserQuery(query);
-                        } else {
-                            orbSub.textContent = 'Say something...';
-                        }
-                    } else if (isManualMode) {
-                        handleUserQuery(finalText);
-                    }
+                const transcript = event.results[0][0].transcript.trim();
+                if (transcript.length > 0) {
+                    handleUserQuery(transcript);
+                } else {
+                    stopListening();
                 }
             };
 
             rec.onerror = (event) => {
+                console.error('Speech error:', event.error);
                 if (event.error === 'not-allowed') {
                     orbStatus.textContent = 'Microphone access denied';
-                } else if (event.error !== 'no-speech') {
-                    orbStatus.textContent = 'Error: ' + event.error;
+                } else if (event.error === 'no-speech') {
+                    orbSub.textContent = 'No speech detected. Try again.';
+                } else {
+                    orbSub.textContent = 'Error: ' + event.error;
                 }
-                if (state === 'listening') {
-                    setTimeout(() => { if (state === 'listening') startListening(); }, 300);
-                }
+                stopListening();
             };
 
             rec.onend = () => {
-                if (state === 'listening' && !isProcessing) {
-                    // Auto-restart for continuous listening
-                    try { rec.start(); } catch (e) {}
-                } else if (!isProcessing) {
+                if (!isProcessing) {
                     setOrbState('idle');
                 }
             };
@@ -522,11 +470,19 @@
             }
             try {
                 recognition.start();
-                isManualMode = true;
                 setOrbState('listening');
             } catch (e) {
-                try { recognition.stop(); } catch (ex) {}
-                setTimeout(() => recognition.start(), 200);
+                // If already started, stop and restart
+                try {
+                    recognition.stop();
+                    setTimeout(() => {
+                        recognition.start();
+                        setOrbState('listening');
+                    }, 200);
+                } catch (ex) {
+                    console.error('Failed to start:', ex);
+                    setOrbState('idle');
+                }
             }
         }
 
@@ -534,7 +490,9 @@
             if (recognition) {
                 try { recognition.stop(); } catch (e) {}
             }
-            if (!isProcessing) setOrbState('idle');
+            if (!isProcessing) {
+                setOrbState('idle');
+            }
         }
 
         // ============================================================
@@ -547,60 +505,59 @@
                 const [, toolName, params] = match;
                 const args = params ? params.split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')) : [];
 
-                addToolMessage(`Executing ${toolName}...`);
+                addToolMessage('Executing ' + toolName + '...');
 
                 switch (toolName) {
                     case 'open_website':
                         const url = args[0] || 'https://google.com';
                         window.open(url, '_blank');
-                        return `Opened ${url}`;
-                    
+                        return 'Opened ' + url;
+
                     case 'set_reminder':
                         const reminder = { text: args[0], time: args[1] || 'now' };
                         const reminders = JSON.parse(localStorage.getItem('zishu_reminders') || '[]');
                         reminders.push(reminder);
                         localStorage.setItem('zishu_reminders', JSON.stringify(reminders));
-                        return `Reminder set: ${reminder.text} at ${reminder.time}`;
-                    
+                        return 'Reminder set: ' + reminder.text + ' at ' + reminder.time;
+
                     case 'create_note':
                         const note = args[0] || 'empty note';
                         const notes = JSON.parse(localStorage.getItem('zishu_notes') || '[]');
                         notes.push({ text: note, date: new Date().toISOString() });
                         localStorage.setItem('zishu_notes', JSON.stringify(notes));
-                        return `Note saved: ${note}`;
-                    
+                        return 'Note saved: ' + note;
+
                     case 'get_weather':
                         const city = args[0] || 'Delhi';
                         const weatherData = await fetchWeather(city);
-                        return `Weather in ${city}: ${weatherData}`;
-                    
+                        return 'Weather in ' + city + ': ' + weatherData;
+
                     case 'get_time':
                         const tz = args[0] || 'Asia/Kolkata';
                         const time = new Date().toLocaleString('en-US', { timeZone: tz, hour: '2-digit', minute: '2-digit' });
-                        return `Current time in ${tz.split('/').pop()}: ${time}`;
-                    
+                        return 'Current time in ' + tz.split('/').pop() + ': ' + time;
+
                     case 'calculate':
                         const expr = args[0] || '0';
                         const result = Function('"use strict"; return (' + expr + ')')();
-                        return `Result: ${result}`;
-                    
+                        return 'Result: ' + result;
+
                     case 'translate':
                         const text = args[0] || '';
                         const lang = args[1] || 'English';
-                        // Simple mock translation - in production use a real API
-                        return `Translated to ${lang}: ${text} (mock translation)`;
-                    
+                        return 'Translated to ' + lang + ': ' + text + ' (demo)';
+
                     default:
-                        return `Tool ${toolName} not recognized`;
+                        return 'Tool ' + toolName + ' not recognized';
                 }
             } catch (error) {
-                return `Tool error: ${error.message}`;
+                return 'Tool error: ' + error.message;
             }
         }
 
         async function fetchWeather(city) {
             try {
-                const response = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=%C+%t`);
+                const response = await fetch('https://wttr.in/' + encodeURIComponent(city) + '?format=%C+%t');
                 const data = await response.text();
                 return data.trim() || 'Weather data unavailable';
             } catch {
@@ -617,15 +574,11 @@
         }
 
         // ============================================================
-        // MEMORY SYSTEM
+        // MEMORY
         // ============================================================
         function updateMemory(key, value) {
             memory[key] = value;
             localStorage.setItem('zishu_memory', JSON.stringify(memory));
-        }
-
-        function getMemory(key) {
-            return memory[key] || null;
         }
 
         // ============================================================
@@ -633,42 +586,39 @@
         // ============================================================
         async function streamResponse(text) {
             setOrbState('speaking');
-            
-            // Add assistant message bubble
+
             const msgDiv = document.createElement('div');
             msgDiv.className = 'message assistant-msg';
             const senderSpan = document.createElement('span');
             senderSpan.className = 'sender';
             senderSpan.textContent = 'Zishu';
             const contentSpan = document.createElement('span');
+            contentSpan.className = 'content';
             msgDiv.appendChild(senderSpan);
             msgDiv.appendChild(contentSpan);
             chatContainer.appendChild(msgDiv);
-            
-            // Stream text character by character
+
             let accumulatedText = '';
             for (let i = 0; i < text.length; i++) {
                 accumulatedText += text[i];
                 contentSpan.textContent = accumulatedText;
                 chatContainer.scrollTop = chatContainer.scrollHeight;
-                // Speed control
-                await new Promise(r => setTimeout(r, 15 + Math.random() * 10));
+                await new Promise(r => setTimeout(r, 12 + Math.random() * 8));
             }
 
-            // Speak the full text
             speakText(text);
             return msgDiv;
         }
 
         // ============================================================
-        // TTS with interruption support
+        // TTS
         // ============================================================
         function speakText(text) {
             try {
                 if (currentUtterance) {
                     window.speechSynthesis.cancel();
                 }
-                
+
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'hi-IN';
                 utterance.rate = 0.85;
@@ -717,22 +667,21 @@
             senderSpan.className = 'sender';
             senderSpan.textContent = 'You';
             const contentSpan = document.createElement('span');
+            contentSpan.className = 'content';
             contentSpan.textContent = query;
             userDiv.appendChild(senderSpan);
             userDiv.appendChild(contentSpan);
             chatContainer.appendChild(userDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
-            // Add to history
             conversationHistory.push({ role: 'user', content: query });
 
-            // Check for tool invocation via LLM
             try {
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${GROQ_API_KEY}`
+                        'Authorization': 'Bearer ' + GROQ_API_KEY
                     },
                     body: JSON.stringify({
                         model: GROQ_MODEL,
@@ -744,27 +693,26 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`API Error: ${response.status}`);
+                    throw new Error('API Error: ' + response.status);
                 }
 
                 const data = await response.json();
                 const reply = data.choices[0].message.content;
 
-                // Check if it's a tool command
                 if (reply.startsWith('TOOL:')) {
                     const toolResult = await executeTool(reply);
                     const toolResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${GROQ_API_KEY}`
+                            'Authorization': 'Bearer ' + GROQ_API_KEY
                         },
                         body: JSON.stringify({
                             model: GROQ_MODEL,
                             messages: [
                                 ...conversationHistory,
                                 { role: 'assistant', content: reply },
-                                { role: 'user', content: `Tool result: ${toolResult}. Now respond naturally.` }
+                                { role: 'user', content: 'Tool result: ' + toolResult + '. Now respond naturally.' }
                             ],
                             temperature: 0.7,
                             max_tokens: 150,
@@ -791,11 +739,18 @@
         }
 
         // ============================================================
-        // INIT
+        // KEYBOARD SHORTCUT
         // ============================================================
-        setOrbState('idle');
-        
-        // Preload TTS voices
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !e.repeat && !e.target.matches('input, textarea')) {
+                e.preventDefault();
+                toggleListening();
+            }
+        });
+
+        // ============================================================
+        // PRELOAD TTS VOICES
+        // ============================================================
         if (window.speechSynthesis) {
             window.speechSynthesis.getVoices();
             window.speechSynthesis.onvoiceschanged = () => {
@@ -803,26 +758,25 @@
             };
         }
 
-        // Auto-start listening after short delay
-        setTimeout(() => {
-            startListening();
-        }, 1000);
-
         // ============================================================
-        // KEYBOARD SHORTCUT: Space to toggle listening
+        // INIT
         // ============================================================
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && !e.repeat) {
-                e.preventDefault();
-                if (state === 'idle' || state === 'speaking') {
-                    startListening();
-                } else if (state === 'listening') {
-                    stopListening();
-                }
-            }
-        });
+        setOrbState('idle');
 
-        console.log('Zishu AI v2.0 loaded');
+        // Add welcome message
+        const welcomeDiv = document.createElement('div');
+        welcomeDiv.className = 'message assistant-msg';
+        const ws = document.createElement('span');
+        ws.className = 'sender';
+        ws.textContent = 'Zishu';
+        const wc = document.createElement('span');
+        wc.className = 'content';
+        wc.textContent = 'Namaste! Main Zishu hoon. Orb dabayein ya Space press karein aur baat karein.';
+        welcomeDiv.appendChild(ws);
+        welcomeDiv.appendChild(wc);
+        chatContainer.appendChild(welcomeDiv);
+
+        console.log('Zishu AI v2.1 loaded');
         console.log('Memory:', memory);
         console.log('Press Space to toggle listening');
     </script>
