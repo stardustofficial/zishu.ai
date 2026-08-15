@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zishu AI - Voice Assistant</title>
     <style>
-        /* ===== CSS VARIABLES FOR THEME ===== */
+        /* ===== CSS VARIABLES ===== */
         :root {
             --bg: #f4f7fc;
             --surface: #ffffff;
@@ -13,18 +13,17 @@
             --text-primary: #1a2332;
             --text-secondary: #6b7a8f;
             --text-muted: #9aa9bb;
+            --orb-idle: #3b82f6;
+            --orb-listening: #4f8ef7;
+            --orb-thinking: #7b6cf7;
+            --orb-speaking: #3b82f6;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             --bubble-user: #3b82f6;
             --bubble-user-text: #ffffff;
             --bubble-assistant: #f1f4f9;
             --bubble-assistant-text: #1a2332;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-            --mic-bg: #ffffff;
-            --mic-border: #e9edf4;
-            --mic-shadow: 0 8px 30px rgba(59, 130, 246, 0.15);
-            --typing-bg: #f1f4f9;
             --scrollbar-track: #f1f4f9;
             --scrollbar-thumb: #d0d8e3;
-            --header-gradient: linear-gradient(90deg, #1a2332, #3b82f6);
         }
 
         [data-theme="dark"] {
@@ -34,21 +33,20 @@
             --text-primary: #e8edf5;
             --text-secondary: #9aa9bb;
             --text-muted: #6b7a8f;
+            --orb-idle: #4f8ef7;
+            --orb-listening: #6b9cf7;
+            --orb-thinking: #8b7cf7;
+            --orb-speaking: #4f8ef7;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             --bubble-user: #4f8ef7;
             --bubble-user-text: #ffffff;
             --bubble-assistant: #2a2a3a;
             --bubble-assistant-text: #e8edf5;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            --mic-bg: #1a1a24;
-            --mic-border: #2a2a3a;
-            --mic-shadow: 0 8px 30px rgba(79, 142, 247, 0.2);
-            --typing-bg: #2a2a3a;
             --scrollbar-track: #1a1a24;
             --scrollbar-thumb: #3a3a4a;
-            --header-gradient: linear-gradient(90deg, #4f8ef7, #7b6cf7);
         }
 
-        /* ===== RESET & BASE ===== */
+        /* ===== RESET ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -60,6 +58,7 @@
             padding: 16px 20px 12px;
             color: var(--text-primary);
             transition: background 0.3s ease, color 0.3s ease;
+            overflow: hidden;
         }
 
         /* ===== HEADER ===== */
@@ -69,38 +68,41 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             padding: 0 4px;
+            flex-shrink: 0;
         }
-        #header-left {
+        #brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
-        #header-left h1 {
-            font-size: 22px;
+        #brand svg {
+            width: 28px;
+            height: 28px;
+        }
+        #brand h1 {
+            font-size: 20px;
             font-weight: 700;
-            background: var(--header-gradient);
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, var(--orb-idle), var(--orb-thinking));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            letter-spacing: -0.3px;
         }
-        #header-left .badge {
+        #brand .sub {
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 450;
             color: var(--text-secondary);
-            background: var(--surface-border);
-            padding: 2px 10px;
-            border-radius: 30px;
             -webkit-text-fill-color: var(--text-secondary);
+            background: none;
         }
         #theme-toggle {
             background: var(--surface);
             border: 1px solid var(--surface-border);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -110,8 +112,8 @@
             flex-shrink: 0;
         }
         #theme-toggle svg {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             stroke: var(--text-secondary);
             fill: none;
             stroke-width: 2;
@@ -119,164 +121,198 @@
             stroke-linejoin: round;
             transition: stroke 0.3s ease;
         }
-        #theme-toggle:hover {
-            transform: scale(1.05);
+        #theme-toggle:hover svg { stroke: var(--text-primary); }
+
+        /* ===== ORB CONTAINER ===== */
+        #orb-container {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0 12px;
+            flex-shrink: 0;
+            position: relative;
         }
-        #theme-toggle:hover svg {
-            stroke: var(--text-primary);
+        #orb {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, var(--orb-idle), #1a2332);
+            box-shadow: 0 0 60px rgba(59, 130, 246, 0.15);
+            transition: all 0.5s ease;
+            position: relative;
+            cursor: pointer;
+        }
+        #orb::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            transition: all 0.5s ease;
+        }
+        #orb.listening {
+            background: radial-gradient(circle at 30% 30%, var(--orb-listening), #1a2332);
+            box-shadow: 0 0 80px rgba(79, 142, 247, 0.25);
+            animation: orbPulse 1.2s ease-in-out infinite;
+        }
+        #orb.listening::after {
+            border-color: var(--orb-listening);
+            animation: ringPulse 1.2s ease-in-out infinite;
+        }
+        #orb.thinking {
+            background: radial-gradient(circle at 30% 30%, var(--orb-thinking), #1a2332);
+            box-shadow: 0 0 80px rgba(123, 108, 247, 0.25);
+            animation: orbSpin 2s linear infinite;
+        }
+        #orb.speaking {
+            background: radial-gradient(circle at 30% 30%, var(--orb-speaking), #1a2332);
+            box-shadow: 0 0 80px rgba(59, 130, 246, 0.2);
+            animation: orbSpeak 0.6s ease-in-out infinite alternate;
+        }
+        @keyframes orbPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+        @keyframes ringPulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.15); opacity: 0.8; }
+        }
+        @keyframes orbSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes orbSpeak {
+            0% { transform: scale(1) translateY(0); }
+            100% { transform: scale(1.06) translateY(-4px); }
         }
 
-        /* ===== CHAT CONTAINER ===== */
+        #orb-status {
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 0.3px;
+            transition: color 0.3s ease;
+            min-height: 22px;
+        }
+        #orb-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            min-height: 18px;
+        }
+
+        /* ===== CHAT CONTAINER (Compact) ===== */
         #chat-container {
             flex: 1;
             width: 100%;
             max-width: 700px;
             overflow-y: auto;
-            padding: 20px 16px;
+            padding: 12px 16px;
             background: var(--surface);
-            border-radius: 24px;
+            border-radius: 20px;
             box-shadow: var(--shadow);
             border: 1px solid var(--surface-border);
-            margin-bottom: 16px;
+            margin-top: 8px;
             scroll-behavior: smooth;
             transition: background 0.3s ease, border-color 0.3s ease;
+            min-height: 0;
         }
-        #chat-container::-webkit-scrollbar { width: 5px; }
+        #chat-container::-webkit-scrollbar { width: 4px; }
         #chat-container::-webkit-scrollbar-track { background: var(--scrollbar-track); border-radius: 10px; }
         #chat-container::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 10px; }
 
-        /* ===== MESSAGES ===== */
         .message {
-            margin: 10px 0;
-            padding: 14px 20px;
-            border-radius: 20px;
-            max-width: 82%;
+            margin: 6px 0;
+            padding: 10px 16px;
+            border-radius: 16px;
+            max-width: 78%;
             word-wrap: break-word;
-            animation: fadeIn 0.25s ease;
-            line-height: 1.6;
-            font-size: 15px;
-            font-weight: 450;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            animation: fadeIn 0.2s ease;
+            line-height: 1.5;
+            font-size: 14px;
+            font-weight: 420;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
             transition: background 0.3s ease, color 0.3s ease;
         }
         .user-msg {
             background: var(--bubble-user);
             color: var(--bubble-user-text);
             margin-left: auto;
-            border-bottom-right-radius: 6px;
+            border-bottom-right-radius: 4px;
         }
         .assistant-msg {
             background: var(--bubble-assistant);
             color: var(--bubble-assistant-text);
             margin-right: auto;
-            border-bottom-left-radius: 6px;
+            border-bottom-left-radius: 4px;
         }
-        .message strong {
+        .message .sender {
             font-weight: 600;
-            display: inline-block;
-            margin-right: 6px;
+            font-size: 11px;
+            opacity: 0.6;
+            display: block;
+            margin-bottom: 2px;
         }
-        .assistant-msg strong {
-            color: var(--text-primary);
-            opacity: 0.7;
-        }
-        .user-msg strong {
-            color: rgba(255, 255, 255, 0.85);
+        .assistant-msg .sender { color: var(--text-secondary); }
+        .user-msg .sender { color: rgba(255,255,255,0.7); }
+
+        .tool-msg {
+            background: var(--surface-border);
+            color: var(--text-secondary);
+            margin: 4px auto;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            text-align: center;
+            max-width: 90%;
+            font-weight: 450;
         }
 
-        /* ===== TYPING INDICATOR ===== */
         .typing-indicator {
             color: var(--text-secondary);
-            font-size: 14px;
-            margin: 10px 0;
-            padding: 10px 18px;
-            background: var(--typing-bg);
+            font-size: 13px;
+            margin: 6px 0;
+            padding: 8px 16px;
+            background: var(--bubble-assistant);
             border-radius: 30px;
             display: inline-block;
             animation: fadeIn 0.3s ease;
             transition: background 0.3s ease;
         }
 
-        /* ===== MIC BUTTON ===== */
-        #mic-btn {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            border: 1px solid var(--mic-border);
-            background: var(--mic-bg);
-            cursor: pointer;
-            box-shadow: var(--mic-shadow);
-            transition: all 0.25s ease;
-            margin-bottom: 10px;
+        /* ===== FOOTER ===== */
+        #footer {
+            width: 100%;
+            max-width: 700px;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+            padding: 8px 4px 0;
             flex-shrink: 0;
-        }
-        #mic-btn svg {
-            width: 32px;
-            height: 32px;
-            fill: none;
-            stroke: var(--text-primary);
-            stroke-width: 1.8;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            transition: stroke 0.25s ease;
-        }
-        #mic-btn.listening {
-            background: var(--bubble-user);
-            border-color: var(--bubble-user);
-            box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2);
-        }
-        #mic-btn.listening svg {
-            stroke: white;
-        }
-        #mic-btn:active { transform: scale(0.92); }
-        #mic-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: scale(0.95);
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3); }
-            70% { box-shadow: 0 0 0 16px rgba(59, 130, 246, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-        }
-        #mic-btn.listening {
-            animation: pulse 1.6s infinite;
-        }
-
-        /* ===== STATUS & FOOTER ===== */
-        #status {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-top: 2px;
-            font-weight: 450;
-            letter-spacing: 0.2px;
-            transition: color 0.3s ease;
-        }
-        .footer-note {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-muted);
-            margin-top: 6px;
-            letter-spacing: 0.3px;
-            transition: color 0.3s ease;
+            letter-spacing: 0.2px;
         }
 
         /* ===== ANIMATIONS ===== */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
+            from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
-            #header-left h1 { font-size: 18px; }
-            #theme-toggle { width: 36px; height: 36px; }
+            #orb { width: 96px; height: 96px; }
+            #brand h1 { font-size: 17px; }
+            #brand .sub { font-size: 10px; }
+            #orb-status { font-size: 13px; }
+            .message { font-size: 13px; padding: 8px 14px; max-width: 86%; }
+            #chat-container { padding: 10px 12px; }
+            #theme-toggle { width: 34px; height: 34px; }
             #theme-toggle svg { width: 18px; height: 18px; }
-            .message { font-size: 14px; padding: 12px 16px; max-width: 88%; }
-            #mic-btn { width: 64px; height: 64px; }
-            #mic-btn svg { width: 28px; height: 28px; }
         }
     </style>
 </head>
@@ -284,56 +320,88 @@
 
     <!-- ===== HEADER ===== -->
     <div id="header">
-        <div id="header-left">
-            <h1>🎙️ Zishu AI</h1>
-            <span class="badge">Beta</span>
+        <div id="brand">
+            <svg viewBox="0 0 24 24" fill="none" stroke="url(#grad)" stroke-width="1.8">
+                <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#3b82f6"/>
+                    <stop offset="100%" stop-color="#7b6cf7"/>
+                </linearGradient></defs>
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M8 12l2 2 4-4"/>
+                <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+            <div>
+                <h1>ZISHU</h1>
+                <span class="sub">voice intelligence</span>
+            </div>
         </div>
         <button id="theme-toggle" aria-label="Toggle theme">
-            <svg viewBox="0 0 24 24">
-                <!-- Sun/Moon icon (we'll swap via JS) -->
-                <circle cx="12" cy="12" r="5" />
-                <line x1="12" y1="1" x2="12" y2="3" />
-                <line x1="12" y1="21" x2="12" y2="23" />
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                <line x1="1" y1="12" x2="3" y2="12" />
-                <line x1="21" y1="12" x2="23" y2="12" />
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-            </svg>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         </button>
+    </div>
+
+    <!-- ===== ORB ===== -->
+    <div id="orb-container">
+        <div id="orb"></div>
+        <div id="orb-status">Tap orb or speak</div>
+        <div id="orb-sub">Zishu is idle</div>
     </div>
 
     <!-- ===== CHAT ===== -->
     <div id="chat-container"></div>
 
-    <!-- ===== MIC BUTTON ===== -->
-    <button id="mic-btn" aria-label="Microphone">
-        <svg viewBox="0 0 24 24">
-            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-            <line x1="12" y1="19" x2="12" y2="23" />
-            <line x1="8" y1="23" x2="16" y2="23" />
-        </svg>
-    </button>
-
-    <div id="status">Tap mic to start speaking</div>
-    <div class="footer-note">🔒 Private · No cloud storage</div>
+    <!-- ===== FOOTER ===== -->
+    <div id="footer">
+        <span>your conversations aren't stored</span>
+        <span>v2.0 · local</span>
+    </div>
 
     <script>
         // ============================================================
-        // 🔑 CONFIG
+        // CONFIG
         // ============================================================
         const GROQ_API_KEY = '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';
         const GROQ_MODEL = 'llama-3.1-8b-instant';
+        const WAKE_WORDS = ['zishu', 'zishu', 'hey zishu', 'ok zishu'];
 
         // ============================================================
-        // THEME TOGGLE
+        // STATE
+        // ============================================================
+        let state = 'idle'; // idle | listening | thinking | speaking
+        let recognition = null;
+        let isManualMode = false;
+        let conversationHistory = [
+            { role: 'system', content: `You are Zishu, a voice assistant. 
+            You have access to these tools:
+            1. open_website(url) - opens any website
+            2. set_reminder(text, time) - sets reminder
+            3. create_note(text) - saves note
+            4. get_weather(city) - gets weather
+            5. get_time(city) - gets current time
+            6. calculate(expression) - does math
+            7. translate(text, language) - translates text
+            
+            If user asks for any action, respond with: TOOL: tool_name(params)
+            Otherwise respond naturally in Hinglish or Hindi.
+            Keep responses concise.` }
+        ];
+        let memory = JSON.parse(localStorage.getItem('zishu_memory') || '{}');
+        let isProcessing = false;
+        let currentUtterance = null;
+
+        // ============================================================
+        // DOM REFS
+        // ============================================================
+        const orb = document.getElementById('orb');
+        const orbStatus = document.getElementById('orb-status');
+        const orbSub = document.getElementById('orb-sub');
+        const chatContainer = document.getElementById('chat-container');
+        const themeToggle = document.getElementById('theme-toggle');
+
+        // ============================================================
+        // THEME
         // ============================================================
         let currentTheme = 'light';
-        const themeToggle = document.getElementById('theme-toggle');
-        const sunMoonSvg = themeToggle.querySelector('svg');
-
         themeToggle.addEventListener('click', () => {
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', newTheme);
@@ -342,140 +410,323 @@
         });
 
         function updateThemeIcon(theme) {
+            const svg = themeToggle.querySelector('svg');
             if (theme === 'dark') {
-                // Moon icon
-                sunMoonSvg.innerHTML = `
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                `;
+                svg.innerHTML = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
             } else {
-                // Sun icon
-                sunMoonSvg.innerHTML = `
-                    <circle cx="12" cy="12" r="5" />
-                    <line x1="12" y1="1" x2="12" y2="3" />
-                    <line x1="12" y1="21" x2="12" y2="23" />
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                    <line x1="1" y1="12" x2="3" y2="12" />
-                    <line x1="21" y1="12" x2="23" y2="12" />
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                `;
+                svg.innerHTML = `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
             }
         }
 
         // ============================================================
-        // STATE
+        // ORB CONTROLS
         // ============================================================
-        let isListening = false;
-        let recognition = null;
-        let conversationHistory = [
-            { role: 'system', content: 'You are Zishu, a helpful voice assistant. Speak naturally and concisely. Always respond in Hinglish or Hindi.' }
-        ];
-        let isProcessing = false;
+        function setOrbState(newState) {
+            state = newState;
+            orb.className = newState;
+            const statusMap = {
+                idle: ['Zishu is idle', 'Tap orb or speak'],
+                listening: ['Listening...', 'Speak now'],
+                thinking: ['Thinking...', 'Processing your request'],
+                speaking: ['Speaking...', 'Zishu is responding']
+            };
+            const [status, sub] = statusMap[newState] || statusMap.idle;
+            orbStatus.textContent = status;
+            orbSub.textContent = sub;
+        }
 
-        const chatContainer = document.getElementById('chat-container');
-        const micBtn = document.getElementById('mic-btn');
-        const statusEl = document.getElementById('status');
+        orb.addEventListener('click', () => {
+            if (isProcessing) return;
+            if (state === 'idle' || state === 'speaking') {
+                startListening();
+            } else if (state === 'listening') {
+                stopListening();
+            }
+        });
 
         // ============================================================
         // SPEECH RECOGNITION
         // ============================================================
         function initSpeechRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                statusEl.textContent = '❌ Browser not supported. Use Chrome on Android.';
-                micBtn.disabled = true;
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) {
+                orbStatus.textContent = 'Browser not supported';
                 return null;
             }
-
-            const rec = new SpeechRecognition();
+            const rec = new SR();
             rec.lang = 'hi-IN';
-            rec.continuous = false;
-            rec.interimResults = false;
+            rec.continuous = true;
+            rec.interimResults = true;
             rec.maxAlternatives = 1;
 
             rec.onstart = () => {
-                isListening = true;
-                micBtn.classList.add('listening');
-                statusEl.textContent = '🔴 Listening... speak now';
+                setOrbState('listening');
+                isManualMode = false;
             };
 
             rec.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                statusEl.textContent = '✍️ Processing...';
-                addMessage('You', transcript, 'user-msg');
-                processUserQuery(transcript);
+                let finalText = '';
+                let interimText = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript.toLowerCase().trim();
+                    if (event.results[i].isFinal) {
+                        finalText = transcript;
+                    } else {
+                        interimText = transcript;
+                    }
+                }
+
+                // Wake word detection
+                if (finalText && !isProcessing) {
+                    const hasWakeWord = WAKE_WORDS.some(w => finalText.includes(w));
+                    if (hasWakeWord) {
+                        const query = finalText.replace(new RegExp(WAKE_WORDS.join('|'), 'gi'), '').trim();
+                        if (query.length > 0) {
+                            handleUserQuery(query);
+                        } else {
+                            orbSub.textContent = 'Say something...';
+                        }
+                    } else if (isManualMode) {
+                        handleUserQuery(finalText);
+                    }
+                }
             };
 
             rec.onerror = (event) => {
-                console.error('Speech error:', event.error);
                 if (event.error === 'not-allowed') {
-                    statusEl.textContent = '❌ Microphone access denied. Tap mic & allow.';
-                } else if (event.error === 'audio-capture') {
-                    statusEl.textContent = '❌ No microphone found.';
-                } else {
-                    statusEl.textContent = `⚠️ Error: ${event.error}. Tap mic again.`;
+                    orbStatus.textContent = 'Microphone access denied';
+                } else if (event.error !== 'no-speech') {
+                    orbStatus.textContent = 'Error: ' + event.error;
                 }
-                stopListening();
+                if (state === 'listening') {
+                    setTimeout(() => { if (state === 'listening') startListening(); }, 300);
+                }
             };
 
             rec.onend = () => {
-                stopListening();
-                if (!isProcessing) {
-                    statusEl.textContent = '🎤 Tap mic to speak';
+                if (state === 'listening' && !isProcessing) {
+                    // Auto-restart for continuous listening
+                    try { rec.start(); } catch (e) {}
+                } else if (!isProcessing) {
+                    setOrbState('idle');
                 }
             };
 
             return rec;
         }
 
-        // ============================================================
-        // MIC BUTTON TOGGLE
-        // ============================================================
-        micBtn.addEventListener('click', () => {
-            if (isProcessing) {
-                statusEl.textContent = '⏳ Please wait...';
-                return;
-            }
-
+        function startListening() {
             if (!recognition) {
                 recognition = initSpeechRecognition();
                 if (!recognition) return;
             }
-
-            if (isListening) {
-                recognition.stop();
-                stopListening();
-            } else {
-                try {
-                    recognition.start();
-                } catch (e) {
-                    recognition.stop();
-                    setTimeout(() => recognition.start(), 200);
-                }
+            try {
+                recognition.start();
+                isManualMode = true;
+                setOrbState('listening');
+            } catch (e) {
+                try { recognition.stop(); } catch (ex) {}
+                setTimeout(() => recognition.start(), 200);
             }
-        });
+        }
 
         function stopListening() {
-            isListening = false;
-            micBtn.classList.remove('listening');
-            if (!isProcessing) {
-                statusEl.textContent = '🎤 Tap mic to speak';
+            if (recognition) {
+                try { recognition.stop(); } catch (e) {}
+            }
+            if (!isProcessing) setOrbState('idle');
+        }
+
+        // ============================================================
+        // TOOL SYSTEM
+        // ============================================================
+        async function executeTool(toolString) {
+            try {
+                const match = toolString.match(/TOOL:\s*(\w+)\((.*)\)/);
+                if (!match) return null;
+                const [, toolName, params] = match;
+                const args = params ? params.split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')) : [];
+
+                addToolMessage(`Executing ${toolName}...`);
+
+                switch (toolName) {
+                    case 'open_website':
+                        const url = args[0] || 'https://google.com';
+                        window.open(url, '_blank');
+                        return `Opened ${url}`;
+                    
+                    case 'set_reminder':
+                        const reminder = { text: args[0], time: args[1] || 'now' };
+                        const reminders = JSON.parse(localStorage.getItem('zishu_reminders') || '[]');
+                        reminders.push(reminder);
+                        localStorage.setItem('zishu_reminders', JSON.stringify(reminders));
+                        return `Reminder set: ${reminder.text} at ${reminder.time}`;
+                    
+                    case 'create_note':
+                        const note = args[0] || 'empty note';
+                        const notes = JSON.parse(localStorage.getItem('zishu_notes') || '[]');
+                        notes.push({ text: note, date: new Date().toISOString() });
+                        localStorage.setItem('zishu_notes', JSON.stringify(notes));
+                        return `Note saved: ${note}`;
+                    
+                    case 'get_weather':
+                        const city = args[0] || 'Delhi';
+                        const weatherData = await fetchWeather(city);
+                        return `Weather in ${city}: ${weatherData}`;
+                    
+                    case 'get_time':
+                        const tz = args[0] || 'Asia/Kolkata';
+                        const time = new Date().toLocaleString('en-US', { timeZone: tz, hour: '2-digit', minute: '2-digit' });
+                        return `Current time in ${tz.split('/').pop()}: ${time}`;
+                    
+                    case 'calculate':
+                        const expr = args[0] || '0';
+                        const result = Function('"use strict"; return (' + expr + ')')();
+                        return `Result: ${result}`;
+                    
+                    case 'translate':
+                        const text = args[0] || '';
+                        const lang = args[1] || 'English';
+                        // Simple mock translation - in production use a real API
+                        return `Translated to ${lang}: ${text} (mock translation)`;
+                    
+                    default:
+                        return `Tool ${toolName} not recognized`;
+                }
+            } catch (error) {
+                return `Tool error: ${error.message}`;
+            }
+        }
+
+        async function fetchWeather(city) {
+            try {
+                const response = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=%C+%t`);
+                const data = await response.text();
+                return data.trim() || 'Weather data unavailable';
+            } catch {
+                return 'Could not fetch weather. Please try again.';
+            }
+        }
+
+        function addToolMessage(text) {
+            const div = document.createElement('div');
+            div.className = 'tool-msg';
+            div.textContent = text;
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // ============================================================
+        // MEMORY SYSTEM
+        // ============================================================
+        function updateMemory(key, value) {
+            memory[key] = value;
+            localStorage.setItem('zishu_memory', JSON.stringify(memory));
+        }
+
+        function getMemory(key) {
+            return memory[key] || null;
+        }
+
+        // ============================================================
+        // STREAMING RESPONSE
+        // ============================================================
+        async function streamResponse(text) {
+            setOrbState('speaking');
+            
+            // Add assistant message bubble
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message assistant-msg';
+            const senderSpan = document.createElement('span');
+            senderSpan.className = 'sender';
+            senderSpan.textContent = 'Zishu';
+            const contentSpan = document.createElement('span');
+            msgDiv.appendChild(senderSpan);
+            msgDiv.appendChild(contentSpan);
+            chatContainer.appendChild(msgDiv);
+            
+            // Stream text character by character
+            let accumulatedText = '';
+            for (let i = 0; i < text.length; i++) {
+                accumulatedText += text[i];
+                contentSpan.textContent = accumulatedText;
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                // Speed control
+                await new Promise(r => setTimeout(r, 15 + Math.random() * 10));
+            }
+
+            // Speak the full text
+            speakText(text);
+            return msgDiv;
+        }
+
+        // ============================================================
+        // TTS with interruption support
+        // ============================================================
+        function speakText(text) {
+            try {
+                if (currentUtterance) {
+                    window.speechSynthesis.cancel();
+                }
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'hi-IN';
+                utterance.rate = 0.85;
+                utterance.pitch = 1.0;
+                utterance.volume = 1;
+
+                const voices = window.speechSynthesis.getVoices();
+                const hindiVoice = voices.find(v => v.lang.startsWith('hi'));
+                if (hindiVoice) utterance.voice = hindiVoice;
+
+                utterance.onstart = () => {
+                    setOrbState('speaking');
+                };
+
+                utterance.onend = () => {
+                    currentUtterance = null;
+                    if (!isProcessing) setOrbState('idle');
+                };
+
+                utterance.onerror = () => {
+                    currentUtterance = null;
+                    if (!isProcessing) setOrbState('idle');
+                };
+
+                currentUtterance = utterance;
+                window.speechSynthesis.speak(utterance);
+
+            } catch (error) {
+                console.error('TTS error:', error);
+                if (!isProcessing) setOrbState('idle');
             }
         }
 
         // ============================================================
-        // GROQ API CALL
+        // MAIN QUERY HANDLER
         // ============================================================
-        async function processUserQuery(userText) {
+        async function handleUserQuery(query) {
+            if (isProcessing) return;
             isProcessing = true;
-            micBtn.disabled = true;
-            statusEl.textContent = '🧠 Thinking...';
+            setOrbState('thinking');
 
-            conversationHistory.push({ role: 'user', content: userText });
+            // Add user message
+            const userDiv = document.createElement('div');
+            userDiv.className = 'message user-msg';
+            const senderSpan = document.createElement('span');
+            senderSpan.className = 'sender';
+            senderSpan.textContent = 'You';
+            const contentSpan = document.createElement('span');
+            contentSpan.textContent = query;
+            userDiv.appendChild(senderSpan);
+            userDiv.appendChild(contentSpan);
+            chatContainer.appendChild(userDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
 
-            const typingId = showTypingIndicator();
+            // Add to history
+            conversationHistory.push({ role: 'user', content: query });
 
+            // Check for tool invocation via LLM
             try {
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
@@ -486,81 +737,65 @@
                     body: JSON.stringify({
                         model: GROQ_MODEL,
                         messages: conversationHistory,
-                        temperature: 0.7,
-                        max_tokens: 300,
+                        temperature: 0.3,
+                        max_tokens: 200,
                         stream: false
                     })
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(`Groq API Error: ${errorData.error?.message || response.status}`);
+                    throw new Error(`API Error: ${response.status}`);
                 }
 
                 const data = await response.json();
-                const assistantReply = data.choices[0].message.content;
+                const reply = data.choices[0].message.content;
 
-                removeTypingIndicator(typingId);
-                addMessage('Zishu', assistantReply, 'assistant-msg');
-                conversationHistory.push({ role: 'assistant', content: assistantReply });
-
-                // ======== FAST TTS (Browser Native) ========
-                speakTextFast(assistantReply);
+                // Check if it's a tool command
+                if (reply.startsWith('TOOL:')) {
+                    const toolResult = await executeTool(reply);
+                    const toolResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${GROQ_API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            model: GROQ_MODEL,
+                            messages: [
+                                ...conversationHistory,
+                                { role: 'assistant', content: reply },
+                                { role: 'user', content: `Tool result: ${toolResult}. Now respond naturally.` }
+                            ],
+                            temperature: 0.7,
+                            max_tokens: 150,
+                            stream: false
+                        })
+                    });
+                    const toolData = await toolResponse.json();
+                    const finalReply = toolData.choices[0].message.content;
+                    conversationHistory.push({ role: 'assistant', content: finalReply });
+                    await streamResponse(finalReply);
+                } else {
+                    conversationHistory.push({ role: 'assistant', content: reply });
+                    await streamResponse(reply);
+                }
 
             } catch (error) {
                 console.error('Error:', error);
-                removeTypingIndicator(typingId);
-                addMessage('⚠️ Error', error.message, 'assistant-msg');
-                statusEl.textContent = '❌ Error occurred. Try again.';
+                addToolMessage('Error: ' + error.message);
+                setOrbState('idle');
             } finally {
                 isProcessing = false;
-                micBtn.disabled = false;
-                if (!isListening) {
-                    statusEl.textContent = '🎤 Tap mic to speak';
-                }
+                if (state !== 'listening') setOrbState('idle');
             }
         }
 
         // ============================================================
-        // FAST TTS (Browser Native - Instant)
+        // INIT
         // ============================================================
-        function speakTextFast(text) {
-            try {
-                // Cancel any ongoing speech
-                window.speechSynthesis.cancel();
-
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'hi-IN';
-                utterance.rate = 0.9;
-                utterance.pitch = 1.0;
-                utterance.volume = 1;
-
-                // Select Hindi voice if available
-                const voices = window.speechSynthesis.getVoices();
-                const hindiVoice = voices.find(v => v.lang.startsWith('hi'));
-                if (hindiVoice) utterance.voice = hindiVoice;
-
-                utterance.onstart = () => {
-                    statusEl.textContent = '🔊 Speaking...';
-                };
-
-                utterance.onend = () => {
-                    statusEl.textContent = '🎤 Tap mic to speak';
-                };
-
-                utterance.onerror = () => {
-                    statusEl.textContent = '⚠️ TTS error, but text is on screen.';
-                };
-
-                window.speechSynthesis.speak(utterance);
-
-            } catch (error) {
-                console.error('TTS Error:', error);
-                statusEl.textContent = '⚠️ TTS unavailable.';
-            }
-        }
-
-        // Preload voices (important for some browsers)
+        setOrbState('idle');
+        
+        // Preload TTS voices
         if (window.speechSynthesis) {
             window.speechSynthesis.getVoices();
             window.speechSynthesis.onvoiceschanged = () => {
@@ -568,47 +803,28 @@
             };
         }
 
-        // ============================================================
-        // UI HELPERS
-        // ============================================================
-        function addMessage(sender, text, className) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${className}`;
-            msgDiv.innerHTML = `<strong>${sender}:</strong> ${escapeHtml(text)}`;
-            chatContainer.appendChild(msgDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        function showTypingIndicator() {
-            const id = 'typing-' + Date.now();
-            const div = document.createElement('div');
-            div.id = id;
-            div.className = 'typing-indicator';
-            div.textContent = 'Zishu is thinking...';
-            chatContainer.appendChild(div);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            return id;
-        }
-
-        function removeTypingIndicator(id) {
-            const el = document.getElementById(id);
-            if (el) el.remove();
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+        // Auto-start listening after short delay
+        setTimeout(() => {
+            startListening();
+        }, 1000);
 
         // ============================================================
-        // INIT
+        // KEYBOARD SHORTCUT: Space to toggle listening
         // ============================================================
-        addMessage('Zishu', 'Namaste! Main aapka voice assistant hoon. Mic dabayein aur baat karein.', 'assistant-msg');
-        statusEl.textContent = '🎤 Tap mic to start';
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !e.repeat) {
+                e.preventDefault();
+                if (state === 'idle' || state === 'speaking') {
+                    startListening();
+                } else if (state === 'listening') {
+                    stopListening();
+                }
+            }
+        });
 
-        // Set initial theme icon
-        updateThemeIcon('light');
+        console.log('Zishu AI v2.0 loaded');
+        console.log('Memory:', memory);
+        console.log('Press Space to toggle listening');
     </script>
 </body>
 </html>
