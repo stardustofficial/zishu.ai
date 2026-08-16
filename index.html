@@ -296,8 +296,8 @@
 
     <div id="orb-container">
         <div id="orb"></div>
-        <div id="orb-status">Zishu is ready</div>
-        <div id="orb-sub">Tap orb or press Space to talk</div>
+        <div id="orb-status">Tap orb to start</div>
+        <div id="orb-sub">First tap to enable microphone</div>
     </div>
 
     <div id="chat-wrapper">
@@ -306,7 +306,7 @@
 
     <div id="footer">
         <span>private · local</span>
-        <span>v2.7</span>
+        <span>v2.8</span>
     </div>
 
     <script>
@@ -332,6 +332,7 @@
         let currentUtterance = null;
         let restartTimer = null;
         let isRestartScheduled = false;
+        let isFirstActivation = true;
 
         // ============================================================
         // SYSTEM PROMPT
@@ -412,7 +413,136 @@
         }
 
         // ============================================================
-        // SPEECH RECOGNITION - STABLE VERSION
+        // WEBSITE ALIASES - HINDI + ENGLISH
+        // ============================================================
+        const SITE_ALIASES = {
+            youtube: ['youtube', 'you tube', 'यूट्यूब', 'यू ट्यूब'],
+            google: ['google', 'गूगल'],
+            gmail: ['gmail', 'जीमेल', 'जी मेल'],
+            github: ['github', 'git hub', 'गिटहब', 'गिट हब'],
+            instagram: ['instagram', 'insta', 'इंस्टाग्राम', 'इंस्टा'],
+            facebook: ['facebook', 'फेसबुक'],
+            whatsapp: ['whatsapp', 'व्हाट्सएप', 'व्हाट्सऐप'],
+            twitter: ['twitter', 'ट्विटर', 'x'],
+            reddit: ['reddit', 'रेडिट'],
+            spotify: ['spotify', 'स्पॉटिफाई', 'स्पॉटिफाय'],
+            netflix: ['netflix', 'नेटफ्लिक्स'],
+            amazon: ['amazon', 'अमेज़न', 'अमेजन'],
+            flipkart: ['flipkart', 'फ्लिपकार्ट'],
+            linkedin: ['linkedin', 'लिंक्डइन'],
+            maps: ['google maps', 'maps', 'गूगल मैप्स', 'मैप्स'],
+            drive: ['google drive', 'drive', 'गूगल ड्राइव', 'ड्राइव'],
+            docs: ['google docs', 'docs', 'गूगल डॉक्स', 'डॉक्स'],
+            translate: ['google translate', 'translate', 'गूगल ट्रांसलेट', 'ट्रांसलेट'],
+            zomato: ['zomato', 'जोमैटो'],
+            swiggy: ['swiggy', 'स्विगी']
+        };
+
+        const WEBSITE_MAP = {
+            youtube: 'https://youtube.com',
+            google: 'https://google.com',
+            gmail: 'https://gmail.com',
+            github: 'https://github.com',
+            reddit: 'https://reddit.com',
+            twitter: 'https://twitter.com',
+            instagram: 'https://instagram.com',
+            whatsapp: 'https://web.whatsapp.com',
+            maps: 'https://maps.google.com',
+            drive: 'https://drive.google.com',
+            docs: 'https://docs.google.com',
+            translate: 'https://translate.google.com',
+            facebook: 'https://facebook.com',
+            linkedin: 'https://linkedin.com',
+            spotify: 'https://spotify.com',
+            netflix: 'https://netflix.com',
+            amazon: 'https://amazon.in',
+            flipkart: 'https://flipkart.com',
+            zomato: 'https://zomato.com',
+            swiggy: 'https://swiggy.com'
+        };
+
+        // ============================================================
+        // LOCAL COMMAND DETECTION - HINDI + ENGLISH
+        // ============================================================
+        function detectLocalCommand(query) {
+            const q = query.toLowerCase().trim();
+
+            const openWords = [
+                'open', 'open karo', 'open kar', 'kholo', 'khol', 'khol do', 'khol de',
+                'chalao', 'chala do', 'start', 'launch',
+                'खोलो', 'खोल', 'खोल दो', 'खोल दे', 'चलाओ', 'चला दो', 'शुरू करो', 'शुरू कर'
+            ];
+
+            console.log('🔍 DETECTING COMMAND:', q);
+
+            for (const [site, aliases] of Object.entries(SITE_ALIASES)) {
+                const siteFound = aliases.some(alias => q.includes(alias));
+                if (!siteFound) continue;
+
+                const wantsOpen = openWords.some(word => q.includes(word)) || 
+                                 aliases.some(alias => q === alias) ||
+                                 q === site;
+
+                if (wantsOpen) {
+                    console.log('✅ WEBSITE COMMAND DETECTED:', {
+                        original: query,
+                        site: site,
+                        url: WEBSITE_MAP[site]
+                    });
+                    return {
+                        type: 'open_website',
+                        value: site
+                    };
+                }
+            }
+
+            console.log('❌ NO LOCAL COMMAND DETECTED');
+            return null;
+        }
+
+        // ============================================================
+        // DIRECT WEBSITE NAVIGATION - WITH FALLBACK
+        // ============================================================
+        function openWebsiteDirectly(siteName) {
+            const url = WEBSITE_MAP[siteName];
+            if (!url) {
+                addToolMessage('Website not found: ' + siteName);
+                return false;
+            }
+
+            addToolMessage('Opening ' + siteName + '...');
+            console.log('🌐 OPENING:', siteName, url);
+
+            try {
+                window.location.assign(url);
+                return true;
+            } catch (error) {
+                console.error('assign() failed:', error);
+                try {
+                    window.location.href = url;
+                    return true;
+                } catch (error2) {
+                    console.error('href failed:', error2);
+                    try {
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.target = '_blank';
+                        a.rel = 'noopener noreferrer';
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        return true;
+                    } catch (error3) {
+                        console.error('All navigation methods failed:', error3);
+                        addToolMessage('Could not open ' + siteName + '. Please open manually.');
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // ============================================================
+        // SPEECH RECOGNITION
         // ============================================================
         function initSpeechRecognition() {
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -429,12 +559,17 @@
             rec.onstart = () => {
                 clearRestartTimer();
                 setOrbState(STATE.LISTENING);
+                if (isFirstActivation) {
+                    isFirstActivation = false;
+                    orbSub.textContent = 'Listening...';
+                }
             };
 
             rec.onresult = (event) => {
                 const transcript = event.results[0][0].transcript.trim();
+                console.log('🎤 USER SAID:', transcript);
+                
                 if (transcript.length > 0) {
-                    // Stop listening immediately when user speaks
                     stopListening();
                     handleUserQuery(transcript);
                 }
@@ -444,6 +579,7 @@
                 console.error('Speech error:', event.error);
                 if (event.error === 'not-allowed') {
                     orbStatus.textContent = 'Microphone access denied';
+                    orbSub.textContent = 'Please allow microphone access';
                     setOrbState(STATE.IDLE);
                 } else if (event.error === 'no-speech') {
                     orbSub.textContent = 'No speech detected. Try again.';
@@ -455,7 +591,6 @@
             };
 
             rec.onend = () => {
-                // Only restart if we're still supposed to be listening
                 if (state === STATE.LISTENING && !isProcessing && !isRestartScheduled) {
                     scheduleRestart(300);
                 } else if (!isProcessing && state !== STATE.SPEAKING) {
@@ -515,105 +650,6 @@
             if (restartTimer) {
                 clearTimeout(restartTimer);
                 restartTimer = null;
-            }
-        }
-
-        // ============================================================
-        // WEBSITE MAPPING
-        // ============================================================
-        const WEBSITE_MAP = {
-            'youtube': 'https://youtube.com',
-            'google': 'https://google.com',
-            'gmail': 'https://gmail.com',
-            'github': 'https://github.com',
-            'reddit': 'https://reddit.com',
-            'twitter': 'https://twitter.com',
-            'x': 'https://twitter.com',
-            'instagram': 'https://instagram.com',
-            'whatsapp': 'https://web.whatsapp.com',
-            'maps': 'https://maps.google.com',
-            'drive': 'https://drive.google.com',
-            'docs': 'https://docs.google.com',
-            'translate': 'https://translate.google.com',
-            'facebook': 'https://facebook.com',
-            'linkedin': 'https://linkedin.com',
-            'spotify': 'https://spotify.com',
-            'netflix': 'https://netflix.com',
-            'amazon': 'https://amazon.in',
-            'flipkart': 'https://flipkart.com',
-            'zomato': 'https://zomato.com',
-            'swiggy': 'https://swiggy.com'
-        };
-
-        // ============================================================
-        // LOCAL COMMAND DETECTION - ROBUST
-        // ============================================================
-        function detectLocalCommand(query) {
-            const q = query.toLowerCase().trim();
-            const sites = Object.keys(WEBSITE_MAP);
-            const openWords = [
-                'open', 'kholo', 'khol', 'chalao', 'start', 'launch',
-                'open karo', 'khol do', 'kholo na', 'khol de', 'kholo ji'
-            ];
-
-            for (const site of sites) {
-                if (!q.includes(site)) continue;
-                
-                const wantsOpen = openWords.some(word => q.includes(word)) || q === site;
-                if (wantsOpen) {
-                    return {
-                        type: 'open_website',
-                        value: site
-                    };
-                }
-            }
-
-            return null;
-        }
-
-        // ============================================================
-        // DIRECT WEBSITE NAVIGATION - WITH FALLBACK
-        // ============================================================
-        function openWebsiteDirectly(siteName) {
-            const url = WEBSITE_MAP[siteName];
-            if (!url) {
-                addToolMessage('Website not found: ' + siteName);
-                return false;
-            }
-
-            addToolMessage('Opening ' + siteName + '...');
-            console.log('ZISHU OPENING:', siteName, url);
-
-            try {
-                // Method 1: Same-tab navigation (works in Chrome, Firefox)
-                window.location.assign(url);
-                return true;
-            } catch (error) {
-                console.error('assign() failed:', error);
-                
-                try {
-                    // Method 2: Direct href assignment
-                    window.location.href = url;
-                    return true;
-                } catch (error2) {
-                    console.error('href failed:', error2);
-                    
-                    try {
-                        // Method 3: Fallback - open in new tab (for WebView)
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.target = '_blank';
-                        a.rel = 'noopener noreferrer';
-                        document.body.appendChild(a);
-                        a.click();
-                        a.remove();
-                        return true;
-                    } catch (error3) {
-                        console.error('All navigation methods failed:', error3);
-                        addToolMessage('Could not open ' + siteName + '. Please open manually.');
-                        return false;
-                    }
-                }
             }
         }
 
@@ -808,14 +844,11 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
             // ============================================================
-            // STEP 1: LOCAL COMMAND DETECTION - IMMEDIATE EXECUTION
+            // STEP 1: LOCAL COMMAND DETECTION
             // ============================================================
             const localCommand = detectLocalCommand(query);
             if (localCommand && localCommand.type === 'open_website') {
-                // Navigate IMMEDIATELY - no LLM, no TTS, no streaming
                 openWebsiteDirectly(localCommand.value);
-                
-                // Clean exit - no confirmation, no TTS
                 isProcessing = false;
                 setOrbState(STATE.IDLE);
                 scheduleRestart(1200);
@@ -915,9 +948,10 @@
         }
 
         // ============================================================
-        // INIT - AUTO START AFTER 1.5 SECONDS
+        // INIT
         // ============================================================
         setOrbState(STATE.IDLE);
+        orbSub.textContent = 'Tap orb to start';
 
         const welcomeDiv = document.createElement('div');
         welcomeDiv.className = 'message assistant-msg';
@@ -926,21 +960,14 @@
         ws.textContent = 'Zishu';
         const wc = document.createElement('span');
         wc.className = 'content';
-        wc.textContent = 'Namaste! Main Zishu hoon. Main aapki madad kar sakti hoon. Orb dabayein ya Space press karein aur baat karein.';
+        wc.textContent = 'Namaste! Main Zishu hoon. Orb dabayein aur baat karein. Main Hindi aur English dono samajhti hoon.';
         welcomeDiv.appendChild(ws);
         welcomeDiv.appendChild(wc);
         chatContainer.appendChild(welcomeDiv);
 
-        // Auto-start after welcome
-        setTimeout(() => {
-            if (state === STATE.IDLE) {
-                startListening();
-            }
-        }, 1500);
-
-        console.log('Zishu AI v2.7 - Clean Navigation + No TTS for Websites');
-        console.log('Websites:', Object.keys(WEBSITE_MAP).join(', '));
-        console.log('Press Space to toggle listening');
+        console.log('🚀 Zishu AI v2.8 - Hindi + English Aliases');
+        console.log('📝 SITE ALIASES:', Object.keys(SITE_ALIASES).join(', '));
+        console.log('🎯 Press Space or tap orb to start');
     </script>
 </body>
 </html>
