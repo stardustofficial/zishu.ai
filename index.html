@@ -306,7 +306,7 @@
 
     <div id="footer">
         <span>private · local</span>
-        <span>v2.6</span>
+        <span>v2.7</span>
     </div>
 
     <script>
@@ -331,6 +331,7 @@
         let isProcessing = false;
         let currentUtterance = null;
         let restartTimer = null;
+        let isRestartScheduled = false;
 
         // ============================================================
         // SYSTEM PROMPT
@@ -406,6 +407,7 @@
                 startListening();
             } else if (state === STATE.LISTENING) {
                 stopListening();
+                setOrbState(STATE.IDLE);
             }
         }
 
@@ -425,6 +427,7 @@
             rec.maxAlternatives = 1;
 
             rec.onstart = () => {
+                clearRestartTimer();
                 setOrbState(STATE.LISTENING);
             };
 
@@ -444,7 +447,6 @@
                     setOrbState(STATE.IDLE);
                 } else if (event.error === 'no-speech') {
                     orbSub.textContent = 'No speech detected. Try again.';
-                    // Controlled restart
                     scheduleRestart(800);
                 } else {
                     orbSub.textContent = 'Error: ' + event.error;
@@ -454,7 +456,7 @@
 
             rec.onend = () => {
                 // Only restart if we're still supposed to be listening
-                if (state === STATE.LISTENING && !isProcessing) {
+                if (state === STATE.LISTENING && !isProcessing && !isRestartScheduled) {
                     scheduleRestart(300);
                 } else if (!isProcessing && state !== STATE.SPEAKING) {
                     setOrbState(STATE.IDLE);
@@ -465,7 +467,7 @@
         }
 
         function startListening() {
-            clearTimeout(restartTimer);
+            clearRestartTimer();
             if (!recognition) {
                 recognition = initSpeechRecognition();
                 if (!recognition) return;
@@ -474,7 +476,6 @@
                 recognition.start();
                 setOrbState(STATE.LISTENING);
             } catch (e) {
-                // If already started, stop and restart
                 try {
                     recognition.stop();
                     setTimeout(() => {
@@ -489,7 +490,7 @@
         }
 
         function stopListening() {
-            clearTimeout(restartTimer);
+            clearRestartTimer();
             if (recognition) {
                 try { recognition.stop(); } catch (e) {}
             }
@@ -499,12 +500,22 @@
         }
 
         function scheduleRestart(delay) {
-            clearTimeout(restartTimer);
+            clearRestartTimer();
+            isRestartScheduled = true;
             restartTimer = setTimeout(() => {
-                if (state === STATE.LISTENING || state === STATE.IDLE) {
+                isRestartScheduled = false;
+                if (state === STATE.IDLE || state === STATE.LISTENING) {
                     startListening();
                 }
             }, delay);
+        }
+
+        function clearRestartTimer() {
+            isRestartScheduled = false;
+            if (restartTimer) {
+                clearTimeout(restartTimer);
+                restartTimer = null;
+            }
         }
 
         // ============================================================
@@ -535,7 +546,7 @@
         };
 
         // ============================================================
-        // LOCAL COMMAND DETECTION - ROBUST VERSION
+        // LOCAL COMMAND DETECTION - ROBUST
         // ============================================================
         function detectLocalCommand(query) {
             const q = query.toLowerCase().trim();
@@ -548,7 +559,6 @@
             for (const site of sites) {
                 if (!q.includes(site)) continue;
                 
-                // Check if user wants to open this site
                 const wantsOpen = openWords.some(word => q.includes(word)) || q === site;
                 if (wantsOpen) {
                     return {
@@ -562,7 +572,7 @@
         }
 
         // ============================================================
-        // DIRECT WEBSITE NAVIGATION - IMMEDIATE
+        // DIRECT WEBSITE NAVIGATION - WITH FALLBACK
         // ============================================================
         function openWebsiteDirectly(siteName) {
             const url = WEBSITE_MAP[siteName];
@@ -572,10 +582,39 @@
             }
 
             addToolMessage('Opening ' + siteName + '...');
-            
-            // CRITICAL: Navigate immediately, no setTimeout
-            window.location.href = url;
-            return true;
+            console.log('ZISHU OPENING:', siteName, url);
+
+            try {
+                // Method 1: Same-tab navigation (works in Chrome, Firefox)
+                window.location.assign(url);
+                return true;
+            } catch (error) {
+                console.error('assign() failed:', error);
+                
+                try {
+                    // Method 2: Direct href assignment
+                    window.location.href = url;
+                    return true;
+                } catch (error2) {
+                    console.error('href failed:', error2);
+                    
+                    try {
+                        // Method 3: Fallback - open in new tab (for WebView)
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.target = '_blank';
+                        a.rel = 'noopener noreferrer';
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        return true;
+                    } catch (error3) {
+                        console.error('All navigation methods failed:', error3);
+                        addToolMessage('Could not open ' + siteName + '. Please open manually.');
+                        return false;
+                    }
+                }
+            }
         }
 
         // ============================================================
@@ -721,8 +760,7 @@
                     currentUtterance = null;
                     if (!isProcessing) {
                         setOrbState(STATE.IDLE);
-                        // Auto-restart listening after speaking
-                        scheduleRestart(1200);
+                        scheduleRestart(1000);
                     }
                 };
 
@@ -752,7 +790,7 @@
         async function handleUserQuery(query) {
             if (isProcessing) return;
             isProcessing = true;
-            clearTimeout(restartTimer);
+            clearRestartTimer();
             setOrbState(STATE.THINKING);
 
             // Add user message
@@ -774,22 +812,14 @@
             // ============================================================
             const localCommand = detectLocalCommand(query);
             if (localCommand && localCommand.type === 'open_website') {
-                // Navigate IMMEDIATELY - no LLM wait
-                const success = openWebsiteDirectly(localCommand.value);
-                if (success) {
-                    const reply = 'Main ' + localCommand.value + ' khol rahi hoon.';
-                    conversationHistory.push({ role: 'assistant', content: reply });
-                    
-                    // Stream confirmation (website already opened)
-                    await streamResponse(reply);
-                    
-                    isProcessing = false;
-                    if (state !== STATE.LISTENING) {
-                        setOrbState(STATE.IDLE);
-                        scheduleRestart(1000);
-                    }
-                    return;
-                }
+                // Navigate IMMEDIATELY - no LLM, no TTS, no streaming
+                openWebsiteDirectly(localCommand.value);
+                
+                // Clean exit - no confirmation, no TTS
+                isProcessing = false;
+                setOrbState(STATE.IDLE);
+                scheduleRestart(1200);
+                return;
             }
 
             // ============================================================
@@ -885,7 +915,7 @@
         }
 
         // ============================================================
-        // INIT - AUTO START AFTER 1 SECOND
+        // INIT - AUTO START AFTER 1.5 SECONDS
         // ============================================================
         setOrbState(STATE.IDLE);
 
@@ -908,7 +938,7 @@
             }
         }, 1500);
 
-        console.log('Zishu AI v2.6 - Stable Auto-Start + Instant Commands');
+        console.log('Zishu AI v2.7 - Clean Navigation + No TTS for Websites');
         console.log('Websites:', Object.keys(WEBSITE_MAP).join(', '));
         console.log('Press Space to toggle listening');
     </script>
