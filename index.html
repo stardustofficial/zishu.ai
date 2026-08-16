@@ -27,9 +27,7 @@
             transform: scale(1.05);
             pointer-events: none;
         }
-        #splash.hidden {
-            display: none !important;
-        }
+        #splash.hidden { display: none !important; }
         #splash-logo {
             width: 120px; height: 120px;
             border-radius: 50%;
@@ -61,7 +59,6 @@
         #splash-loader-bar {
             height: 100%; width: 0%;
             background: linear-gradient(90deg, #3b82f6, #7b6cf7);
-            border-radius: 4px;
             animation: loadBar 2.5s ease-in-out forwards;
         }
         @keyframes loadBar { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
@@ -442,22 +439,18 @@
 
     <script>
         // ============================================================
-        // SPLASH - FIXED
+        // SPLASH
         // ============================================================
         function hideSplash() {
-            const splash = document.getElementById('splash');
+            var splash = document.getElementById('splash');
             splash.classList.add('hide');
-            // Force hide after transition
             setTimeout(function() {
                 splash.style.display = 'none';
                 splash.classList.add('hidden');
-                // Start app
                 preloadTTS();
-                setTimeout(startListening, 400);
+                setTimeout(startListening, 500);
             }, 800);
         }
-
-        // Wait for loader animation to complete, then hide splash
         setTimeout(hideSplash, 3000);
 
         function preloadTTS() {
@@ -496,11 +489,16 @@
         var isRestartScheduled = false;
         var wakeWordDetected = false;
         var conversationHistory = [];
+        var isFirstStart = true;
 
         // ============================================================
-        // SYSTEM PROMPT - CREATOR INFO
+        // SYSTEM PROMPT - NO CREATOR INFO IN WELCOME
         // ============================================================
-        var SYSTEM_PROMPT = 'You are Zishu, a female voice assistant created by Zishan, the founder of StardustOfficial.\n\nIMPORTANT - If anyone asks about your creator:\n- "Tumhe kisne banaya?" → "Mujhe Zishan ne banaya hai, jo StardustOfficial ke founder hain."\n- "Zishan ki company ka naam kya hai?" → "StardustOfficial."\n- "Who created you?" → "Zishan, the founder of StardustOfficial."\n\nAlways respond in Hinglish - mix Hindi and English naturally. Use feminine verb endings: "kar sakti hoon", "bol sakti hoon". Be warm and helpful.';
+        var SYSTEM_PROMPT = 'You are Zishu, a helpful voice assistant. Always respond in Hinglish - mix Hindi and English naturally. Use feminine verb endings: "kar sakti hoon", "bol sakti hoon". Be warm and helpful.\n\n' +
+            'IMPORTANT - Only share creator info if specifically asked:\n' +
+            '- If asked "tumhe kisne banaya?" or "who created you?" → "Mujhe Zishan ne banaya hai, jo StardustOfficial ke founder hain."\n' +
+            '- If asked "Zishan ki company?" or "StardustOfficial?" → "StardustOfficial."\n' +
+            'Do not mention creator unless asked directly.';
 
         // ============================================================
         // WEBSITE MAP
@@ -629,7 +627,7 @@
         });
 
         // ============================================================
-        // SPEECH RECOGNITION
+        // SPEECH RECOGNITION - FIXED
         // ============================================================
         function initSpeechRecognition() {
             var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -657,12 +655,14 @@
                 var text = finalText || interimText;
                 if (!text) return;
 
+                // Check for wake word
                 var hasWake = WAKE_WORDS.some(function(w) { return text.indexOf(w) !== -1; });
                 if (hasWake && !wakeWordDetected && !isProcessing) {
                     wakeWordDetected = true;
                     var query = text.replace(new RegExp(WAKE_WORDS.join('|'), 'gi'), '').trim();
                     if (query.length > 0) {
-                        stopListening();
+                        // Stop listening and process
+                        try { rec.stop(); } catch (e) {}
                         handleUserQuery(query);
                     } else {
                         orbSub.textContent = 'Listening for command...';
@@ -674,7 +674,7 @@
                 } else if (wakeWordDetected && !isProcessing && finalText) {
                     var query = text.replace(new RegExp(WAKE_WORDS.join('|'), 'gi'), '').trim();
                     if (query.length > 0) {
-                        stopListening();
+                        try { rec.stop(); } catch (e) {}
                         handleUserQuery(query);
                     }
                 }
@@ -713,7 +713,9 @@
                 setOrbState(STATE.LISTENING);
             } catch (e) {
                 try { recognition.stop(); } catch (ex) {}
-                setTimeout(function() { try { recognition.start(); } catch (ex) {} }, 200);
+                setTimeout(function() {
+                    try { recognition.start(); } catch (ex) {}
+                }, 200);
             }
         }
 
@@ -980,7 +982,7 @@
         }
 
         // ============================================================
-        // MAIN HANDLER
+        // MAIN HANDLER - WITH RATE LIMIT HANDLING
         // ============================================================
         async function handleUserQuery(query) {
             if (isProcessing) return;
@@ -1006,11 +1008,32 @@
                             temperature: 0.7, max_tokens: 500
                         })
                     });
-                    if (!response.ok) throw new Error('API Error: ' + response.status);
+
+                    // Handle rate limit / server errors
+                    if (response.status === 429) {
+                        var busyReply = 'Abhi server busy hai, thodi der baad try karein.';
+                        addMessage('Zishu', busyReply, 'assistant-msg');
+                        speakText(busyReply);
+                        isProcessing = false;
+                        setOrbState(STATE.IDLE);
+                        scheduleRestart(1000);
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        var errorReply = 'Kuch technical issue aa raha hai. Thodi der baad try karein.';
+                        addMessage('Zishu', errorReply, 'assistant-msg');
+                        speakText(errorReply);
+                        isProcessing = false;
+                        setOrbState(STATE.IDLE);
+                        scheduleRestart(1000);
+                        return;
+                    }
+
                     var data = await response.json();
                     var reply = data.choices[0].message.content;
 
-                    // Handle tools
+                    // Handle tools in reply
                     if (reply.indexOf('TOOL:') !== -1) {
                         var m = reply.match(/TOOL:\s*(\w+)\((.*)\)/);
                         if (m) {
@@ -1031,7 +1054,7 @@
 
                     conversationHistory.push({ role: 'assistant', content: reply });
 
-                    // Memory
+                    // Memory - only if user shares name
                     var memory = JSON.parse(localStorage.getItem('zishu_memory') || '{}');
                     var nameMatch = reply.match(/(?:your name is|aapka naam|tumhara naam|mera naam)\s+([a-zA-Z\u0900-\u097F\s]+)/i);
                     if (nameMatch && !memory.name) {
@@ -1043,7 +1066,10 @@
 
                 } catch (error) {
                     console.error('Error:', error);
+                    var errorReply = 'Abhi server busy hai, thodi der baad try karein.';
                     addToolMessage('Error: ' + error.message);
+                    addMessage('Zishu', errorReply, 'assistant-msg');
+                    speakText(errorReply);
                     setOrbState(STATE.IDLE);
                 }
             }
@@ -1076,16 +1102,17 @@
         // INIT
         // ============================================================
         setOrbState(STATE.IDLE);
-        addMessage('Zishu', 'Namaste! Main Zishu hoon. Mujhe Zishan ne banaya hai, jo StardustOfficial ke founder hain. "Hey Zishu" boliye ya orb dabayein.', 'assistant-msg');
+        // Welcome message - NO CREATOR INFO
+        addMessage('Zishu', 'Namaste! Main Zishu hoon. "Hey Zishu" boliye ya orb dabayein aur baat karein.', 'assistant-msg');
 
         if (window.speechSynthesis) {
             window.speechSynthesis.getVoices();
             window.speechSynthesis.onvoiceschanged = function() { window.speechSynthesis.getVoices(); };
         }
 
-        console.log('🚀 Zishu AI v4.2 - Loading Fixed');
-        console.log('👤 Creator: Zishan (StardustOfficial)');
+        console.log('🚀 Zishu AI v4.3 - Fully Working');
         console.log('🎯 Say "Hey Zishu" or tap orb');
+        console.log('🔄 Rate limit handling enabled');
     </script>
 </body>
 </html>
