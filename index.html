@@ -1,973 +1,795 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zishu AI - Voice Assistant</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f4f7fc;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 20px 24px 16px;
-            color: #1a2332;
-            overflow: hidden;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zishu AI — Your Voice, Your Assistant</title>
+  <meta name="description" content="Zishu is a personal AI voice assistant for Android that helps you interact naturally using voice." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        #header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            flex-shrink: 0;
-            padding: 0 4px;
-        }
-        #brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        #brand svg {
-            width: 32px;
-            height: 32px;
-        }
-        #brand h1 {
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #3b82f6, #7b6cf7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        #brand .sub {
-            font-size: 12px;
-            font-weight: 400;
-            color: #6b7a8f;
-            -webkit-text-fill-color: #6b7a8f;
-            background: none;
-            margin-left: 4px;
-        }
-        #status-badge {
-            font-size: 13px;
-            font-weight: 500;
-            padding: 6px 16px;
-            border-radius: 30px;
-            background: #e9edf4;
-            color: #6b7a8f;
-            transition: all 0.3s ease;
-        }
-        #status-badge.active {
-            background: #3b82f6;
-            color: white;
-        }
+    :root {
+      --bg: #F7F9FC;
+      --surface: #FFFFFF;
+      --surface2: #f1f4f9;
+      --text: #111827;
+      --text-secondary: #64748B;
+      --border: #E5E7EB;
+      --accent: #3B82F6;
+      --accent-secondary: #6366F1;
+      --shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+      --radius: 20px;
+      --max-width: 1160px;
+      --nav-bg: rgba(247, 249, 252, 0.85);
+    }
 
-        #orb-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 16px 0 20px;
-            flex-shrink: 0;
-        }
-        #orb {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #3b82f6, #1a2332);
-            box-shadow: 0 0 60px rgba(59, 130, 246, 0.15);
-            transition: all 0.4s ease;
-            cursor: pointer;
-            position: relative;
-        }
-        #orb:hover {
-            transform: scale(1.04);
-        }
-        #orb.listening {
-            background: radial-gradient(circle at 30% 30%, #4f8ef7, #1a2332);
-            box-shadow: 0 0 80px rgba(79, 142, 247, 0.25);
-            animation: orbPulse 1.2s ease-in-out infinite;
-        }
-        #orb.thinking {
-            background: radial-gradient(circle at 30% 30%, #7b6cf7, #1a2332);
-            box-shadow: 0 0 80px rgba(123, 108, 247, 0.25);
-            animation: orbSpin 2s linear infinite;
-        }
-        #orb.speaking {
-            background: radial-gradient(circle at 30% 30%, #3b82f6, #1a2332);
-            box-shadow: 0 0 80px rgba(59, 130, 246, 0.2);
-            animation: orbSpeak 0.6s ease-in-out infinite alternate;
-        }
-        @keyframes orbPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        @keyframes orbSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        @keyframes orbSpeak {
-            0% { transform: scale(1) translateY(0); }
-            100% { transform: scale(1.04) translateY(-3px); }
-        }
+    [data-theme="dark"] {
+      --bg: #0B0F14;
+      --surface: #111827;
+      --surface2: #172033;
+      --text: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --border: #253044;
+      --accent: #60A5FA;
+      --accent-secondary: #818CF8;
+      --shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      --nav-bg: rgba(11, 15, 20, 0.88);
+    }
 
-        #orb-status {
-            margin-top: 14px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #1a2332;
-            letter-spacing: -0.2px;
-        }
-        #orb-sub {
-            font-size: 13px;
-            color: #6b7a8f;
-            margin-top: 4px;
-            font-weight: 400;
-        }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      transition: background 0.2s, color 0.2s;
+      padding: 0 1.5rem;
+    }
 
-        #chat-wrapper {
-            flex: 1;
-            min-height: 0;
-            width: 100%;
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
-            border: 1px solid #e9edf4;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        #chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px 24px;
-            scroll-behavior: smooth;
-        }
-        #chat-container::-webkit-scrollbar {
-            width: 4px;
-        }
-        #chat-container::-webkit-scrollbar-track {
-            background: #f1f4f9;
-        }
-        #chat-container::-webkit-scrollbar-thumb {
-            background: #d0d8e3;
-            border-radius: 10px;
-        }
+    .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 1rem 0 3rem;
+    }
 
-        .message {
-            margin: 8px 0;
-            padding: 12px 18px;
-            border-radius: 16px;
-            max-width: 80%;
-            word-wrap: break-word;
-            animation: fadeIn 0.25s ease;
-            line-height: 1.7;
-            font-size: 15px;
-            font-weight: 400;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-        }
-        .user-msg {
-            background: #3b82f6;
-            color: white;
-            margin-left: auto;
-            border-bottom-right-radius: 4px;
-        }
-        .assistant-msg {
-            background: #f1f4f9;
-            color: #1a2332;
-            margin-right: auto;
-            border-bottom-left-radius: 4px;
-        }
-        .message .sender {
-            font-weight: 600;
-            font-size: 12px;
-            opacity: 0.7;
-            display: block;
-            margin-bottom: 3px;
-            letter-spacing: 0.3px;
-        }
-        .assistant-msg .sender {
-            color: #6b7a8f;
-        }
-        .user-msg .sender {
-            color: rgba(255, 255, 255, 0.8);
-        }
-        .message .content {
-            display: block;
-        }
+    /* NAV */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--nav-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.6rem 0;
+      transition: box-shadow 0.2s, background 0.2s;
+    }
+    nav.scrolled {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.3px;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo span {
+      color: var(--accent);
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      font-size: 0.9rem;
+    }
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover {
+      color: var(--text);
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+    .theme-toggle {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 60px;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: 0.2s;
+    }
+    .theme-toggle:hover {
+      background: var(--border);
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1.4rem;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      text-decoration: none;
+      display: inline-block;
+      letter-spacing: -0.2px;
+    }
+    .btn-primary:hover {
+      background: var(--accent-secondary);
+      transform: scale(0.97);
+    }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 1.4rem;
+      border-radius: 60px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-secondary:hover {
+      background: var(--surface2);
+      border-color: var(--text-secondary);
+    }
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+    .hamburger span {
+      width: 24px;
+      height: 2px;
+      background: var(--text);
+      border-radius: 4px;
+      transition: 0.2s;
+    }
 
-        .tool-msg {
-            background: #e9edf4;
-            color: #6b7a8f;
-            margin: 6px auto;
-            padding: 6px 16px;
-            border-radius: 30px;
-            font-size: 13px;
-            text-align: center;
-            max-width: 85%;
-            font-weight: 450;
-        }
+    /* HERO */
+    .hero {
+      display: flex;
+      align-items: center;
+      gap: 4rem;
+      padding: 3rem 0 2rem;
+      flex-wrap: wrap;
+    }
+    .hero-content {
+      flex: 1 1 45%;
+    }
+    .hero-badge {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 0.2rem 1rem;
+      border-radius: 60px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      display: inline-block;
+      margin-bottom: 1.2rem;
+      letter-spacing: 0.3px;
+    }
+    .hero h1 {
+      font-size: 3.4rem;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -1.2px;
+      margin-bottom: 1rem;
+    }
+    .hero h1 .highlight {
+      color: var(--accent);
+    }
+    .hero p {
+      color: var(--text-secondary);
+      font-size: 1.15rem;
+      max-width: 480px;
+      margin-bottom: 2rem;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1.2rem;
+    }
+    .trust-line {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .trust-line svg {
+      width: 16px;
+      height: 16px;
+      fill: var(--accent);
+    }
 
-        #footer {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 4px 0;
-            flex-shrink: 0;
-            font-size: 12px;
-            color: #9aa9bb;
-            letter-spacing: 0.2px;
-        }
+    /* phone mock */
+    .hero-visual {
+      flex: 1 1 40%;
+      display: flex;
+      justify-content: center;
+    }
+    .phone-mock {
+      background: var(--surface);
+      border-radius: 40px;
+      padding: 1.2rem 0.8rem 0.8rem;
+      box-shadow: var(--shadow), 0 20px 60px rgba(0,0,0,0.04);
+      border: 1px solid var(--border);
+      width: 100%;
+      max-width: 320px;
+      transition: background 0.2s;
+    }
+    .phone-screen {
+      background: var(--bg);
+      border-radius: 28px;
+      padding: 1.2rem 1rem;
+      min-height: 480px;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border);
+    }
+    .phone-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.6rem;
+    }
+    .phone-header span:first-child { color: var(--text); }
+    .orb-area {
+      flex:1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .orb {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent-secondary));
+      box-shadow: 0 0 30px rgba(59,130,246,0.2);
+      animation: breath 2.4s ease-in-out infinite;
+      transition: 0.2s;
+    }
+    @keyframes breath {
+      0% { transform: scale(0.94); opacity: 0.8; }
+      50% { transform: scale(1.04); opacity: 1; }
+      100% { transform: scale(0.94); opacity: 0.8; }
+    }
+    .orb-label {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+    .convo-example {
+      background: var(--surface2);
+      border-radius: 18px;
+      padding: 0.8rem 1rem;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      border: 1px solid var(--border);
+    }
+    .convo-example .you {
+      color: var(--text-secondary);
+      margin-bottom: 0.2rem;
+    }
+    .convo-example .zishu {
+      color: var(--accent);
+      font-weight: 500;
+    }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(6px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    /* sections */
+    section {
+      margin: 5rem 0;
+    }
+    .section-title {
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: -0.6px;
+      margin-bottom: 0.4rem;
+    }
+    .section-sub {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      margin-bottom: 2.5rem;
+    }
 
-        @media (max-width: 480px) {
-            body {
-                padding: 12px 14px 10px;
-            }
-            #orb {
-                width: 80px;
-                height: 80px;
-            }
-            #brand h1 {
-                font-size: 18px;
-            }
-            #brand .sub {
-                font-size: 10px;
-            }
-            #orb-status {
-                font-size: 14px;
-            }
-            .message {
-                font-size: 14px;
-                padding: 10px 14px;
-                max-width: 88%;
-            }
-            #chat-container {
-                padding: 14px 16px;
-            }
-            #status-badge {
-                font-size: 11px;
-                padding: 4px 12px;
-            }
-        }
-    </style>
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+      gap: 1.8rem;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+      gap: 2rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.8rem 1.4rem;
+      transition: 0.2s;
+      box-shadow: var(--shadow);
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+    }
+    .card h4 {
+      margin-bottom: 0.3rem;
+      font-weight: 600;
+    }
+    .card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .badge-coming {
+      background: var(--surface2);
+      color: var(--text-secondary);
+      font-size: 0.65rem;
+      padding: 0.1rem 0.7rem;
+      border-radius: 60px;
+      display: inline-block;
+      margin-top: 0.4rem;
+      border: 1px solid var(--border);
+    }
+
+    .step {
+      text-align: center;
+    }
+    .step-icon {
+      font-size: 2.2rem;
+      background: var(--surface);
+      width: 72px;
+      height: 72px;
+      border-radius: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      border: 1px solid var(--border);
+    }
+
+    .use-case-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+      gap: 1.2rem;
+    }
+    .use-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 60px;
+      padding: 0.8rem 1.4rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-align: center;
+      color: var(--text);
+      transition: 0.2s;
+    }
+    .use-card:hover {
+      border-color: var(--accent);
+    }
+
+    .pricing-card {
+      max-width: 420px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .pricing-card .price {
+      font-size: 3.4rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin: 0.5rem 0;
+    }
+    .pricing-card .price-label {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .pricing-card ul {
+      list-style: none;
+      text-align: left;
+      margin: 1.8rem 0;
+    }
+    .pricing-card ul li {
+      padding: 0.3rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: var(--text-secondary);
+    }
+    .pricing-card ul li::before {
+      content: "✓";
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .btn-block {
+      width: 100%;
+      padding: 0.9rem;
+      font-size: 1rem;
+    }
+
+    /* purchase flow */
+    .purchase-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      max-width: 520px;
+      margin: 2rem auto;
+      box-shadow: var(--shadow);
+    }
+    .purchase-box input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 60px;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0.6rem 0 1rem;
+      font-size: 0.95rem;
+    }
+    .purchase-box .status {
+      font-size: 0.9rem;
+      padding: 0.6rem 1rem;
+      border-radius: 60px;
+      background: var(--surface2);
+      margin: 0.6rem 0;
+      border: 1px solid var(--border);
+    }
+    .flex-row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+      cursor: pointer;
+    }
+    .faq-question {
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease, padding 0.2s;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+    .faq-item.open .faq-answer {
+      max-height: 300px;
+      padding-top: 0.8rem;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 0 1.5rem;
+      margin-top: 3rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    footer .footer-links {
+      display: flex;
+      gap: 1.8rem;
+      flex-wrap: wrap;
+    }
+    footer a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+    footer a:hover {
+      color: var(--text);
+    }
+
+    @media (max-width: 800px) {
+      .hero { flex-direction: column; text-align: center; gap: 2rem; }
+      .hero p { margin-left: auto; margin-right: auto; }
+      .hero-actions { justify-content: center; }
+      .trust-line { justify-content: center; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .nav-links.open { display: flex; flex-direction: column; position: absolute; top: 60px; left: 0; right: 0; background: var(--surface); padding: 1.5rem; gap: 1.2rem; border-bottom: 1px solid var(--border); }
+      .section-title { font-size: 2rem; }
+    }
+    @media (max-width: 500px) {
+      body { padding: 0 1rem; }
+      .hero h1 { font-size: 2.5rem; }
+      .pricing-card { padding: 1.8rem 1rem; }
+    }
+
+    /* utils */
+    .text-center { text-align: center; }
+    .mt-1 { margin-top: 1rem; }
+    .mb-1 { margin-bottom: 1rem; }
+    .gap-1 { gap: 1rem; }
+    .hidden { display: none; }
+  </style>
 </head>
 <body>
+  <nav id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="logo">ZISH<span>U</span></a>
+      <div class="nav-links" id="navLinks">
+        <a href="#features">Features</a>
+        <a href="#howitworks">How it works</a>
+        <a href="#faq">FAQ</a>
+        <a href="#support">Support</a>
+      </div>
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">☀️</button>
+        <a href="#purchase" class="btn-primary">Get Zishu</a>
+        <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
 
-    <div id="header">
-        <div id="brand">
-            <svg viewBox="0 0 24 24" fill="none" stroke="url(#grad)" stroke-width="1.8">
-                <defs>
-                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#3b82f6" />
-                        <stop offset="100%" stop-color="#7b6cf7" />
-                    </linearGradient>
-                </defs>
-                <circle cx="12" cy="12" r="10" />
-                <path d="M8 12l2 2 4-4" />
-                <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-            </svg>
-            <div style="display:flex;align-items:baseline;gap:6px;">
-                <h1>ZISHU</h1>
-                <span class="sub">voice intelligence</span>
-            </div>
+  <div class="container">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-badge">ZISHU AI • ANDROID</div>
+        <h1>Your voice.<br /><span class="highlight">Your assistant.</span></h1>
+        <p>Zishu is a personal AI voice assistant designed to understand natural conversations, answer questions and help you get things done with simple voice commands.</p>
+        <div class="hero-actions">
+          <a href="#purchase" class="btn-primary">Get Zishu — ₹99</a>
+          <a href="#howitworks" class="btn-secondary">See how it works</a>
         </div>
-        <div id="status-badge">● Idle</div>
-    </div>
-
-    <div id="orb-container">
-        <div id="orb"></div>
-        <div id="orb-status">Tap orb to start</div>
-        <div id="orb-sub">First tap to enable microphone</div>
-    </div>
-
-    <div id="chat-wrapper">
-        <div id="chat-container"></div>
-    </div>
-
-    <div id="footer">
-        <span>private · local</span>
-        <span>v2.8</span>
-    </div>
-
-    <script>
-        // ============================================================
-        // CONFIG
-        // ============================================================
-        const GROQ_API_KEY = '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';
-        const GROQ_MODEL = 'llama-3.1-8b-instant';
-
-        // ============================================================
-        // STATE MACHINE
-        // ============================================================
-        const STATE = {
-            IDLE: 'idle',
-            LISTENING: 'listening',
-            THINKING: 'thinking',
-            SPEAKING: 'speaking'
-        };
-
-        let state = STATE.IDLE;
-        let recognition = null;
-        let isProcessing = false;
-        let currentUtterance = null;
-        let restartTimer = null;
-        let isRestartScheduled = false;
-        let isFirstActivation = true;
-
-        // ============================================================
-        // SYSTEM PROMPT
-        // ============================================================
-        const SYSTEM_PROMPT = `You are Zishu, a female voice assistant with a warm, helpful personality.
-
-        IMPORTANT GENDER RULES:
-        - Always refer to yourself as "main" (feminine) in Hindi
-        - Use feminine verb endings: "kar sakti hoon", "bol sakti hoon", "de sakti hoon"
-
-        RESPONSE STYLE:
-        - Give detailed, complete answers
-        - Be warm and helpful like a trusted friend
-        - Use Hinglish naturally - mix Hindi and English
-
-        TOOLS (use EXACT format):
-        - TOOL: set_reminder(text, time) - sets a reminder
-        - TOOL: create_note(text) - saves a note
-        - TOOL: get_weather(city) - gets weather
-        - TOOL: get_time(city) - gets current time
-        - TOOL: calculate(expression) - does math
-        - TOOL: translate(text, language) - translates text
-
-        Note: For opening websites, the system handles it locally. Just respond with confirmation.`;
-
-        let conversationHistory = [
-            { role: 'system', content: SYSTEM_PROMPT }
-        ];
-
-        let memory = JSON.parse(localStorage.getItem('zishu_memory') || '{}');
-
-        // ============================================================
-        // DOM REFS
-        // ============================================================
-        const orb = document.getElementById('orb');
-        const orbStatus = document.getElementById('orb-status');
-        const orbSub = document.getElementById('orb-sub');
-        const chatContainer = document.getElementById('chat-container');
-        const statusBadge = document.getElementById('status-badge');
-
-        // ============================================================
-        // ORB CONTROLS
-        // ============================================================
-        function setOrbState(newState) {
-            state = newState;
-            orb.className = newState;
-
-            const statusMap = {
-                idle: ['Zishu is ready', 'Tap orb or press Space to talk', '● Idle'],
-                listening: ['Listening...', 'Speak now', '● Listening'],
-                thinking: ['Thinking...', 'Processing your request', '◉ Thinking'],
-                speaking: ['Speaking...', 'Zishu is responding', '● Speaking']
-            };
-            const [status, sub, badge] = statusMap[newState] || statusMap.idle;
-            orbStatus.textContent = status;
-            orbSub.textContent = sub;
-            statusBadge.textContent = badge;
-            statusBadge.className = newState === STATE.IDLE ? '' : 'active';
-        }
-
-        orb.addEventListener('click', toggleListening);
-
-        // ============================================================
-        // TOGGLE LISTENING
-        // ============================================================
-        function toggleListening() {
-            if (isProcessing) {
-                orbSub.textContent = 'Please wait...';
-                return;
-            }
-
-            if (state === STATE.IDLE || state === STATE.SPEAKING) {
-                startListening();
-            } else if (state === STATE.LISTENING) {
-                stopListening();
-                setOrbState(STATE.IDLE);
-            }
-        }
-
-        // ============================================================
-        // WEBSITE ALIASES - HINDI + ENGLISH
-        // ============================================================
-        const SITE_ALIASES = {
-            youtube: ['youtube', 'you tube', 'यूट्यूब', 'यू ट्यूब'],
-            google: ['google', 'गूगल'],
-            gmail: ['gmail', 'जीमेल', 'जी मेल'],
-            github: ['github', 'git hub', 'गिटहब', 'गिट हब'],
-            instagram: ['instagram', 'insta', 'इंस्टाग्राम', 'इंस्टा'],
-            facebook: ['facebook', 'फेसबुक'],
-            whatsapp: ['whatsapp', 'व्हाट्सएप', 'व्हाट्सऐप'],
-            twitter: ['twitter', 'ट्विटर', 'x'],
-            reddit: ['reddit', 'रेडिट'],
-            spotify: ['spotify', 'स्पॉटिफाई', 'स्पॉटिफाय'],
-            netflix: ['netflix', 'नेटफ्लिक्स'],
-            amazon: ['amazon', 'अमेज़न', 'अमेजन'],
-            flipkart: ['flipkart', 'फ्लिपकार्ट'],
-            linkedin: ['linkedin', 'लिंक्डइन'],
-            maps: ['google maps', 'maps', 'गूगल मैप्स', 'मैप्स'],
-            drive: ['google drive', 'drive', 'गूगल ड्राइव', 'ड्राइव'],
-            docs: ['google docs', 'docs', 'गूगल डॉक्स', 'डॉक्स'],
-            translate: ['google translate', 'translate', 'गूगल ट्रांसलेट', 'ट्रांसलेट'],
-            zomato: ['zomato', 'जोमैटो'],
-            swiggy: ['swiggy', 'स्विगी']
-        };
-
-        const WEBSITE_MAP = {
-            youtube: 'https://youtube.com',
-            google: 'https://google.com',
-            gmail: 'https://gmail.com',
-            github: 'https://github.com',
-            reddit: 'https://reddit.com',
-            twitter: 'https://twitter.com',
-            instagram: 'https://instagram.com',
-            whatsapp: 'https://web.whatsapp.com',
-            maps: 'https://maps.google.com',
-            drive: 'https://drive.google.com',
-            docs: 'https://docs.google.com',
-            translate: 'https://translate.google.com',
-            facebook: 'https://facebook.com',
-            linkedin: 'https://linkedin.com',
-            spotify: 'https://spotify.com',
-            netflix: 'https://netflix.com',
-            amazon: 'https://amazon.in',
-            flipkart: 'https://flipkart.com',
-            zomato: 'https://zomato.com',
-            swiggy: 'https://swiggy.com'
-        };
-
-        // ============================================================
-        // LOCAL COMMAND DETECTION - HINDI + ENGLISH
-        // ============================================================
-        function detectLocalCommand(query) {
-            const q = query.toLowerCase().trim();
-
-            const openWords = [
-                'open', 'open karo', 'open kar', 'kholo', 'khol', 'khol do', 'khol de',
-                'chalao', 'chala do', 'start', 'launch',
-                'खोलो', 'खोल', 'खोल दो', 'खोल दे', 'चलाओ', 'चला दो', 'शुरू करो', 'शुरू कर','ओपन'
-            ];
-
-            console.log('🔍 DETECTING COMMAND:', q);
-
-            for (const [site, aliases] of Object.entries(SITE_ALIASES)) {
-                const siteFound = aliases.some(alias => q.includes(alias));
-                if (!siteFound) continue;
-
-                const wantsOpen = openWords.some(word => q.includes(word)) || 
-                                 aliases.some(alias => q === alias) ||
-                                 q === site;
-
-                if (wantsOpen) {
-                    console.log('✅ WEBSITE COMMAND DETECTED:', {
-                        original: query,
-                        site: site,
-                        url: WEBSITE_MAP[site]
-                    });
-                    return {
-                        type: 'open_website',
-                        value: site
-                    };
-                }
-            }
-
-            console.log('❌ NO LOCAL COMMAND DETECTED');
-            return null;
-        }
-
-        // ============================================================
-        // DIRECT WEBSITE NAVIGATION - WITH FALLBACK
-        // ============================================================
-        function openWebsiteDirectly(siteName) {
-            const url = WEBSITE_MAP[siteName];
-            if (!url) {
-                addToolMessage('Website not found: ' + siteName);
-                return false;
-            }
-
-            addToolMessage('Opening ' + siteName + '...');
-            console.log('🌐 OPENING:', siteName, url);
-
-            try {
-                window.location.assign(url);
-                return true;
-            } catch (error) {
-                console.error('assign() failed:', error);
-                try {
-                    window.location.href = url;
-                    return true;
-                } catch (error2) {
-                    console.error('href failed:', error2);
-                    try {
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.target = '_blank';
-                        a.rel = 'noopener noreferrer';
-                        document.body.appendChild(a);
-                        a.click();
-                        a.remove();
-                        return true;
-                    } catch (error3) {
-                        console.error('All navigation methods failed:', error3);
-                        addToolMessage('Could not open ' + siteName + '. Please open manually.');
-                        return false;
-                    }
-                }
-            }
-        }
-
-        // ============================================================
-        // SPEECH RECOGNITION
-        // ============================================================
-        function initSpeechRecognition() {
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) {
-                orbStatus.textContent = 'Browser not supported';
-                return null;
-            }
-            const rec = new SR();
-            rec.lang = 'hi-IN';
-            rec.continuous = false;
-            rec.interimResults = false;
-            rec.maxAlternatives = 1;
-
-            rec.onstart = () => {
-                clearRestartTimer();
-                setOrbState(STATE.LISTENING);
-                if (isFirstActivation) {
-                    isFirstActivation = false;
-                    orbSub.textContent = 'Listening...';
-                }
-            };
-
-            rec.onresult = (event) => {
-                const transcript = event.results[0][0].transcript.trim();
-                console.log('🎤 USER SAID:', transcript);
-                
-                if (transcript.length > 0) {
-                    stopListening();
-                    handleUserQuery(transcript);
-                }
-            };
-
-            rec.onerror = (event) => {
-                console.error('Speech error:', event.error);
-                if (event.error === 'not-allowed') {
-                    orbStatus.textContent = 'Microphone access denied';
-                    orbSub.textContent = 'Please allow microphone access';
-                    setOrbState(STATE.IDLE);
-                } else if (event.error === 'no-speech') {
-                    orbSub.textContent = 'No speech detected. Try again.';
-                    scheduleRestart(800);
-                } else {
-                    orbSub.textContent = 'Error: ' + event.error;
-                    scheduleRestart(1000);
-                }
-            };
-
-            rec.onend = () => {
-                if (state === STATE.LISTENING && !isProcessing && !isRestartScheduled) {
-                    scheduleRestart(300);
-                } else if (!isProcessing && state !== STATE.SPEAKING) {
-                    setOrbState(STATE.IDLE);
-                }
-            };
-
-            return rec;
-        }
-
-        function startListening() {
-            clearRestartTimer();
-            if (!recognition) {
-                recognition = initSpeechRecognition();
-                if (!recognition) return;
-            }
-            try {
-                recognition.start();
-                setOrbState(STATE.LISTENING);
-            } catch (e) {
-                try {
-                    recognition.stop();
-                    setTimeout(() => {
-                        recognition.start();
-                        setOrbState(STATE.LISTENING);
-                    }, 200);
-                } catch (ex) {
-                    console.error('Failed to start:', ex);
-                    setOrbState(STATE.IDLE);
-                }
-            }
-        }
-
-        function stopListening() {
-            clearRestartTimer();
-            if (recognition) {
-                try { recognition.stop(); } catch (e) {}
-            }
-            if (!isProcessing) {
-                setOrbState(STATE.IDLE);
-            }
-        }
-
-        function scheduleRestart(delay) {
-            clearRestartTimer();
-            isRestartScheduled = true;
-            restartTimer = setTimeout(() => {
-                isRestartScheduled = false;
-                if (state === STATE.IDLE || state === STATE.LISTENING) {
-                    startListening();
-                }
-            }, delay);
-        }
-
-        function clearRestartTimer() {
-            isRestartScheduled = false;
-            if (restartTimer) {
-                clearTimeout(restartTimer);
-                restartTimer = null;
-            }
-        }
-
-        // ============================================================
-        // TOOL SYSTEM
-        // ============================================================
-        async function executeTool(toolString) {
-            try {
-                const match = toolString.match(/TOOL:\s*(\w+)\((.*)\)/);
-                if (!match) return null;
-                const [, toolName, params] = match;
-                const args = params ? params.split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')) : [];
-
-                switch (toolName) {
-                    case 'set_reminder': {
-                        const reminder = { text: args[0] || 'reminder', time: args[1] || 'now' };
-                        const reminders = JSON.parse(localStorage.getItem('zishu_reminders') || '[]');
-                        reminders.push(reminder);
-                        localStorage.setItem('zishu_reminders', JSON.stringify(reminders));
-                        return 'Reminder set: ' + reminder.text + ' at ' + reminder.time;
-                    }
-
-                    case 'create_note': {
-                        const note = args[0] || 'empty note';
-                        const notes = JSON.parse(localStorage.getItem('zishu_notes') || '[]');
-                        notes.push({ text: note, date: new Date().toISOString() });
-                        localStorage.setItem('zishu_notes', JSON.stringify(notes));
-                        return 'Note saved: ' + note;
-                    }
-
-                    case 'get_weather': {
-                        const city = args[0] || 'Delhi';
-                        const weatherData = await fetchWeather(city);
-                        return 'Weather in ' + city + ': ' + weatherData;
-                    }
-
-                    case 'get_time': {
-                        const tz = args[0] || 'Asia/Kolkata';
-                        const time = new Date().toLocaleString('en-US', { timeZone: tz, hour: '2-digit', minute: '2-digit' });
-                        return 'Current time in ' + tz.split('/').pop() + ': ' + time;
-                    }
-
-                    case 'calculate': {
-                        const expr = args[0] || '0';
-                        const result = Function('"use strict"; return (' + expr + ')')();
-                        return 'Result: ' + result;
-                    }
-
-                    case 'translate': {
-                        const text = args[0] || '';
-                        const lang = args[1] || 'English';
-                        return 'Translated to ' + lang + ': ' + text + ' (demo)';
-                    }
-
-                    default:
-                        return 'Tool ' + toolName + ' not recognized';
-                }
-            } catch (error) {
-                return 'Tool error: ' + error.message;
-            }
-        }
-
-        async function fetchWeather(city) {
-            try {
-                const response = await fetch('https://wttr.in/' + encodeURIComponent(city) + '?format=%C+%t');
-                const data = await response.text();
-                return data.trim() || 'Weather data unavailable';
-            } catch {
-                return 'Could not fetch weather. Please try again.';
-            }
-        }
-
-        function addToolMessage(text) {
-            const div = document.createElement('div');
-            div.className = 'tool-msg';
-            div.textContent = text;
-            chatContainer.appendChild(div);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        // ============================================================
-        // STREAMING RESPONSE
-        // ============================================================
-        async function streamResponse(text) {
-            setOrbState(STATE.SPEAKING);
-
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'message assistant-msg';
-            const senderSpan = document.createElement('span');
-            senderSpan.className = 'sender';
-            senderSpan.textContent = 'Zishu';
-            const contentSpan = document.createElement('span');
-            contentSpan.className = 'content';
-            msgDiv.appendChild(senderSpan);
-            msgDiv.appendChild(contentSpan);
-            chatContainer.appendChild(msgDiv);
-
-            let accumulatedText = '';
-            for (let i = 0; i < text.length; i++) {
-                accumulatedText += text[i];
-                contentSpan.textContent = accumulatedText;
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-                await new Promise(r => setTimeout(r, 10 + Math.random() * 8));
-            }
-
-            speakText(text);
-            return msgDiv;
-        }
-
-        // ============================================================
-        // TTS
-        // ============================================================
-        function speakText(text) {
-            try {
-                if (currentUtterance) {
-                    window.speechSynthesis.cancel();
-                }
-
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'hi-IN';
-                utterance.rate = 0.85;
-                utterance.pitch = 1.1;
-                utterance.volume = 1;
-
-                const voices = window.speechSynthesis.getVoices();
-                const femaleVoices = voices.filter(v => 
-                    v.lang.startsWith('hi') && 
-                    (v.name.toLowerCase().includes('female') || 
-                     v.name.toLowerCase().includes('swara') ||
-                     v.name.toLowerCase().includes('lekh'))
-                );
-                if (femaleVoices.length > 0) {
-                    utterance.voice = femaleVoices[0];
-                } else {
-                    const hindiVoice = voices.find(v => v.lang.startsWith('hi'));
-                    if (hindiVoice) utterance.voice = hindiVoice;
-                }
-
-                utterance.onstart = () => {
-                    setOrbState(STATE.SPEAKING);
-                };
-
-                utterance.onend = () => {
-                    currentUtterance = null;
-                    if (!isProcessing) {
-                        setOrbState(STATE.IDLE);
-                        scheduleRestart(1000);
-                    }
-                };
-
-                utterance.onerror = () => {
-                    currentUtterance = null;
-                    if (!isProcessing) {
-                        setOrbState(STATE.IDLE);
-                        scheduleRestart(1000);
-                    }
-                };
-
-                currentUtterance = utterance;
-                window.speechSynthesis.speak(utterance);
-
-            } catch (error) {
-                console.error('TTS error:', error);
-                if (!isProcessing) {
-                    setOrbState(STATE.IDLE);
-                    scheduleRestart(1000);
-                }
-            }
-        }
-
-        // ============================================================
-        // MAIN QUERY HANDLER
-        // ============================================================
-        async function handleUserQuery(query) {
-            if (isProcessing) return;
-            isProcessing = true;
-            clearRestartTimer();
-            setOrbState(STATE.THINKING);
-
-            // Add user message
-            const userDiv = document.createElement('div');
-            userDiv.className = 'message user-msg';
-            const senderSpan = document.createElement('span');
-            senderSpan.className = 'sender';
-            senderSpan.textContent = 'You';
-            const contentSpan = document.createElement('span');
-            contentSpan.className = 'content';
-            contentSpan.textContent = query;
-            userDiv.appendChild(senderSpan);
-            userDiv.appendChild(contentSpan);
-            chatContainer.appendChild(userDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-
-            // ============================================================
-            // STEP 1: LOCAL COMMAND DETECTION
-            // ============================================================
-            const localCommand = detectLocalCommand(query);
-            if (localCommand && localCommand.type === 'open_website') {
-                openWebsiteDirectly(localCommand.value);
-                isProcessing = false;
-                setOrbState(STATE.IDLE);
-                scheduleRestart(1200);
-                return;
-            }
-
-            // ============================================================
-            // STEP 2: LLM FOR COMPLEX QUERIES
-            // ============================================================
-            conversationHistory.push({ role: 'user', content: query });
-
-            try {
-                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + GROQ_API_KEY
-                    },
-                    body: JSON.stringify({
-                        model: GROQ_MODEL,
-                        messages: conversationHistory,
-                        temperature: 0.4,
-                        max_tokens: 500,
-                        stream: false
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error('API Error: ' + response.status);
-                }
-
-                const data = await response.json();
-                let reply = data.choices[0].message.content;
-
-                if (reply.startsWith('TOOL:')) {
-                    const toolResult = await executeTool(reply);
-                    
-                    const toolResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + GROQ_API_KEY
-                        },
-                        body: JSON.stringify({
-                            model: GROQ_MODEL,
-                            messages: [
-                                { role: 'system', content: SYSTEM_PROMPT },
-                                ...conversationHistory,
-                                { role: 'assistant', content: reply },
-                                { role: 'user', content: 'Tool result: ' + toolResult + '. Now respond naturally with a complete, helpful answer.' }
-                            ],
-                            temperature: 0.7,
-                            max_tokens: 500,
-                            stream: false
-                        })
-                    });
-                    const toolData = await toolResponse.json();
-                    const finalReply = toolData.choices[0].message.content;
-                    conversationHistory.push({ role: 'assistant', content: finalReply });
-                    await streamResponse(finalReply);
-                } else {
-                    conversationHistory.push({ role: 'assistant', content: reply });
-                    await streamResponse(reply);
-                }
-
-            } catch (error) {
-                console.error('Error:', error);
-                addToolMessage('Error: ' + error.message);
-                setOrbState(STATE.IDLE);
-            } finally {
-                isProcessing = false;
-                if (state !== STATE.LISTENING) {
-                    setOrbState(STATE.IDLE);
-                    scheduleRestart(1000);
-                }
-            }
-        }
-
-        // ============================================================
-        // KEYBOARD SHORTCUT
-        // ============================================================
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && !e.repeat && !e.target.matches('input, textarea')) {
-                e.preventDefault();
-                toggleListening();
-            }
+        <div class="trust-line">✅ One-time purchase • No monthly subscription</div>
+      </div>
+      <div class="hero-visual">
+        <div class="phone-mock">
+          <div class="phone-screen">
+            <div class="phone-header"><span>ZISHU</span><span>voice</span></div>
+            <div class="orb-area">
+              <div class="orb"></div>
+              <div class="orb-label">Zishu is ready</div>
+              <div style="font-size:0.7rem;color:var(--text-secondary);">Tap to talk</div>
+            </div>
+            <div class="convo-example">
+              <div class="you">You: "What's the weather today?"</div>
+              <div class="zishu">Zishu: "Let me check that for you."</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features">
+      <h2 class="section-title">Built to be useful.</h2>
+      <div class="grid-2">
+        <div class="card"><h4>Voice-first</h4><p>Talk naturally instead of typing every command.</p></div>
+        <div class="card"><h4>AI conversations</h4><p>Ask questions and have natural conversations with Zishu.</p></div>
+        <div class="card"><h4>Voice commands</h4><p>Use your voice to trigger supported actions.</p></div>
+        <div class="card"><h4>App launching</h4><p>Open supported apps and services with simple commands.</p></div>
+        <div class="card"><h4>Reminders & notes</h4><p>Create useful reminders and save notes using your voice.</p></div>
+        <div class="card"><h4>Smart responses</h4><p>Zishu understands conversational context and responds naturally.</p></div>
+        <div class="card"><h4>Personal memory</h4><p>Remember useful preferences when memory is enabled. <span class="badge-coming">Coming soon</span></p></div>
+        <div class="card"><h4>Continuous improvement</h4><p>Zishu is actively evolving with new capabilities. <span class="badge-coming">Coming soon</span></p></div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="howitworks">
+      <h2 class="section-title text-center">How it works</h2>
+      <div class="grid-3">
+        <div class="step"><div class="step-icon">🎤</div><h4>Speak</h4><p style="color:var(--text-secondary)">Tell Zishu what you need.</p></div>
+        <div class="step"><div class="step-icon">🧠</div><h4>Understand</h4><p style="color:var(--text-secondary)">Zishu processes your request and determines what action or response is appropriate.</p></div>
+        <div class="step"><div class="step-icon">⚡</div><h4>Act</h4><p style="color:var(--text-secondary)">Zishu responds or performs the supported action.</p></div>
+      </div>
+    </section>
+
+    <!-- USE CASES -->
+    <section>
+      <h2 class="section-title text-center">Just say what you need.</h2>
+      <div class="use-case-grid">
+        <div class="use-card">"Zishu, YouTube kholo."</div>
+        <div class="use-card">"Zishu, ek note save karo."</div>
+        <div class="use-card">"Zishu, kal 7 baje reminder laga do."</div>
+        <div class="use-card">"Zishu, mujhe weather batao."</div>
+        <div class="use-card">"Zishu, 125 × 48 calculate karo."</div>
+      </div>
+    </section>
+
+    <!-- PRICING + PURCHASE -->
+    <section id="purchase">
+      <h2 class="section-title text-center">Get Zishu</h2>
+      <div class="pricing-card">
+        <div class="price-label">One-time purchase</div>
+        <div class="price">₹99</div>
+        <ul>
+          <li>Android app access</li><li>Zishu AI assistant</li><li>Voice interaction</li><li>Supported voice commands</li><li>Future updates included according to policy</li>
+        </ul>
+        <button class="btn-primary btn-block" id="showPurchase">Get Zishu — ₹99</button>
+        <div style="margin-top:0.8rem;color:var(--text-secondary);font-size:0.85rem;">No monthly subscription.</div>
+      </div>
+
+      <div id="purchaseFlow" class="purchase-box hidden">
+        <h3>Pay ₹99 using UPI</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem;">UPI ID: 7654613259@fam (QR placeholder)</p>
+        <div style="background:var(--surface2);border-radius:12px;padding:1rem;border:1px solid var(--border);margin:1rem 0;text-align:center;">📱 Scan QR or pay to zishu@upi</div>
+        <label>Transaction / UPI Reference ID</label>
+        <input type="text" id="txnId" placeholder="e.g. 1234567890" />
+        <button class="btn-primary btn-block" id="submitPayment">Submit Payment</button>
+        <div id="paymentStatus" class="status">Payment verification pending</div>
+        <div id="downloadArea" class="hidden" style="margin-top:1rem;">
+          <p style="color:var(--accent);font-weight:600;">✅ Payment verified</p>
+          <a href="#" class="btn-primary btn-block" style="text-align:center;">Download APK</a>
+          <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.5rem;">Your payment will be verified before download access is enabled.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECURITY & PRIVACY -->
+    <section>
+      <h2 class="section-title">Built with privacy in mind.</h2>
+      <p style="color:var(--text-secondary);max-width:600px;">Zishu uses a separate backend to handle AI requests so sensitive API credentials are not embedded directly in the client application.</p>
+      <div style="display:flex;gap:2rem;margin-top:1.5rem;flex-wrap:wrap;">
+        <a href="#" style="color:var(--accent);">Privacy Policy</a>
+        <a href="#" style="color:var(--accent);">Terms of Service</a>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq">
+      <h2 class="section-title">FAQ</h2>
+      <div id="faqContainer">
+        <div class="faq-item"><div class="faq-question">What is Zishu? <span>+</span></div><div class="faq-answer">Zishu is a personal AI voice assistant for Android that responds to natural voice commands.</div></div>
+        <div class="faq-item"><div class="faq-question">Is Zishu free? <span>+</span></div><div class="faq-answer">Zishu Android is available through a one-time purchase of ₹99.</div></div>
+        <div class="faq-item"><div class="faq-question">Is this a subscription? <span>+</span></div><div class="faq-answer">No. The current purchase is a one-time ₹99 payment.</div></div>
+        <div class="faq-item"><div class="faq-question">Which devices are supported? <span>+</span></div><div class="faq-answer">Android devices running version 8.0+.</div></div>
+        <div class="faq-item"><div class="faq-question">How do I receive the APK? <span>+</span></div><div class="faq-answer">After payment verification, you can download the APK from this page.</div></div>
+        <div class="faq-item"><div class="faq-question">How does payment verification work? <span>+</span></div><div class="faq-answer">You submit your UPI reference ID; we verify it manually before enabling download.</div></div>
+        <div class="faq-item"><div class="faq-question">Can I reinstall Zishu? <span>+</span></div><div class="faq-answer">Yes, you can reinstall using the same APK. Keep your purchase reference.</div></div>
+        <div class="faq-item"><div class="faq-question">What happens if I change my phone? <span>+</span></div><div class="faq-answer">You can install Zishu on your new device using the same APK.</div></div>
+        <div class="faq-item"><div class="faq-question">Is internet required? <span>+</span></div><div class="faq-answer">Yes, Zishu requires an internet connection for AI processing.</div></div>
+        <div class="faq-item"><div class="faq-question">How can I contact support? <span>+</span></div><div class="faq-answer">Email us at support@example.com</div></div>
+        <div class="faq-item"><div class="faq-question">Are future updates included? <span>+</span></div><div class="faq-answer">Updates are included according to the product's update policy.</div></div>
+        <div class="faq-item"><div class="faq-question">What data does Zishu collect? <span>+</span></div><div class="faq-answer">Zishu collects voice input solely to process your requests; no personal data is stored without consent.</div></div>
+      </div>
+    </section>
+
+    <!-- SUPPORT -->
+    <section id="support">
+      <h2 class="section-title">Need help?</h2>
+      <p style="color:var(--text-secondary)">Having trouble with installation, activation or Zishu?</p>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.2rem;">
+        <a href="mailto:support@example.com" class="btn-secondary">Contact Support</a>
+        <a href="#" class="btn-secondary">Report a Problem</a>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div><span style="font-weight:700;">ZISHU</span> <span style="color:var(--text-secondary)">Your voice. Your assistant.</span></div>
+      <div class="footer-links">
+        <a href="#features">Features</a><a href="#howitworks">How it works</a><a href="#faq">FAQ</a><a href="#support">Support</a><a href="#">Privacy</a><a href="#">Terms</a>
+      </div>
+      <div style="color:var(--text-secondary);">© 2026 Zishu. All rights reserved.</div>
+    </footer>
+  </div>
+
+  <script>
+    (function() {
+      // Theme
+      const themeToggle = document.getElementById('themeToggle');
+      const html = document.documentElement;
+      const savedTheme = localStorage.getItem('zishu-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      html.setAttribute('data-theme', savedTheme);
+      themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '☾';
+
+      themeToggle.addEventListener('click', function() {
+        const current = html.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('zishu-theme', next);
+        themeToggle.textContent = next === 'dark' ? '☀️' : '☾';
+      });
+
+      // Nav scroll
+      const nav = document.getElementById('navbar');
+      window.addEventListener('scroll', function() {
+        nav.classList.toggle('scrolled', window.scrollY > 20);
+      });
+
+      // Hamburger
+      const hamburger = document.getElementById('hamburger');
+      const navLinks = document.getElementById('navLinks');
+      hamburger.addEventListener('click', function() {
+        navLinks.classList.toggle('open');
+      });
+
+      // FAQ accordion
+      document.querySelectorAll('.faq-item').forEach(item => {
+        item.querySelector('.faq-question').addEventListener('click', function() {
+          item.classList.toggle('open');
+          const span = this.querySelector('span');
+          span.textContent = item.classList.contains('open') ? '−' : '+';
         });
+      });
 
-        // ============================================================
-        // PRELOAD TTS VOICES
-        // ============================================================
-        if (window.speechSynthesis) {
-            window.speechSynthesis.getVoices();
-            window.speechSynthesis.onvoiceschanged = () => {
-                window.speechSynthesis.getVoices();
-            };
+      // Purchase flow
+      const showPurchaseBtn = document.getElementById('showPurchase');
+      const purchaseFlow = document.getElementById('purchaseFlow');
+      const submitBtn = document.getElementById('submitPayment');
+      const txnInput = document.getElementById('txnId');
+      const statusDiv = document.getElementById('paymentStatus');
+      const downloadArea = document.getElementById('downloadArea');
+
+      showPurchaseBtn.addEventListener('click', function() {
+        purchaseFlow.classList.toggle('hidden');
+        if (!purchaseFlow.classList.contains('hidden')) {
+          purchaseFlow.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+      });
 
-        // ============================================================
-        // INIT
-        // ============================================================
-        setOrbState(STATE.IDLE);
-        orbSub.textContent = 'Tap orb to start';
-
-        const welcomeDiv = document.createElement('div');
-        welcomeDiv.className = 'message assistant-msg';
-        const ws = document.createElement('span');
-        ws.className = 'sender';
-        ws.textContent = 'Zishu';
-        const wc = document.createElement('span');
-        wc.className = 'content';
-        wc.textContent = 'Namaste! Main Zishu hoon. Orb dabayein aur baat karein. Main Hindi aur English dono samajhti hoon.';
-        welcomeDiv.appendChild(ws);
-        welcomeDiv.appendChild(wc);
-        chatContainer.appendChild(welcomeDiv);
-
-        console.log('🚀 Zishu AI v2.8 - Hindi + English Aliases');
-        console.log('📝 SITE ALIASES:', Object.keys(SITE_ALIASES).join(', '));
-        console.log('🎯 Press Space or tap orb to start');
-    </script>
+      submitBtn.addEventListener('click', function() {
+        const txn = txnInput.value.trim();
+        if (!txn) { statusDiv.textContent = '⚠️ Please enter a transaction ID.'; return; }
+        statusDiv.textContent = '⏳ Checking...';
+        setTimeout(() => {
+          statusDiv.textContent = '✅ Payment submitted. Verification pending.';
+          setTimeout(() => {
+            statusDiv.textContent = '✅ Payment verified (manual)';
+            downloadArea.classList.remove('hidden');
+          }, 1800);
+        }, 1200);
+      });
+    })();
+  </script>
 </body>
 </html>
