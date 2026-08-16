@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zishu AI - Voice Assistant</title>
+    <title>Zishu AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -218,18 +218,6 @@
             font-weight: 450;
         }
 
-        .quick-reply {
-            background: #3b82f6;
-            color: white;
-            margin: 6px auto;
-            padding: 6px 16px;
-            border-radius: 30px;
-            font-size: 13px;
-            text-align: center;
-            max-width: 85%;
-            font-weight: 450;
-        }
-
         #footer {
             display: flex;
             justify-content: space-between;
@@ -318,7 +306,7 @@
 
     <div id="footer">
         <span>private · local</span>
-        <span>v2.5</span>
+        <span>v2.6</span>
     </div>
 
     <script>
@@ -329,13 +317,20 @@
         const GROQ_MODEL = 'llama-3.1-8b-instant';
 
         // ============================================================
-        // STATE
+        // STATE MACHINE
         // ============================================================
-        let state = 'idle';
+        const STATE = {
+            IDLE: 'idle',
+            LISTENING: 'listening',
+            THINKING: 'thinking',
+            SPEAKING: 'speaking'
+        };
+
+        let state = STATE.IDLE;
         let recognition = null;
         let isProcessing = false;
         let currentUtterance = null;
-        let isManualMode = false;
+        let restartTimer = null;
 
         // ============================================================
         // SYSTEM PROMPT
@@ -393,7 +388,7 @@
             orbStatus.textContent = status;
             orbSub.textContent = sub;
             statusBadge.textContent = badge;
-            statusBadge.className = newState === 'idle' ? '' : 'active';
+            statusBadge.className = newState === STATE.IDLE ? '' : 'active';
         }
 
         orb.addEventListener('click', toggleListening);
@@ -407,15 +402,15 @@
                 return;
             }
 
-            if (state === 'idle' || state === 'speaking') {
+            if (state === STATE.IDLE || state === STATE.SPEAKING) {
                 startListening();
-            } else if (state === 'listening') {
+            } else if (state === STATE.LISTENING) {
                 stopListening();
             }
         }
 
         // ============================================================
-        // SPEECH RECOGNITION
+        // SPEECH RECOGNITION - STABLE VERSION
         // ============================================================
         function initSpeechRecognition() {
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -430,16 +425,15 @@
             rec.maxAlternatives = 1;
 
             rec.onstart = () => {
-                setOrbState('listening');
-                isManualMode = true;
+                setOrbState(STATE.LISTENING);
             };
 
             rec.onresult = (event) => {
                 const transcript = event.results[0][0].transcript.trim();
                 if (transcript.length > 0) {
-                    handleUserQuery(transcript);
-                } else {
+                    // Stop listening immediately when user speaks
                     stopListening();
+                    handleUserQuery(transcript);
                 }
             };
 
@@ -447,17 +441,23 @@
                 console.error('Speech error:', event.error);
                 if (event.error === 'not-allowed') {
                     orbStatus.textContent = 'Microphone access denied';
+                    setOrbState(STATE.IDLE);
                 } else if (event.error === 'no-speech') {
                     orbSub.textContent = 'No speech detected. Try again.';
+                    // Controlled restart
+                    scheduleRestart(800);
                 } else {
                     orbSub.textContent = 'Error: ' + event.error;
+                    scheduleRestart(1000);
                 }
-                stopListening();
             };
 
             rec.onend = () => {
-                if (!isProcessing) {
-                    setOrbState('idle');
+                // Only restart if we're still supposed to be listening
+                if (state === STATE.LISTENING && !isProcessing) {
+                    scheduleRestart(300);
+                } else if (!isProcessing && state !== STATE.SPEAKING) {
+                    setOrbState(STATE.IDLE);
                 }
             };
 
@@ -465,34 +465,46 @@
         }
 
         function startListening() {
+            clearTimeout(restartTimer);
             if (!recognition) {
                 recognition = initSpeechRecognition();
                 if (!recognition) return;
             }
             try {
                 recognition.start();
-                setOrbState('listening');
+                setOrbState(STATE.LISTENING);
             } catch (e) {
+                // If already started, stop and restart
                 try {
                     recognition.stop();
                     setTimeout(() => {
                         recognition.start();
-                        setOrbState('listening');
+                        setOrbState(STATE.LISTENING);
                     }, 200);
                 } catch (ex) {
                     console.error('Failed to start:', ex);
-                    setOrbState('idle');
+                    setOrbState(STATE.IDLE);
                 }
             }
         }
 
         function stopListening() {
+            clearTimeout(restartTimer);
             if (recognition) {
                 try { recognition.stop(); } catch (e) {}
             }
             if (!isProcessing) {
-                setOrbState('idle');
+                setOrbState(STATE.IDLE);
             }
+        }
+
+        function scheduleRestart(delay) {
+            clearTimeout(restartTimer);
+            restartTimer = setTimeout(() => {
+                if (state === STATE.LISTENING || state === STATE.IDLE) {
+                    startListening();
+                }
+            }, delay);
         }
 
         // ============================================================
@@ -523,39 +535,25 @@
         };
 
         // ============================================================
-        // LOCAL COMMAND DETECTION (NO LLM DEPENDENCY)
+        // LOCAL COMMAND DETECTION - ROBUST VERSION
         // ============================================================
         function detectLocalCommand(query) {
-            const lowerQuery = query.toLowerCase().trim();
-
-            // Website patterns
-            const openPatterns = [
-                /(open|kholo|khol|chalao|start|launch)\s+(\w+)/,
-                /(\w+)\s+(open|kholo|khol|chalao|start|launch)/,
-                /(youtube|google|gmail|github|reddit|twitter|instagram|whatsapp|maps|drive|docs|translate|facebook|linkedin|spotify|netflix|amazon|flipkart|zomato|swiggy)\s+(kholo|khol|open)/,
-                /^(youtube|google|gmail|github|reddit|twitter|instagram|whatsapp|maps|drive|docs|translate|facebook|linkedin|spotify|netflix|amazon|flipkart|zomato|swiggy)$/
+            const q = query.toLowerCase().trim();
+            const sites = Object.keys(WEBSITE_MAP);
+            const openWords = [
+                'open', 'kholo', 'khol', 'chalao', 'start', 'launch',
+                'open karo', 'khol do', 'kholo na', 'khol de', 'kholo ji'
             ];
 
-            for (const pattern of openPatterns) {
-                const match = lowerQuery.match(pattern);
-                if (match) {
-                    let site = match[2] || match[1] || match[0];
-                    site = site.replace(/[^a-z]/g, '');
-                    if (WEBSITE_MAP[site]) {
-                        return {
-                            type: 'open_website',
-                            value: site
-                        };
-                    }
-                }
-            }
-
-            // Check if it's a direct website name
-            for (const [key] of Object.entries(WEBSITE_MAP)) {
-                if (lowerQuery.includes(key)) {
+            for (const site of sites) {
+                if (!q.includes(site)) continue;
+                
+                // Check if user wants to open this site
+                const wantsOpen = openWords.some(word => q.includes(word)) || q === site;
+                if (wantsOpen) {
                     return {
                         type: 'open_website',
-                        value: key
+                        value: site
                     };
                 }
             }
@@ -564,7 +562,7 @@
         }
 
         // ============================================================
-        // DIRECT WEBSITE NAVIGATION (NO POP-UP BLOCKING)
+        // DIRECT WEBSITE NAVIGATION - IMMEDIATE
         // ============================================================
         function openWebsiteDirectly(siteName) {
             const url = WEBSITE_MAP[siteName];
@@ -575,11 +573,8 @@
 
             addToolMessage('Opening ' + siteName + '...');
             
-            // CRITICAL FIX: Use location.href instead of window.open()
-            setTimeout(() => {
-                window.location.href = url;
-            }, 300);
-
+            // CRITICAL: Navigate immediately, no setTimeout
+            window.location.href = url;
             return true;
         }
 
@@ -664,7 +659,7 @@
         // STREAMING RESPONSE
         // ============================================================
         async function streamResponse(text) {
-            setOrbState('speaking');
+            setOrbState(STATE.SPEAKING);
 
             const msgDiv = document.createElement('div');
             msgDiv.className = 'message assistant-msg';
@@ -719,17 +714,24 @@
                 }
 
                 utterance.onstart = () => {
-                    setOrbState('speaking');
+                    setOrbState(STATE.SPEAKING);
                 };
 
                 utterance.onend = () => {
                     currentUtterance = null;
-                    if (!isProcessing) setOrbState('idle');
+                    if (!isProcessing) {
+                        setOrbState(STATE.IDLE);
+                        // Auto-restart listening after speaking
+                        scheduleRestart(1200);
+                    }
                 };
 
                 utterance.onerror = () => {
                     currentUtterance = null;
-                    if (!isProcessing) setOrbState('idle');
+                    if (!isProcessing) {
+                        setOrbState(STATE.IDLE);
+                        scheduleRestart(1000);
+                    }
                 };
 
                 currentUtterance = utterance;
@@ -737,17 +739,21 @@
 
             } catch (error) {
                 console.error('TTS error:', error);
-                if (!isProcessing) setOrbState('idle');
+                if (!isProcessing) {
+                    setOrbState(STATE.IDLE);
+                    scheduleRestart(1000);
+                }
             }
         }
 
         // ============================================================
-        // MAIN QUERY HANDLER - WITH LOCAL COMMAND DETECTION
+        // MAIN QUERY HANDLER
         // ============================================================
         async function handleUserQuery(query) {
             if (isProcessing) return;
             isProcessing = true;
-            setOrbState('thinking');
+            clearTimeout(restartTimer);
+            setOrbState(STATE.THINKING);
 
             // Add user message
             const userDiv = document.createElement('div');
@@ -764,21 +770,25 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
             // ============================================================
-            // STEP 1: LOCAL COMMAND DETECTION (NO LLM WAIT)
+            // STEP 1: LOCAL COMMAND DETECTION - IMMEDIATE EXECUTION
             // ============================================================
             const localCommand = detectLocalCommand(query);
-            if (localCommand) {
-                if (localCommand.type === 'open_website') {
-                    // OPEN DIRECTLY - IMMEDIATE RESPONSE
-                    const success = openWebsiteDirectly(localCommand.value);
-                    if (success) {
-                        const reply = 'Main ' + localCommand.value + ' khol rahi hoon.';
-                        conversationHistory.push({ role: 'assistant', content: reply });
-                        await streamResponse(reply);
-                        isProcessing = false;
-                        if (state !== 'listening') setOrbState('idle');
-                        return;
+            if (localCommand && localCommand.type === 'open_website') {
+                // Navigate IMMEDIATELY - no LLM wait
+                const success = openWebsiteDirectly(localCommand.value);
+                if (success) {
+                    const reply = 'Main ' + localCommand.value + ' khol rahi hoon.';
+                    conversationHistory.push({ role: 'assistant', content: reply });
+                    
+                    // Stream confirmation (website already opened)
+                    await streamResponse(reply);
+                    
+                    isProcessing = false;
+                    if (state !== STATE.LISTENING) {
+                        setOrbState(STATE.IDLE);
+                        scheduleRestart(1000);
                     }
+                    return;
                 }
             }
 
@@ -844,10 +854,13 @@
             } catch (error) {
                 console.error('Error:', error);
                 addToolMessage('Error: ' + error.message);
-                setOrbState('idle');
+                setOrbState(STATE.IDLE);
             } finally {
                 isProcessing = false;
-                if (state !== 'listening') setOrbState('idle');
+                if (state !== STATE.LISTENING) {
+                    setOrbState(STATE.IDLE);
+                    scheduleRestart(1000);
+                }
             }
         }
 
@@ -872,9 +885,9 @@
         }
 
         // ============================================================
-        // INIT
+        // INIT - AUTO START AFTER 1 SECOND
         // ============================================================
-        setOrbState('idle');
+        setOrbState(STATE.IDLE);
 
         const welcomeDiv = document.createElement('div');
         welcomeDiv.className = 'message assistant-msg';
@@ -888,7 +901,14 @@
         welcomeDiv.appendChild(wc);
         chatContainer.appendChild(welcomeDiv);
 
-        console.log('Zishu AI v2.5 - Local Commands + Direct Navigation');
+        // Auto-start after welcome
+        setTimeout(() => {
+            if (state === STATE.IDLE) {
+                startListening();
+            }
+        }, 1500);
+
+        console.log('Zishu AI v2.6 - Stable Auto-Start + Instant Commands');
         console.log('Websites:', Object.keys(WEBSITE_MAP).join(', '));
         console.log('Press Space to toggle listening');
     </script>
