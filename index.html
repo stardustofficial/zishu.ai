@@ -22,7 +22,14 @@
             z-index: 9999;
             transition: opacity 0.8s ease, transform 0.8s ease;
         }
-        #splash.hide { opacity: 0; transform: scale(1.05); pointer-events: none; }
+        #splash.hide {
+            opacity: 0;
+            transform: scale(1.05);
+            pointer-events: none;
+        }
+        #splash.hidden {
+            display: none !important;
+        }
         #splash-logo {
             width: 120px; height: 120px;
             border-radius: 50%;
@@ -54,6 +61,7 @@
         #splash-loader-bar {
             height: 100%; width: 0%;
             background: linear-gradient(90deg, #3b82f6, #7b6cf7);
+            border-radius: 4px;
             animation: loadBar 2.5s ease-in-out forwards;
         }
         @keyframes loadBar { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
@@ -175,7 +183,7 @@
             color: white;
         }
 
-        /* ===== ORB - BIGGER ===== */
+        /* ===== ORB ===== */
         #orb-container {
             display: flex;
             flex-direction: column;
@@ -275,7 +283,7 @@
             font-weight: 400;
         }
 
-        /* ===== CHAT - SMALLER ===== */
+        /* ===== CHAT ===== */
         #chat-wrapper {
             flex: 1;
             min-height: 0;
@@ -434,28 +442,37 @@
 
     <script>
         // ============================================================
-        // SPLASH
+        // SPLASH - FIXED
         // ============================================================
-        setTimeout(() => {
-            document.getElementById('splash').classList.add('hide');
-            setTimeout(() => {
-                document.getElementById('splash').style.display = 'none';
+        function hideSplash() {
+            const splash = document.getElementById('splash');
+            splash.classList.add('hide');
+            // Force hide after transition
+            setTimeout(function() {
+                splash.style.display = 'none';
+                splash.classList.add('hidden');
+                // Start app
                 preloadTTS();
                 setTimeout(startListening, 400);
             }, 800);
-        }, 2800);
+        }
+
+        // Wait for loader animation to complete, then hide splash
+        setTimeout(hideSplash, 3000);
 
         function preloadTTS() {
             try {
                 if (window.speechSynthesis) {
-                    const v = window.speechSynthesis.getVoices();
+                    var v = window.speechSynthesis.getVoices();
                     if (v.length === 0) {
-                        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+                        window.speechSynthesis.onvoiceschanged = function() {
+                            window.speechSynthesis.getVoices();
+                        };
                     }
-                    const s = new SpeechSynthesisUtterance(' ');
+                    var s = new SpeechSynthesisUtterance(' ');
                     s.volume = 0;
                     window.speechSynthesis.speak(s);
-                    setTimeout(() => window.speechSynthesis.cancel(), 100);
+                    setTimeout(function() { window.speechSynthesis.cancel(); }, 100);
                 }
             } catch (e) {}
         }
@@ -463,38 +480,32 @@
         // ============================================================
         // CONFIG
         // ============================================================
-        const GROQ_API_KEY = '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';
-        const GROQ_MODEL = 'llama-3.1-8b-instant';
-        const WAKE_WORDS = ['hey zishu', 'zishu', 'ok zishu', 'hello zishu'];
+        var GROQ_API_KEY = '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';
+        var GROQ_MODEL = 'llama-3.1-8b-instant';
+        var WAKE_WORDS = ['hey zishu', 'zishu', 'ok zishu', 'hello zishu'];
 
         // ============================================================
         // STATE
         // ============================================================
-        const STATE = { IDLE: 'idle', LISTENING: 'listening', THINKING: 'thinking', SPEAKING: 'speaking' };
-        let state = STATE.IDLE;
-        let recognition = null;
-        let isProcessing = false;
-        let currentUtterance = null;
-        let restartTimer = null;
-        let wakeWordDetected = false;
-        let conversationHistory = [];
+        var STATE = { IDLE: 'idle', LISTENING: 'listening', THINKING: 'thinking', SPEAKING: 'speaking' };
+        var state = STATE.IDLE;
+        var recognition = null;
+        var isProcessing = false;
+        var currentUtterance = null;
+        var restartTimer = null;
+        var isRestartScheduled = false;
+        var wakeWordDetected = false;
+        var conversationHistory = [];
 
         // ============================================================
         // SYSTEM PROMPT - CREATOR INFO
         // ============================================================
-        const SYSTEM_PROMPT = `You are Zishu, a female voice assistant created by Zishan, the founder of StardustOfficial.
-
-        IMPORTANT - If anyone asks about your creator:
-        - "Tumhe kisne banaya?" → "Mujhe Zishan ne banaya hai, jo StardustOfficial ke founder hain."
-        - "Zishan ki company ka naam kya hai?" → "StardustOfficial."
-        - "Who created you?" → "Zishan, the founder of StardustOfficial."
-
-        Always respond in Hinglish - mix Hindi and English naturally. Use feminine verb endings: "kar sakti hoon", "bol sakti hoon". Be warm and helpful.`;
+        var SYSTEM_PROMPT = 'You are Zishu, a female voice assistant created by Zishan, the founder of StardustOfficial.\n\nIMPORTANT - If anyone asks about your creator:\n- "Tumhe kisne banaya?" → "Mujhe Zishan ne banaya hai, jo StardustOfficial ke founder hain."\n- "Zishan ki company ka naam kya hai?" → "StardustOfficial."\n- "Who created you?" → "Zishan, the founder of StardustOfficial."\n\nAlways respond in Hinglish - mix Hindi and English naturally. Use feminine verb endings: "kar sakti hoon", "bol sakti hoon". Be warm and helpful.';
 
         // ============================================================
         // WEBSITE MAP
         // ============================================================
-        const SITE_ALIASES = {
+        var SITE_ALIASES = {
             youtube: ['youtube', 'you tube', 'यूट्यूब', 'yt'],
             instagram: ['instagram', 'insta', 'इंस्टाग्राम', 'ig'],
             facebook: ['facebook', 'फेसबुक', 'fb'],
@@ -537,7 +548,7 @@
             wifi: ['wifi', 'wi-fi', 'वाईफाई']
         };
 
-        const WEBSITE_MAP = {
+        var WEBSITE_MAP = {
             youtube: 'https://youtube.com', instagram: 'https://instagram.com',
             facebook: 'https://facebook.com', twitter: 'https://twitter.com',
             whatsapp: 'https://web.whatsapp.com', telegram: 'https://web.telegram.org',
@@ -558,7 +569,7 @@
             freefire: 'https://freefire.com', bgmi: 'https://bgmi.com'
         };
 
-        const OPEN_WORDS = [
+        var OPEN_WORDS = [
             'open', 'kholo', 'khol', 'chalao', 'start', 'launch',
             'go to', 'show', 'show me', 'खोलो', 'खोल', 'चलाओ',
             'open karo', 'khol do', 'khol de', 'शुरू करो',
@@ -568,19 +579,19 @@
         // ============================================================
         // DOM REFS
         // ============================================================
-        const orb = document.getElementById('orb');
-        const orbStatus = document.getElementById('orb-status');
-        const orbSub = document.getElementById('orb-sub');
-        const chatContainer = document.getElementById('chat-container');
-        const themeToggle = document.getElementById('theme-toggle');
-        const statusBadge = document.getElementById('status-badge');
-        const waveform = document.getElementById('waveform');
+        var orb = document.getElementById('orb');
+        var orbStatus = document.getElementById('orb-status');
+        var orbSub = document.getElementById('orb-sub');
+        var chatContainer = document.getElementById('chat-container');
+        var themeToggle = document.getElementById('theme-toggle');
+        var statusBadge = document.getElementById('status-badge');
+        var waveform = document.getElementById('waveform');
 
         // ============================================================
         // THEME
         // ============================================================
-        let isDark = false;
-        themeToggle.addEventListener('click', () => {
+        var isDark = false;
+        themeToggle.addEventListener('click', function() {
             isDark = !isDark;
             document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
             themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
@@ -592,21 +603,21 @@
         function setOrbState(newState) {
             state = newState;
             orb.className = newState;
-            const map = {
+            var map = {
                 idle: ['Zishu is ready', 'Tap orb or say "Hey Zishu"', '● Idle'],
                 listening: ['Listening...', 'Speak now', '● Listening'],
                 thinking: ['Thinking...', 'Processing...', '◉ Thinking'],
                 speaking: ['Speaking...', 'Zishu is responding', '● Speaking']
             };
-            const [status, sub, badge] = map[newState] || map.idle;
-            orbStatus.textContent = status;
-            orbSub.textContent = sub;
-            statusBadge.textContent = badge;
+            var data = map[newState] || map.idle;
+            orbStatus.textContent = data[0];
+            orbSub.textContent = data[1];
+            statusBadge.textContent = data[2];
             statusBadge.className = newState === STATE.IDLE ? '' : 'active';
             waveform.className = 'waveform' + (newState !== STATE.IDLE ? ' active' : '');
         }
 
-        orb.addEventListener('click', () => {
+        orb.addEventListener('click', function() {
             if (isProcessing) return;
             if (state === STATE.IDLE || state === STATE.SPEAKING) {
                 wakeWordDetected = true;
@@ -621,49 +632,47 @@
         // SPEECH RECOGNITION
         // ============================================================
         function initSpeechRecognition() {
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SR) { orbStatus.textContent = 'Browser not supported'; return null; }
-            const rec = new SR();
+            var rec = new SR();
             rec.lang = 'hi-IN';
             rec.continuous = true;
             rec.interimResults = true;
             rec.maxAlternatives = 1;
 
-            rec.onstart = () => {
+            rec.onstart = function() {
                 clearRestartTimer();
                 setOrbState(STATE.LISTENING);
             };
 
-            rec.onresult = (event) => {
-                let finalText = '';
-                let interimText = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const t = event.results[i][0].transcript.toLowerCase().trim();
+            rec.onresult = function(event) {
+                var finalText = '';
+                var interimText = '';
+                for (var i = event.resultIndex; i < event.results.length; i++) {
+                    var t = event.results[i][0].transcript.toLowerCase().trim();
                     if (event.results[i].isFinal) finalText = t;
                     else interimText = t;
                 }
 
-                const text = finalText || interimText;
+                var text = finalText || interimText;
                 if (!text) return;
 
-                // Wake word check
-                const hasWake = WAKE_WORDS.some(w => text.includes(w));
+                var hasWake = WAKE_WORDS.some(function(w) { return text.indexOf(w) !== -1; });
                 if (hasWake && !wakeWordDetected && !isProcessing) {
                     wakeWordDetected = true;
-                    const query = text.replace(new RegExp(WAKE_WORDS.join('|'), 'gi'), '').trim();
+                    var query = text.replace(new RegExp(WAKE_WORDS.join('|'), 'gi'), '').trim();
                     if (query.length > 0) {
                         stopListening();
                         handleUserQuery(query);
                     } else {
                         orbSub.textContent = 'Listening for command...';
-                        setTimeout(() => {
+                        setTimeout(function() {
                             wakeWordDetected = false;
                             if (state === STATE.IDLE) startListening();
                         }, 3000);
                     }
                 } else if (wakeWordDetected && !isProcessing && finalText) {
-                    // User already said wake word, process this as command
-                    const query = text.replace(new RegExp(WAKE_WORDS.join('|'), 'gi'), '').trim();
+                    var query = text.replace(new RegExp(WAKE_WORDS.join('|'), 'gi'), '').trim();
                     if (query.length > 0) {
                         stopListening();
                         handleUserQuery(query);
@@ -671,7 +680,7 @@
                 }
             };
 
-            rec.onerror = (event) => {
+            rec.onerror = function(event) {
                 console.error('Speech error:', event.error);
                 if (event.error === 'not-allowed') {
                     orbStatus.textContent = 'Microphone access denied';
@@ -683,7 +692,7 @@
                 }
             };
 
-            rec.onend = () => {
+            rec.onend = function() {
                 if (!isProcessing && state !== STATE.SPEAKING) {
                     setOrbState(STATE.IDLE);
                     if (!isRestartScheduled) scheduleRestart(500);
@@ -693,7 +702,6 @@
             return rec;
         }
 
-        let isRestartScheduled = false;
         function startListening() {
             clearRestartTimer();
             if (!recognition) {
@@ -705,7 +713,7 @@
                 setOrbState(STATE.LISTENING);
             } catch (e) {
                 try { recognition.stop(); } catch (ex) {}
-                setTimeout(() => { try { recognition.start(); } catch (ex) {} }, 200);
+                setTimeout(function() { try { recognition.start(); } catch (ex) {} }, 200);
             }
         }
 
@@ -720,7 +728,7 @@
         function scheduleRestart(delay) {
             clearRestartTimer();
             isRestartScheduled = true;
-            restartTimer = setTimeout(() => {
+            restartTimer = setTimeout(function() {
                 isRestartScheduled = false;
                 if (state === STATE.IDLE || state === STATE.LISTENING) {
                     startListening();
@@ -728,7 +736,6 @@
             }, delay);
         }
 
-        let restartTimer = null;
         function clearRestartTimer() {
             isRestartScheduled = false;
             if (restartTimer) { clearTimeout(restartTimer); restartTimer = null; }
@@ -738,53 +745,56 @@
         // INTENT SYSTEM
         // ============================================================
         function detectIntent(query) {
-            const q = query.toLowerCase().trim();
+            var q = query.toLowerCase().trim();
 
             // Interrupt
-            if (['stop', 'ruk jao', 'bass', 'रुको', 'हट'].some(w => q.includes(w))) {
+            if (['stop', 'ruk jao', 'bass', 'रुको', 'हट'].some(function(w) { return q.indexOf(w) !== -1; })) {
                 return { type: 'interrupt' };
             }
 
             // Open app/website
-            for (const [site, aliases] of Object.entries(SITE_ALIASES)) {
-                if (aliases.some(a => q.includes(a))) {
-                    const wantsOpen = OPEN_WORDS.some(w => q.includes(w)) || aliases.some(a => q === a) || q === site;
+            for (var site in SITE_ALIASES) {
+                var aliases = SITE_ALIASES[site];
+                var found = aliases.some(function(a) { return q.indexOf(a) !== -1; });
+                if (found) {
+                    var wantsOpen = OPEN_WORDS.some(function(w) { return q.indexOf(w) !== -1; }) || 
+                                   aliases.some(function(a) { return q === a; }) || q === site;
                     if (wantsOpen) return { type: 'open_app', value: site };
                 }
             }
 
             // Weather
-            if (q.includes('weather') || q.includes('mausam') || q.includes('मौसम')) {
-                const m = q.match(/(?:weather|mausam|मौसम)\s+(?:in|of|for|का|की|में)?\s*([a-zA-Z\u0900-\u097F\s]+)/);
+            if (q.indexOf('weather') !== -1 || q.indexOf('mausam') !== -1 || q.indexOf('मौसम') !== -1) {
+                var m = q.match(/(?:weather|mausam|मौसम)\s+(?:in|of|for|का|की|में)?\s*([a-zA-Z\u0900-\u097F\s]+)/);
                 return { type: 'weather', value: m ? m[1].trim() : 'Delhi' };
             }
 
             // Time
-            if (q.includes('time') || q.includes('samay') || q.includes('समय') || q.includes('baje')) {
+            if (q.indexOf('time') !== -1 || q.indexOf('samay') !== -1 || q.indexOf('समय') !== -1 || q.indexOf('baje') !== -1) {
                 return { type: 'time' };
             }
 
             // Calculate
-            if (q.includes('calculate') || q.includes('solve') || q.includes('हल')) {
-                const e = q.replace(/calculate|solve|हल|करो|karo/g, '').trim();
+            if (q.indexOf('calculate') !== -1 || q.indexOf('solve') !== -1 || q.indexOf('हल') !== -1) {
+                var e = q.replace(/calculate|solve|हल|करो|karo/g, '').trim();
                 if (e) return { type: 'calculate', value: e };
             }
 
             // Reminder
-            if (q.includes('reminder') || q.includes('remind') || q.includes('याद')) {
-                const m = q.match(/(?:reminder|remind|याद)\s+(?:me|mujhe|मुझे)?\s*(.+)/i);
+            if (q.indexOf('reminder') !== -1 || q.indexOf('remind') !== -1 || q.indexOf('याद') !== -1) {
+                var m = q.match(/(?:reminder|remind|याद)\s+(?:me|mujhe|मुझे)?\s*(.+)/i);
                 return { type: 'reminder', value: m ? m[1].trim() : q };
             }
 
             // Note
-            if (q.includes('note') || q.includes('save') || q.includes('लिखो') || q.includes('नोट')) {
-                const m = q.match(/(?:note|save|लिखो|नोट)\s+(.+)/i);
+            if (q.indexOf('note') !== -1 || q.indexOf('save') !== -1 || q.indexOf('लिखो') !== -1 || q.indexOf('नोट') !== -1) {
+                var m = q.match(/(?:note|save|लिखो|नोट)\s+(.+)/i);
                 return { type: 'note', value: m ? m[1].trim() : q };
             }
 
             // Search
-            if (q.includes('search') || q.includes('खोजो') || q.includes('ढूंढो')) {
-                const m = q.replace(/search|खोजो|ढूंढो|karo|do/g, '').trim();
+            if (q.indexOf('search') !== -1 || q.indexOf('खोजो') !== -1 || q.indexOf('ढूंढो') !== -1) {
+                var m = q.replace(/search|खोजो|ढूंढो|karo|do/g, '').trim();
                 return { type: 'search', value: m || q };
             }
 
@@ -807,14 +817,14 @@
             }
 
             if (intent.type === 'open_app') {
-                const url = WEBSITE_MAP[intent.value];
+                var url = WEBSITE_MAP[intent.value];
                 if (url) {
                     addToolMessage('Opening ' + intent.value + '...');
                     try {
                         window.location.assign(url);
                     } catch (e) {
                         try { window.location.href = url; } catch (e2) {
-                            const a = document.createElement('a');
+                            var a = document.createElement('a');
                             a.href = url; a.target = '_blank';
                             document.body.appendChild(a); a.click(); a.remove();
                         }
@@ -826,18 +836,18 @@
             }
 
             if (intent.type === 'weather') {
-                const weather = await getWeather(intent.value || 'Delhi');
-                const reply = 'Weather in ' + (intent.value || 'Delhi') + ': ' + weather;
+                var weather = await getWeather(intent.value || 'Delhi');
+                var reply = 'Weather in ' + (intent.value || 'Delhi') + ': ' + weather;
                 addMessage('Zishu', reply, 'assistant-msg');
                 speakText(reply);
                 return true;
             }
 
             if (intent.type === 'time') {
-                const now = new Date();
-                const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                const date = now.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
-                const reply = 'Aaj ' + date + ' hai, abhi ' + time + ' baj rahe hain.';
+                var now = new Date();
+                var time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                var date = now.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
+                var reply = 'Aaj ' + date + ' hai, abhi ' + time + ' baj rahe hain.';
                 addMessage('Zishu', reply, 'assistant-msg');
                 speakText(reply);
                 return true;
@@ -845,8 +855,8 @@
 
             if (intent.type === 'calculate') {
                 try {
-                    const result = Function('"use strict"; return (' + intent.value + ')')();
-                    const reply = 'Result: ' + result;
+                    var result = Function('"use strict"; return (' + intent.value + ')')();
+                    var reply = 'Result: ' + result;
                     addMessage('Zishu', reply, 'assistant-msg');
                     speakText(reply);
                 } catch (e) {
@@ -856,20 +866,20 @@
             }
 
             if (intent.type === 'reminder') {
-                const reminders = JSON.parse(localStorage.getItem('zishu_reminders') || '[]');
+                var reminders = JSON.parse(localStorage.getItem('zishu_reminders') || '[]');
                 reminders.push({ text: intent.value, time: new Date().toISOString() });
                 localStorage.setItem('zishu_reminders', JSON.stringify(reminders));
-                const reply = 'Reminder set: ' + intent.value;
+                var reply = 'Reminder set: ' + intent.value;
                 addMessage('Zishu', reply, 'assistant-msg');
                 speakText(reply);
                 return true;
             }
 
             if (intent.type === 'note') {
-                const notes = JSON.parse(localStorage.getItem('zishu_notes') || '[]');
+                var notes = JSON.parse(localStorage.getItem('zishu_notes') || '[]');
                 notes.push({ text: intent.value, date: new Date().toISOString() });
                 localStorage.setItem('zishu_notes', JSON.stringify(notes));
-                const reply = 'Note saved: ' + intent.value;
+                var reply = 'Note saved: ' + intent.value;
                 addMessage('Zishu', reply, 'assistant-msg');
                 speakText(reply);
                 return true;
@@ -886,34 +896,34 @@
 
         async function getWeather(city) {
             try {
-                const r = await fetch('https://wttr.in/' + encodeURIComponent(city) + '?format=%C+%t');
+                var r = await fetch('https://wttr.in/' + encodeURIComponent(city) + '?format=%C+%t');
                 return (await r.text()).trim() || 'Weather unavailable';
-            } catch { return 'Could not fetch weather.'; }
+            } catch (e) { return 'Could not fetch weather.'; }
         }
 
         // ============================================================
         // UI HELPERS
         // ============================================================
         function addMessage(sender, text, className) {
-            const div = document.createElement('div');
+            var div = document.createElement('div');
             div.className = 'message ' + className;
-            const s = document.createElement('span');
+            var s = document.createElement('span');
             s.className = 'sender';
             s.textContent = sender;
-            const c = document.createElement('span');
+            var c = document.createElement('span');
             c.className = 'content';
             c.textContent = text;
             div.appendChild(s); div.appendChild(c);
             chatContainer.appendChild(div);
-            setTimeout(() => chatContainer.scrollTop = chatContainer.scrollHeight, 50);
+            setTimeout(function() { chatContainer.scrollTop = chatContainer.scrollHeight; }, 50);
         }
 
         function addToolMessage(text) {
-            const div = document.createElement('div');
+            var div = document.createElement('div');
             div.className = 'tool-msg';
             div.textContent = text;
             chatContainer.appendChild(div);
-            setTimeout(() => chatContainer.scrollTop = chatContainer.scrollHeight, 50);
+            setTimeout(function() { chatContainer.scrollTop = chatContainer.scrollHeight; }, 50);
         }
 
         // ============================================================
@@ -921,22 +931,22 @@
         // ============================================================
         async function streamResponse(text) {
             setOrbState(STATE.SPEAKING);
-            const div = document.createElement('div');
+            var div = document.createElement('div');
             div.className = 'message assistant-msg';
-            const s = document.createElement('span');
+            var s = document.createElement('span');
             s.className = 'sender';
             s.textContent = 'Zishu';
-            const c = document.createElement('span');
+            var c = document.createElement('span');
             c.className = 'content';
             div.appendChild(s); div.appendChild(c);
             chatContainer.appendChild(div);
 
-            let acc = '';
-            for (let i = 0; i < text.length; i++) {
+            var acc = '';
+            for (var i = 0; i < text.length; i++) {
                 acc += text[i];
                 c.textContent = acc;
                 if (i % 3 === 0 || i === text.length - 1) chatContainer.scrollTop = chatContainer.scrollHeight;
-                await new Promise(r => setTimeout(r, 8 + Math.random() * 4));
+                await new Promise(function(r) { setTimeout(r, 8 + Math.random() * 4); });
             }
             speakText(text);
         }
@@ -944,19 +954,20 @@
         function speakText(text) {
             try {
                 if (currentUtterance) window.speechSynthesis.cancel();
-                const u = new SpeechSynthesisUtterance(text);
+                var u = new SpeechSynthesisUtterance(text);
                 u.lang = 'hi-IN'; u.rate = 0.9; u.pitch = 1.05; u.volume = 1;
-                const voices = window.speechSynthesis.getVoices();
-                const female = voices.filter(v => v.lang.startsWith('hi') &&
-                    (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('swara')));
+                var voices = window.speechSynthesis.getVoices();
+                var female = voices.filter(function(v) { 
+                    return v.lang.startsWith('hi') && (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('swara'));
+                });
                 if (female.length > 0) u.voice = female[0];
-                else { const hv = voices.find(v => v.lang.startsWith('hi')); if (hv) u.voice = hv; }
-                u.onstart = () => setOrbState(STATE.SPEAKING);
-                u.onend = () => {
+                else { var hv = voices.find(function(v) { return v.lang.startsWith('hi'); }); if (hv) u.voice = hv; }
+                u.onstart = function() { setOrbState(STATE.SPEAKING); };
+                u.onend = function() {
                     currentUtterance = null;
                     if (!isProcessing) { setOrbState(STATE.IDLE); wakeWordDetected = false; scheduleRestart(800); }
                 };
-                u.onerror = () => {
+                u.onerror = function() {
                     currentUtterance = null;
                     if (!isProcessing) { setOrbState(STATE.IDLE); wakeWordDetected = false; scheduleRestart(800); }
                 };
@@ -979,39 +990,38 @@
 
             addMessage('You', query, 'user-msg');
 
-            const intent = detectIntent(query);
+            var intent = detectIntent(query);
             console.log('🎯 Intent:', intent);
 
-            const executed = await executeIntent(intent);
+            var executed = await executeIntent(intent);
             if (!executed && intent.type === 'chat') {
-                // LLM Chat
                 conversationHistory.push({ role: 'user', content: query });
                 try {
-                    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    var response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
                         body: JSON.stringify({
                             model: GROQ_MODEL,
-                            messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...conversationHistory],
+                            messages: [{ role: 'system', content: SYSTEM_PROMPT }].concat(conversationHistory),
                             temperature: 0.7, max_tokens: 500
                         })
                     });
                     if (!response.ok) throw new Error('API Error: ' + response.status);
-                    const data = await response.json();
-                    let reply = data.choices[0].message.content;
+                    var data = await response.json();
+                    var reply = data.choices[0].message.content;
 
-                    // Handle tools in reply
-                    if (reply.includes('TOOL:')) {
-                        const m = reply.match(/TOOL:\s*(\w+)\((.*)\)/);
+                    // Handle tools
+                    if (reply.indexOf('TOOL:') !== -1) {
+                        var m = reply.match(/TOOL:\s*(\w+)\((.*)\)/);
                         if (m) {
-                            const args = m[2] ? m[2].split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')) : [];
+                            var args = m[2] ? m[2].split(',').map(function(s) { return s.trim().replace(/^['"]|['"]$/g, ''); }) : [];
                             if (m[1] === 'set_reminder') {
-                                const reminders = JSON.parse(localStorage.getItem('zishu_reminders') || '[]');
+                                var reminders = JSON.parse(localStorage.getItem('zishu_reminders') || '[]');
                                 reminders.push({ text: args[0] || 'reminder', time: args[1] || 'now' });
                                 localStorage.setItem('zishu_reminders', JSON.stringify(reminders));
                                 reply = 'Reminder set: ' + (args[0] || 'reminder');
                             } else if (m[1] === 'create_note') {
-                                const notes = JSON.parse(localStorage.getItem('zishu_notes') || '[]');
+                                var notes = JSON.parse(localStorage.getItem('zishu_notes') || '[]');
                                 notes.push({ text: args[0] || 'note', date: new Date().toISOString() });
                                 localStorage.setItem('zishu_notes', JSON.stringify(notes));
                                 reply = 'Note saved: ' + (args[0] || 'note');
@@ -1021,9 +1031,9 @@
 
                     conversationHistory.push({ role: 'assistant', content: reply });
 
-                    // Save memory
-                    const memory = JSON.parse(localStorage.getItem('zishu_memory') || '{}');
-                    const nameMatch = reply.match(/(?:your name is|aapka naam|tumhara naam|mera naam)\s+([a-zA-Z\u0900-\u097F\s]+)/i);
+                    // Memory
+                    var memory = JSON.parse(localStorage.getItem('zishu_memory') || '{}');
+                    var nameMatch = reply.match(/(?:your name is|aapka naam|tumhara naam|mera naam)\s+([a-zA-Z\u0900-\u097F\s]+)/i);
                     if (nameMatch && !memory.name) {
                         memory.name = nameMatch[1].trim();
                         localStorage.setItem('zishu_memory', JSON.stringify(memory));
@@ -1049,7 +1059,7 @@
         // ============================================================
         // KEYBOARD
         // ============================================================
-        document.addEventListener('keydown', (e) => {
+        document.addEventListener('keydown', function(e) {
             if (e.code === 'Space' && !e.repeat && !e.target.matches('input, textarea')) {
                 e.preventDefault();
                 if (state === STATE.IDLE || state === STATE.SPEAKING) {
@@ -1070,10 +1080,10 @@
 
         if (window.speechSynthesis) {
             window.speechSynthesis.getVoices();
-            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+            window.speechSynthesis.onvoiceschanged = function() { window.speechSynthesis.getVoices(); };
         }
 
-        console.log('🚀 Zishu AI v4.1 - Clean + Working');
+        console.log('🚀 Zishu AI v4.2 - Loading Fixed');
         console.log('👤 Creator: Zishan (StardustOfficial)');
         console.log('🎯 Say "Hey Zishu" or tap orb');
     </script>
