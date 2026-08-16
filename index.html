@@ -3,366 +3,728 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zishu AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Zishu AI - Voice Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* ===== SPLASH SCREEN ===== */
+        #splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, transform 0.8s ease;
         }
+        #splash.hide {
+            opacity: 0;
+            transform: scale(1.05);
+            pointer-events: none;
+        }
+        #splash-logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #7b6cf7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            animation: splashPulse 1.5s ease-in-out infinite;
+            box-shadow: 0 0 80px rgba(59, 130, 246, 0.3);
+        }
+        @keyframes splashPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 60px rgba(59, 130, 246, 0.2); }
+            50% { transform: scale(1.06); box-shadow: 0 0 100px rgba(59, 130, 246, 0.4); }
+        }
+        #splash-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: white;
+            margin-top: 24px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        #splash-sub {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 4px;
+            letter-spacing: 2px;
+            font-weight: 300;
+        }
+        #splash-loader {
+            margin-top: 30px;
+            width: 200px;
+            height: 3px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        #splash-loader-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #7b6cf7);
+            border-radius: 4px;
+            animation: loadBar 2.5s ease-in-out forwards;
+        }
+        @keyframes loadBar {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+        #splash-footer {
+            position: absolute;
+            bottom: 30px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 0.5px;
+        }
+        #splash-footer .love { color: #ef4444; }
+        #splash-footer .highlight { color: rgba(255,255,255,0.6); }
+
+        /* ===== CSS VARIABLES ===== */
+        :root {
+            --bg: #f4f7fc;
+            --surface: #ffffff;
+            --surface-border: #e9edf4;
+            --text-primary: #1a2332;
+            --text-secondary: #6b7a8f;
+            --text-muted: #9aa9bb;
+            --orb-idle: #3b82f6;
+            --orb-listening: #4f8ef7;
+            --orb-thinking: #7b6cf7;
+            --orb-speaking: #3b82f6;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            --bubble-user: #3b82f6;
+            --bubble-user-text: #ffffff;
+            --bubble-assistant: #f1f4f9;
+            --bubble-assistant-text: #1a2332;
+            --scrollbar-track: #f1f4f9;
+            --scrollbar-thumb: #d0d8e3;
+            --quick-btn-bg: #f1f4f9;
+            --quick-btn-hover: #e5e9f0;
+            --tab-active: #3b82f6;
+            --wave-color: rgba(59, 130, 246, 0.3);
+            --menu-bg: #ffffff;
+            --menu-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f0f13;
+            --surface: #1a1a24;
+            --surface-border: #2a2a3a;
+            --text-primary: #e8edf5;
+            --text-secondary: #9aa9bb;
+            --text-muted: #6b7a8f;
+            --orb-idle: #4f8ef7;
+            --orb-listening: #6b9cf7;
+            --orb-thinking: #8b7cf7;
+            --orb-speaking: #4f8ef7;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --bubble-user: #4f8ef7;
+            --bubble-user-text: #ffffff;
+            --bubble-assistant: #2a2a3a;
+            --bubble-assistant-text: #e8edf5;
+            --scrollbar-track: #1a1a24;
+            --scrollbar-thumb: #3a3a4a;
+            --quick-btn-bg: #2a2a3a;
+            --quick-btn-hover: #3a3a4a;
+            --tab-active: #4f8ef7;
+            --wave-color: rgba(79, 142, 247, 0.3);
+            --menu-bg: #1a1a24;
+            --menu-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ===== RESET ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f4f7fc;
+            background: var(--bg);
             height: 100vh;
             display: flex;
             flex-direction: column;
-            padding: 20px 24px 16px;
-            color: #1a2332;
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
             overflow: hidden;
+            padding: 0;
         }
 
+        /* ===== HEADER ===== */
         #header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            padding: 8px 16px 4px;
             flex-shrink: 0;
-            padding: 0 4px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--surface-border);
+            transition: background 0.3s ease;
+            min-height: 48px;
         }
         #brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
-        #brand svg {
-            width: 32px;
-            height: 32px;
-        }
+        #brand svg { width: 24px; height: 24px; }
         #brand h1 {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 800;
-            letter-spacing: -0.5px;
             background: linear-gradient(135deg, #3b82f6, #7b6cf7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        #brand .sub {
-            font-size: 12px;
-            font-weight: 400;
-            color: #6b7a8f;
-            -webkit-text-fill-color: #6b7a8f;
-            background: none;
-            margin-left: 4px;
+        #header-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        #status-badge {
-            font-size: 13px;
-            font-weight: 500;
-            padding: 6px 16px;
+        #theme-toggle {
+            background: var(--surface-border);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        #theme-toggle:hover {
+            background: var(--quick-btn-hover);
+            color: var(--text-primary);
+        }
+        #wake-indicator {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            padding: 2px 10px;
             border-radius: 30px;
-            background: #e9edf4;
-            color: #6b7a8f;
+            background: var(--surface-border);
             transition: all 0.3s ease;
         }
-        #status-badge.active {
-            background: #3b82f6;
+        #wake-indicator.active {
+            background: var(--tab-active);
             color: white;
         }
 
+        /* ===== ORB WITH WAVEFORM ===== */
         #orb-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 16px 0 20px;
+            padding: 6px 0 4px;
             flex-shrink: 0;
+            position: relative;
         }
         #orb {
-            width: 100px;
-            height: 100px;
+            width: 64px;
+            height: 64px;
             border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #3b82f6, #1a2332);
-            box-shadow: 0 0 60px rgba(59, 130, 246, 0.15);
+            background: radial-gradient(circle at 30% 30%, var(--orb-idle), #1a2332);
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.15);
             transition: all 0.4s ease;
             cursor: pointer;
             position: relative;
+            z-index: 2;
         }
-        #orb:hover {
-            transform: scale(1.04);
-        }
+        #orb:hover { transform: scale(1.04); }
         #orb.listening {
-            background: radial-gradient(circle at 30% 30%, #4f8ef7, #1a2332);
-            box-shadow: 0 0 80px rgba(79, 142, 247, 0.25);
+            background: radial-gradient(circle at 30% 30%, var(--orb-listening), #1a2332);
+            box-shadow: 0 0 60px rgba(79, 142, 247, 0.25);
             animation: orbPulse 1.2s ease-in-out infinite;
         }
         #orb.thinking {
-            background: radial-gradient(circle at 30% 30%, #7b6cf7, #1a2332);
-            box-shadow: 0 0 80px rgba(123, 108, 247, 0.25);
+            background: radial-gradient(circle at 30% 30%, var(--orb-thinking), #1a2332);
+            box-shadow: 0 0 60px rgba(123, 108, 247, 0.25);
             animation: orbSpin 2s linear infinite;
         }
         #orb.speaking {
-            background: radial-gradient(circle at 30% 30%, #3b82f6, #1a2332);
-            box-shadow: 0 0 80px rgba(59, 130, 246, 0.2);
+            background: radial-gradient(circle at 30% 30%, var(--orb-speaking), #1a2332);
+            box-shadow: 0 0 60px rgba(59, 130, 246, 0.2);
             animation: orbSpeak 0.6s ease-in-out infinite alternate;
         }
-        @keyframes orbPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        @keyframes orbPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes orbSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes orbSpeak { 0% { transform: scale(1) translateY(0); } 100% { transform: scale(1.04) translateY(-3px); } }
+
+        /* Waveform */
+        .waveform {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
         }
-        @keyframes orbSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .waveform.active {
+            opacity: 1;
         }
-        @keyframes orbSpeak {
-            0% { transform: scale(1) translateY(0); }
-            100% { transform: scale(1.04) translateY(-3px); }
+        .waveform .bar {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            width: 3px;
+            height: 8px;
+            background: var(--wave-color);
+            border-radius: 4px;
+            transform-origin: bottom center;
+            animation: waveAnim 0.8s ease-in-out infinite alternate;
+        }
+        .waveform .bar:nth-child(1) { transform: translate(-50%, 0) rotate(0deg); animation-delay: 0s; height: 12px; }
+        .waveform .bar:nth-child(2) { transform: translate(-50%, 0) rotate(18deg); animation-delay: 0.1s; height: 18px; }
+        .waveform .bar:nth-child(3) { transform: translate(-50%, 0) rotate(36deg); animation-delay: 0.2s; height: 22px; }
+        .waveform .bar:nth-child(4) { transform: translate(-50%, 0) rotate(54deg); animation-delay: 0.3s; height: 26px; }
+        .waveform .bar:nth-child(5) { transform: translate(-50%, 0) rotate(72deg); animation-delay: 0.4s; height: 28px; }
+        .waveform .bar:nth-child(6) { transform: translate(-50%, 0) rotate(90deg); animation-delay: 0.5s; height: 30px; }
+        .waveform .bar:nth-child(7) { transform: translate(-50%, 0) rotate(108deg); animation-delay: 0.4s; height: 28px; }
+        .waveform .bar:nth-child(8) { transform: translate(-50%, 0) rotate(126deg); animation-delay: 0.3s; height: 26px; }
+        .waveform .bar:nth-child(9) { transform: translate(-50%, 0) rotate(144deg); animation-delay: 0.2s; height: 22px; }
+        .waveform .bar:nth-child(10) { transform: translate(-50%, 0) rotate(162deg); animation-delay: 0.1s; height: 18px; }
+        .waveform .bar:nth-child(11) { transform: translate(-50%, 0) rotate(180deg); animation-delay: 0s; height: 12px; }
+        .waveform .bar:nth-child(12) { transform: translate(-50%, 0) rotate(198deg); animation-delay: 0.1s; height: 18px; }
+        .waveform .bar:nth-child(13) { transform: translate(-50%, 0) rotate(216deg); animation-delay: 0.2s; height: 22px; }
+        .waveform .bar:nth-child(14) { transform: translate(-50%, 0) rotate(234deg); animation-delay: 0.3s; height: 26px; }
+        .waveform .bar:nth-child(15) { transform: translate(-50%, 0) rotate(252deg); animation-delay: 0.4s; height: 28px; }
+        .waveform .bar:nth-child(16) { transform: translate(-50%, 0) rotate(270deg); animation-delay: 0.5s; height: 30px; }
+        .waveform .bar:nth-child(17) { transform: translate(-50%, 0) rotate(288deg); animation-delay: 0.4s; height: 28px; }
+        .waveform .bar:nth-child(18) { transform: translate(-50%, 0) rotate(306deg); animation-delay: 0.3s; height: 26px; }
+        .waveform .bar:nth-child(19) { transform: translate(-50%, 0) rotate(324deg); animation-delay: 0.2s; height: 22px; }
+        .waveform .bar:nth-child(20) { transform: translate(-50%, 0) rotate(342deg); animation-delay: 0.1s; height: 18px; }
+        @keyframes waveAnim {
+            0% { transform: translate(-50%, 0) rotate(var(--rot)) scaleY(0.3); }
+            100% { transform: translate(-50%, 0) rotate(var(--rot)) scaleY(1); }
         }
 
         #orb-status {
-            margin-top: 14px;
-            font-size: 16px;
+            margin-top: 4px;
+            font-size: 12px;
             font-weight: 600;
-            color: #1a2332;
-            letter-spacing: -0.2px;
+            color: var(--text-primary);
         }
         #orb-sub {
-            font-size: 13px;
-            color: #6b7a8f;
-            margin-top: 4px;
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 1px;
             font-weight: 400;
         }
 
+        /* ===== QUICK ACTIONS ===== */
+        #quick-actions {
+            display: flex;
+            gap: 4px;
+            padding: 0 10px 4px;
+            flex-shrink: 0;
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        #quick-actions::-webkit-scrollbar { height: 0; }
+        .quick-btn {
+            flex-shrink: 0;
+            padding: 4px 10px;
+            border-radius: 30px;
+            border: 1px solid var(--surface-border);
+            background: var(--quick-btn-bg);
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .quick-btn:hover {
+            background: var(--quick-btn-hover);
+            color: var(--text-primary);
+            border-color: var(--tab-active);
+        }
+        .quick-btn i { font-size: 10px; }
+
+        /* ===== CHAT ===== */
         #chat-wrapper {
             flex: 1;
             min-height: 0;
             width: 100%;
             max-width: 900px;
             margin: 0 auto;
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
-            border: 1px solid #e9edf4;
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--surface-border);
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            margin: 0 10px 4px;
+            transition: background 0.3s ease;
         }
         #chat-container {
             flex: 1;
             overflow-y: auto;
-            padding: 20px 24px;
+            padding: 10px 14px;
             scroll-behavior: smooth;
         }
-        #chat-container::-webkit-scrollbar {
-            width: 4px;
-        }
-        #chat-container::-webkit-scrollbar-track {
-            background: #f1f4f9;
-        }
-        #chat-container::-webkit-scrollbar-thumb {
-            background: #d0d8e3;
-            border-radius: 10px;
-        }
+        #chat-container::-webkit-scrollbar { width: 3px; }
+        #chat-container::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+        #chat-container::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 10px; }
 
         .message {
-            margin: 8px 0;
-            padding: 12px 18px;
-            border-radius: 16px;
-            max-width: 80%;
+            margin: 4px 0;
+            padding: 6px 12px;
+            border-radius: 12px;
+            max-width: 82%;
             word-wrap: break-word;
-            animation: fadeIn 0.25s ease;
-            line-height: 1.7;
-            font-size: 15px;
+            animation: fadeIn 0.2s ease;
+            line-height: 1.4;
+            font-size: 12px;
             font-weight: 400;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
         }
         .user-msg {
-            background: #3b82f6;
-            color: white;
+            background: var(--bubble-user);
+            color: var(--bubble-user-text);
             margin-left: auto;
             border-bottom-right-radius: 4px;
         }
         .assistant-msg {
-            background: #f1f4f9;
-            color: #1a2332;
+            background: var(--bubble-assistant);
+            color: var(--bubble-assistant-text);
             margin-right: auto;
             border-bottom-left-radius: 4px;
         }
         .message .sender {
             font-weight: 600;
-            font-size: 12px;
-            opacity: 0.7;
+            font-size: 9px;
+            opacity: 0.6;
             display: block;
-            margin-bottom: 3px;
+            margin-bottom: 1px;
             letter-spacing: 0.3px;
         }
-        .assistant-msg .sender {
-            color: #6b7a8f;
-        }
-        .user-msg .sender {
-            color: rgba(255, 255, 255, 0.8);
-        }
-        .message .content {
-            display: block;
-        }
+        .assistant-msg .sender { color: var(--text-secondary); }
+        .user-msg .sender { color: rgba(255,255,255,0.7); }
+        .message .content { display: block; }
 
         .tool-msg {
-            background: #e9edf4;
-            color: #6b7a8f;
-            margin: 6px auto;
-            padding: 6px 16px;
+            background: var(--surface-border);
+            color: var(--text-secondary);
+            margin: 3px auto;
+            padding: 3px 10px;
             border-radius: 30px;
-            font-size: 13px;
+            font-size: 10px;
             text-align: center;
             max-width: 85%;
             font-weight: 450;
         }
 
-        #footer {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 4px 0;
-            flex-shrink: 0;
-            font-size: 12px;
-            color: #9aa9bb;
-            letter-spacing: 0.2px;
-        }
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeIn { from { opacity:0; transform:translateY(3px); } to { opacity:1; transform:translateY(0); } }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(6px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
-            body {
-                padding: 12px 14px 10px;
-            }
-            #orb {
-                width: 80px;
-                height: 80px;
-            }
-            #brand h1 {
-                font-size: 18px;
-            }
-            #brand .sub {
-                font-size: 10px;
-            }
-            #orb-status {
-                font-size: 14px;
-            }
-            .message {
-                font-size: 14px;
-                padding: 10px 14px;
-                max-width: 88%;
-            }
-            #chat-container {
-                padding: 14px 16px;
-            }
-            #status-badge {
-                font-size: 11px;
-                padding: 4px 12px;
-            }
+            #orb { width: 52px; height: 52px; }
+            #brand h1 { font-size: 14px; }
+            #brand svg { width: 20px; height: 20px; }
+            #orb-status { font-size: 11px; }
+            .message { font-size: 11px; padding: 5px 10px; max-width: 88%; }
+            #chat-container { padding: 8px 10px; }
+            #quick-actions { padding: 0 6px 3px; gap: 3px; }
+            .quick-btn { font-size: 9px; padding: 3px 8px; }
+            #header { padding: 4px 10px 2px; min-height: 40px; }
+            #splash-logo { width: 80px; height: 80px; font-size: 32px; }
+            #splash-title { font-size: 24px; }
+            #splash-loader { width: 150px; }
+            #orb-container { padding: 4px 0 2px; }
+            #chat-wrapper { margin: 0 6px 2px; border-radius: 10px; }
+            .waveform { width: 80px; height: 80px; }
         }
     </style>
 </head>
 <body>
 
+    <!-- ===== SPLASH SCREEN ===== -->
+    <div id="splash">
+        <div id="splash-logo"><i class="fas fa-microphone-alt"></i></div>
+        <div id="splash-title">ZISHU</div>
+        <div id="splash-sub">Voice Intelligence</div>
+        <div id="splash-loader"><div id="splash-loader-bar"></div></div>
+        <div id="splash-footer">made with <span class="love">❤</span> by <span class="highlight">Zishan</span></div>
+    </div>
+
+    <!-- ===== HEADER ===== -->
     <div id="header">
         <div id="brand">
             <svg viewBox="0 0 24 24" fill="none" stroke="url(#grad)" stroke-width="1.8">
-                <defs>
-                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#3b82f6" />
-                        <stop offset="100%" stop-color="#7b6cf7" />
-                    </linearGradient>
-                </defs>
-                <circle cx="12" cy="12" r="10" />
-                <path d="M8 12l2 2 4-4" />
-                <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#3b82f6"/>
+                    <stop offset="100%" stop-color="#7b6cf7"/>
+                </linearGradient></defs>
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M8 12l2 2 4-4"/>
+                <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
             </svg>
-            <div style="display:flex;align-items:baseline;gap:6px;">
-                <h1>ZISHU</h1>
-                <span class="sub">voice intelligence</span>
-            </div>
+            <h1>ZISHU</h1>
         </div>
-        <div id="status-badge">● Idle</div>
+        <div id="header-actions">
+            <span id="wake-indicator">● Idle</span>
+            <button id="theme-toggle" aria-label="Toggle theme"><i class="fas fa-moon"></i></button>
+        </div>
     </div>
 
+    <!-- ===== ORB ===== -->
     <div id="orb-container">
         <div id="orb"></div>
-        <div id="orb-status">Tap orb to start</div>
-        <div id="orb-sub">First tap to enable microphone</div>
+        <div class="waveform" id="waveform">
+            <div class="bar" style="--rot:0deg;"></div>
+            <div class="bar" style="--rot:18deg;"></div>
+            <div class="bar" style="--rot:36deg;"></div>
+            <div class="bar" style="--rot:54deg;"></div>
+            <div class="bar" style="--rot:72deg;"></div>
+            <div class="bar" style="--rot:90deg;"></div>
+            <div class="bar" style="--rot:108deg;"></div>
+            <div class="bar" style="--rot:126deg;"></div>
+            <div class="bar" style="--rot:144deg;"></div>
+            <div class="bar" style="--rot:162deg;"></div>
+            <div class="bar" style="--rot:180deg;"></div>
+            <div class="bar" style="--rot:198deg;"></div>
+            <div class="bar" style="--rot:216deg;"></div>
+            <div class="bar" style="--rot:234deg;"></div>
+            <div class="bar" style="--rot:252deg;"></div>
+            <div class="bar" style="--rot:270deg;"></div>
+            <div class="bar" style="--rot:288deg;"></div>
+            <div class="bar" style="--rot:306deg;"></div>
+            <div class="bar" style="--rot:324deg;"></div>
+            <div class="bar" style="--rot:342deg;"></div>
+        </div>
+        <div id="orb-status">Say "Hey Zishu"</div>
+        <div id="orb-sub">Wake word active</div>
     </div>
 
+    <!-- ===== QUICK ACTIONS ===== -->
+    <div id="quick-actions">
+        <button class="quick-btn" data-action="summarize"><i class="fas fa-file-alt"></i> Summarize</button>
+        <button class="quick-btn" data-action="study"><i class="fas fa-graduation-cap"></i> Study</button>
+        <button class="quick-btn" data-action="quiz"><i class="fas fa-brain"></i> Quiz</button>
+        <button class="quick-btn" data-action="notes"><i class="fas fa-sticky-note"></i> Notes</button>
+        <button class="quick-btn" data-action="reminders"><i class="fas fa-bell"></i> Reminders</button>
+        <button class="quick-btn" data-action="translate"><i class="fas fa-language"></i> Translate</button>
+        <button class="quick-btn" data-action="apps"><i class="fas fa-th"></i> Apps</button>
+    </div>
+
+    <!-- ===== CHAT ===== -->
     <div id="chat-wrapper">
         <div id="chat-container"></div>
     </div>
 
-    <div id="footer">
-        <span>private · local</span>
-        <span>v2.8</span>
-    </div>
-
     <script>
+        // ============================================================
+        // SPLASH SCREEN
+        // ============================================================
+        setTimeout(() => {
+            document.getElementById('splash').classList.add('hide');
+            setTimeout(() => {
+                document.getElementById('splash').style.display = 'none';
+                preloadTTS();
+                // Start listening for wake word after splash
+                setTimeout(() => {
+                    startListening();
+                    document.getElementById('orb-sub').textContent = 'Say "Hey Zishu"';
+                }, 500);
+            }, 800);
+        }, 2800);
+
+        // ============================================================
+        // PRELOAD TTS
+        // ============================================================
+        function preloadTTS() {
+            try {
+                if (window.speechSynthesis) {
+                    const voices = window.speechSynthesis.getVoices();
+                    if (voices.length === 0) {
+                        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+                    }
+                    const silent = new SpeechSynthesisUtterance(' ');
+                    silent.volume = 0;
+                    window.speechSynthesis.speak(silent);
+                    setTimeout(() => window.speechSynthesis.cancel(), 100);
+                }
+            } catch (e) {}
+        }
+
         // ============================================================
         // CONFIG
         // ============================================================
         const GROQ_API_KEY = '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';
         const GROQ_MODEL = 'llama-3.1-8b-instant';
+        const WAKE_WORDS = ['hey zishu', 'zishu', 'ok zishu', 'hello zishu'];
 
         // ============================================================
-        // STATE MACHINE
+        // STATE
         // ============================================================
-        const STATE = {
-            IDLE: 'idle',
-            LISTENING: 'listening',
-            THINKING: 'thinking',
-            SPEAKING: 'speaking'
-        };
-
+        const STATE = { IDLE: 'idle', LISTENING: 'listening', THINKING: 'thinking', SPEAKING: 'speaking' };
         let state = STATE.IDLE;
         let recognition = null;
         let isProcessing = false;
         let currentUtterance = null;
         let restartTimer = null;
         let isRestartScheduled = false;
-        let isFirstActivation = true;
+        let wakeWordDetected = false;
+        let conversationHistory = [];
+        let lastCommand = '';
+        let commandContext = {};
 
         // ============================================================
-        // SYSTEM PROMPT
+        // SYSTEM PROMPT - WITH CREATOR INFO
         // ============================================================
-        const SYSTEM_PROMPT = `You are Zishu, a female voice assistant with a warm, helpful personality.
+        const SYSTEM_PROMPT = `You are Zishu, a female voice assistant created by Zishan, the founder of StardustOfficial.
 
-        IMPORTANT GENDER RULES:
-        - Always refer to yourself as "main" (feminine) in Hindi
-        - Use feminine verb endings: "kar sakti hoon", "bol sakti hoon", "de sakti hoon"
+        IMPORTANT - If anyone asks about your creator:
+        - "Tumhe kisne banaya?" → "Mujhe Zishan ne banaya hai, jo StardustOfficial ke founder hain."
+        - "Zishan ki company ka naam kya hai?" → "StardustOfficial."
+        - "Who created you?" → "Zishan, the founder of StardustOfficial."
+        - "StardustOfficial kya hai?" → "StardustOfficial Zishan ki company hai."
 
-        RESPONSE STYLE:
-        - Give detailed, complete answers
-        - Be warm and helpful like a trusted friend
-        - Use Hinglish naturally - mix Hindi and English
+        Always respond in Hinglish - mix Hindi and English naturally. Use feminine verb endings: "kar sakti hoon", "bol sakti hoon". Be warm, helpful, and professional. Keep responses natural and conversational.`;
 
-        TOOLS (use EXACT format):
-        - TOOL: set_reminder(text, time) - sets a reminder
-        - TOOL: create_note(text) - saves a note
-        - TOOL: get_weather(city) - gets weather
-        - TOOL: get_time(city) - gets current time
-        - TOOL: calculate(expression) - does math
-        - TOOL: translate(text, language) - translates text
+        // ============================================================
+        // WEBSITE ALIASES - COMPLETE
+        // ============================================================
+        const SITE_ALIASES = {
+            youtube: ['youtube', 'you tube', 'यूट्यूब', 'yt'],
+            instagram: ['instagram', 'insta', 'इंस्टाग्राम', 'ig'],
+            facebook: ['facebook', 'फेसबुक', 'fb'],
+            twitter: ['twitter', 'ट्विटर', 'x'],
+            whatsapp: ['whatsapp', 'व्हाट्सएप', 'wa'],
+            telegram: ['telegram', 'टेलीग्राम', 'tg'],
+            snapchat: ['snapchat', 'स्नैपचैट'],
+            linkedin: ['linkedin', 'लिंक्डइन', 'li'],
+            reddit: ['reddit', 'रेडिट'],
+            discord: ['discord', 'डिस्कॉर्ड'],
+            google: ['google', 'गूगल'],
+            gmail: ['gmail', 'जीमेल', 'mail'],
+            maps: ['maps', 'google maps', 'मैप्स', 'map'],
+            drive: ['drive', 'google drive', 'ड्राइव'],
+            docs: ['docs', 'google docs', 'डॉक्स'],
+            translate: ['translate', 'google translate', 'ट्रांसलेट'],
+            meet: ['meet', 'google meet', 'मीट'],
+            netflix: ['netflix', 'नेटफ्लिक्स', 'nf'],
+            amazonprime: ['amazon prime', 'prime video', 'prime', 'प्राइम'],
+            hotstar: ['hotstar', 'हॉटस्टार', 'disney hotstar'],
+            sonyliv: ['sony liv', 'sonyliv', 'सोनी लिव'],
+            zee5: ['zee5', 'ज़ी5'],
+            spotify: ['spotify', 'स्पॉटिफाई', 'spot'],
+            amazon: ['amazon', 'अमेज़न'],
+            flipkart: ['flipkart', 'फ्लिपकार्ट'],
+            myntra: ['myntra', 'मिंत्रा'],
+            zomato: ['zomato', 'जोमैटो'],
+            swiggy: ['swiggy', 'स्विगी'],
+            github: ['github', 'गिटहब'],
+            zoom: ['zoom', 'ज़ूम'],
+            teams: ['teams', 'टीम्स'],
+            wikipedia: ['wikipedia', 'wiki', 'विकिपीडिया'],
+            chatgpt: ['chatgpt', 'chat gpt', 'चैटजीपीटी'],
+            gemini: ['gemini', 'जेमिनी'],
+            paytm: ['paytm', 'पेटीएम'],
+            gpay: ['gpay', 'google pay', 'जीपे'],
+            phonepay: ['phone pe', 'phonepay', 'फोन पे'],
+            pubg: ['pubg', 'पीयूबीजी'],
+            freefire: ['free fire', 'freefire', 'फ्री फायर'],
+            bgmi: ['bgmi', 'बीजीएमआई'],
+            settings: ['settings', 'सेटिंग्स', 'setting'],
+            camera: ['camera', 'कैमरा'],
+            bluetooth: ['bluetooth', 'ब्लूटूथ'],
+            wifi: ['wifi', 'wi-fi', 'वाईफाई']
+        };
 
-        Note: For opening websites, the system handles it locally. Just respond with confirmation.`;
+        const WEBSITE_MAP = {
+            youtube: 'https://youtube.com',
+            instagram: 'https://instagram.com',
+            facebook: 'https://facebook.com',
+            twitter: 'https://twitter.com',
+            whatsapp: 'https://web.whatsapp.com',
+            telegram: 'https://web.telegram.org',
+            snapchat: 'https://snapchat.com',
+            linkedin: 'https://linkedin.com',
+            reddit: 'https://reddit.com',
+            discord: 'https://discord.com',
+            google: 'https://google.com',
+            gmail: 'https://gmail.com',
+            maps: 'https://maps.google.com',
+            drive: 'https://drive.google.com',
+            docs: 'https://docs.google.com',
+            translate: 'https://translate.google.com',
+            meet: 'https://meet.google.com',
+            netflix: 'https://netflix.com',
+            amazonprime: 'https://primevideo.com',
+            hotstar: 'https://hotstar.com',
+            sonyliv: 'https://sonyliv.com',
+            zee5: 'https://zee5.com',
+            spotify: 'https://spotify.com',
+            amazon: 'https://amazon.in',
+            flipkart: 'https://flipkart.com',
+            myntra: 'https://myntra.com',
+            zomato: 'https://zomato.com',
+            swiggy: 'https://swiggy.com',
+            github: 'https://github.com',
+            zoom: 'https://zoom.us',
+            teams: 'https://teams.microsoft.com',
+            wikipedia: 'https://wikipedia.org',
+            chatgpt: 'https://chatgpt.com',
+            gemini: 'https://gemini.google.com',
+            paytm: 'https://paytm.com',
+            gpay: 'https://pay.google.com',
+            phonepay: 'https://phonepe.com',
+            pubg: 'https://pubg.com',
+            freefire: 'https://freefire.com',
+            bgmi: 'https://bgmi.com'
+        };
 
-        let conversationHistory = [
-            { role: 'system', content: SYSTEM_PROMPT }
+        // ============================================================
+        // APP OPENING PATTERNS
+        // ============================================================
+        const APP_PATTERNS = {
+            settings: ['settings', 'सेटिंग्स', 'setting', 'settings kholo'],
+            camera: ['camera', 'कैमरा', 'camera kholo'],
+            bluetooth: ['bluetooth', 'ब्लूटूथ', 'bluetooth settings', 'bluetooth kholo'],
+            wifi: ['wifi', 'wi-fi', 'वाईफाई', 'wifi settings', 'wifi kholo']
+        };
+
+        const APP_URLS = {
+            settings: 'settings://',
+            camera: 'camera://',
+            bluetooth: 'bluetooth://',
+            wifi: 'wifi://'
+        };
+
+        // ============================================================
+        // COMMAND WORDS
+        // ============================================================
+        const OPEN_WORDS = [
+            'open', 'kholo', 'khol', 'chalao', 'start', 'launch',
+            'go to', 'show', 'show me', 'खोलो', 'खोल', 'चलाओ',
+            'open karo', 'khol do', 'khol de', 'chala do', 'शुरू करो',
+            'खोल दो', 'खोल दे', 'चला दो', 'शुरू कर दो'
         ];
 
-        let memory = JSON.parse(localStorage.getItem('zishu_memory') || '{}');
+        const SEARCH_WORDS = ['search', 'search karo', 'खोजो', 'खोज', 'search for', 'dhoondo', 'ढूंढो'];
 
         // ============================================================
         // DOM REFS
@@ -371,207 +733,138 @@
         const orbStatus = document.getElementById('orb-status');
         const orbSub = document.getElementById('orb-sub');
         const chatContainer = document.getElementById('chat-container');
-        const statusBadge = document.getElementById('status-badge');
+        const themeToggle = document.getElementById('theme-toggle');
+        const wakeIndicator = document.getElementById('wake-indicator');
+        const waveform = document.getElementById('waveform');
+        const quickBtns = document.querySelectorAll('.quick-btn');
 
         // ============================================================
-        // ORB CONTROLS
+        // THEME TOGGLE
         // ============================================================
-        function setOrbState(newState) {
-            state = newState;
-            orb.className = newState;
+        let isDark = false;
+        themeToggle.addEventListener('click', () => {
+            isDark = !isDark;
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        });
 
-            const statusMap = {
-                idle: ['Zishu is ready', 'Tap orb or press Space to talk', '● Idle'],
-                listening: ['Listening...', 'Speak now', '● Listening'],
-                thinking: ['Thinking...', 'Processing your request', '◉ Thinking'],
-                speaking: ['Speaking...', 'Zishu is responding', '● Speaking']
-            };
-            const [status, sub, badge] = statusMap[newState] || statusMap.idle;
-            orbStatus.textContent = status;
-            orbSub.textContent = sub;
-            statusBadge.textContent = badge;
-            statusBadge.className = newState === STATE.IDLE ? '' : 'active';
+        // ============================================================
+        // QUICK ACTIONS
+        // ============================================================
+        quickBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const action = this.dataset.action;
+                const queries = {
+                    'summarize': 'Please summarize this text for me.',
+                    'study': 'I want to study. Can you help me?',
+                    'quiz': 'Give me a quick quiz question.',
+                    'notes': 'Show my saved notes.',
+                    'reminders': 'Show my reminders.',
+                    'translate': 'Please translate this for me.',
+                    'apps': 'Show me my apps.'
+                };
+                if (action === 'notes') showNotes();
+                else if (action === 'reminders') showReminders();
+                else if (action === 'apps') showApps();
+                else {
+                    addMessage('You', queries[action], 'user-msg');
+                    handleUserQuery(queries[action]);
+                }
+            });
+        });
+
+        // ============================================================
+        // SHOW APPS
+        // ============================================================
+        function showApps() {
+            const appList = Object.keys(SITE_ALIASES).slice(0, 15).join(', ');
+            addMessage('Zishu', 'Available apps: ' + appList + '. Just say "Zishu, [app name] kholo".', 'assistant-msg');
         }
 
-        orb.addEventListener('click', toggleListening);
-
         // ============================================================
-        // TOGGLE LISTENING
+        // NOTES & REMINDERS
         // ============================================================
-        function toggleListening() {
-            if (isProcessing) {
-                orbSub.textContent = 'Please wait...';
+        function showNotes() {
+            const notes = JSON.parse(localStorage.getItem('zishu_notes') || '[]');
+            if (notes.length === 0) {
+                addMessage('Zishu', 'No notes saved yet. Say "create note" to add one.', 'assistant-msg');
                 return;
             }
+            let msg = '📝 Your Saved Notes:\n\n';
+            notes.forEach((n, i) => {
+                msg += `${i+1}. ${n.text}\n   📅 ${new Date(n.date).toLocaleDateString()}\n\n`;
+            });
+            addMessage('Zishu', msg, 'assistant-msg');
+        }
 
-            if (state === STATE.IDLE || state === STATE.SPEAKING) {
-                startListening();
-            } else if (state === STATE.LISTENING) {
-                stopListening();
-                setOrbState(STATE.IDLE);
+        function showReminders() {
+            const reminders = JSON.parse(localStorage.getItem('zishu_reminders') || '[]');
+            if (reminders.length === 0) {
+                addMessage('Zishu', 'No reminders set. Say "set reminder" to add one.', 'assistant-msg');
+                return;
             }
+            let msg = '🔔 Your Reminders:\n\n';
+            reminders.forEach((r, i) => {
+                msg += `${i+1}. ${r.text}\n   ⏰ ${r.time}\n\n`;
+            });
+            addMessage('Zishu', msg, 'assistant-msg');
         }
 
         // ============================================================
-        // WEBSITE ALIASES - HINDI + ENGLISH
-        // ============================================================
-        const SITE_ALIASES = {
-            youtube: ['youtube', 'you tube', 'यूट्यूब', 'यू ट्यूब'],
-            google: ['google', 'गूगल'],
-            gmail: ['gmail', 'जीमेल', 'जी मेल'],
-            github: ['github', 'git hub', 'गिटहब', 'गिट हब'],
-            instagram: ['instagram', 'insta', 'इंस्टाग्राम', 'इंस्टा'],
-            facebook: ['facebook', 'फेसबुक'],
-            whatsapp: ['whatsapp', 'व्हाट्सएप', 'व्हाट्सऐप'],
-            twitter: ['twitter', 'ट्विटर', 'x'],
-            reddit: ['reddit', 'रेडिट'],
-            spotify: ['spotify', 'स्पॉटिफाई', 'स्पॉटिफाय'],
-            netflix: ['netflix', 'नेटफ्लिक्स'],
-            amazon: ['amazon', 'अमेज़न', 'अमेजन'],
-            flipkart: ['flipkart', 'फ्लिपकार्ट'],
-            linkedin: ['linkedin', 'लिंक्डइन'],
-            maps: ['google maps', 'maps', 'गूगल मैप्स', 'मैप्स'],
-            drive: ['google drive', 'drive', 'गूगल ड्राइव', 'ड्राइव'],
-            docs: ['google docs', 'docs', 'गूगल डॉक्स', 'डॉक्स'],
-            translate: ['google translate', 'translate', 'गूगल ट्रांसलेट', 'ट्रांसलेट'],
-            zomato: ['zomato', 'जोमैटो'],
-            swiggy: ['swiggy', 'स्विगी']
-        };
-
-        const WEBSITE_MAP = {
-            youtube: 'https://youtube.com',
-            google: 'https://google.com',
-            gmail: 'https://gmail.com',
-            github: 'https://github.com',
-            reddit: 'https://reddit.com',
-            twitter: 'https://twitter.com',
-            instagram: 'https://instagram.com',
-            whatsapp: 'https://web.whatsapp.com',
-            maps: 'https://maps.google.com',
-            drive: 'https://drive.google.com',
-            docs: 'https://docs.google.com',
-            translate: 'https://translate.google.com',
-            facebook: 'https://facebook.com',
-            linkedin: 'https://linkedin.com',
-            spotify: 'https://spotify.com',
-            netflix: 'https://netflix.com',
-            amazon: 'https://amazon.in',
-            flipkart: 'https://flipkart.com',
-            zomato: 'https://zomato.com',
-            swiggy: 'https://swiggy.com'
-        };
-
-        // ============================================================
-        // LOCAL COMMAND DETECTION - HINDI + ENGLISH
-        // ============================================================
-        function detectLocalCommand(query) {
-            const q = query.toLowerCase().trim();
-
-            const openWords = [
-                'open', 'open karo', 'open kar', 'kholo', 'khol', 'khol do', 'khol de',
-                'chalao', 'chala do', 'start', 'launch',
-                'खोलो', 'खोल', 'खोल दो', 'खोल दे', 'चलाओ', 'चला दो', 'शुरू करो', 'शुरू कर'
-            ];
-
-            console.log('🔍 DETECTING COMMAND:', q);
-
-            for (const [site, aliases] of Object.entries(SITE_ALIASES)) {
-                const siteFound = aliases.some(alias => q.includes(alias));
-                if (!siteFound) continue;
-
-                const wantsOpen = openWords.some(word => q.includes(word)) || 
-                                 aliases.some(alias => q === alias) ||
-                                 q === site;
-
-                if (wantsOpen) {
-                    console.log('✅ WEBSITE COMMAND DETECTED:', {
-                        original: query,
-                        site: site,
-                        url: WEBSITE_MAP[site]
-                    });
-                    return {
-                        type: 'open_website',
-                        value: site
-                    };
-                }
-            }
-
-            console.log('❌ NO LOCAL COMMAND DETECTED');
-            return null;
-        }
-
-        // ============================================================
-        // DIRECT WEBSITE NAVIGATION - WITH FALLBACK
-        // ============================================================
-        function openWebsiteDirectly(siteName) {
-            const url = WEBSITE_MAP[siteName];
-            if (!url) {
-                addToolMessage('Website not found: ' + siteName);
-                return false;
-            }
-
-            addToolMessage('Opening ' + siteName + '...');
-            console.log('🌐 OPENING:', siteName, url);
-
-            try {
-                window.location.assign(url);
-                return true;
-            } catch (error) {
-                console.error('assign() failed:', error);
-                try {
-                    window.location.href = url;
-                    return true;
-                } catch (error2) {
-                    console.error('href failed:', error2);
-                    try {
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.target = '_blank';
-                        a.rel = 'noopener noreferrer';
-                        document.body.appendChild(a);
-                        a.click();
-                        a.remove();
-                        return true;
-                    } catch (error3) {
-                        console.error('All navigation methods failed:', error3);
-                        addToolMessage('Could not open ' + siteName + '. Please open manually.');
-                        return false;
-                    }
-                }
-            }
-        }
-
-        // ============================================================
-        // SPEECH RECOGNITION
+        // SPEECH RECOGNITION - WITH WAKE WORD
         // ============================================================
         function initSpeechRecognition() {
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) {
-                orbStatus.textContent = 'Browser not supported';
-                return null;
-            }
+            if (!SR) return null;
             const rec = new SR();
             rec.lang = 'hi-IN';
-            rec.continuous = false;
-            rec.interimResults = false;
+            rec.continuous = true;
+            rec.interimResults = true;
             rec.maxAlternatives = 1;
 
             rec.onstart = () => {
                 clearRestartTimer();
                 setOrbState(STATE.LISTENING);
-                if (isFirstActivation) {
-                    isFirstActivation = false;
-                    orbSub.textContent = 'Listening...';
-                }
+                waveform.classList.add('active');
+                wakeIndicator.textContent = '● Listening';
+                wakeIndicator.className = 'active';
+                orbSub.textContent = 'Listening for "Hey Zishu"';
             };
 
             rec.onresult = (event) => {
-                const transcript = event.results[0][0].transcript.trim();
-                console.log('🎤 USER SAID:', transcript);
-                
-                if (transcript.length > 0) {
-                    stopListening();
-                    handleUserQuery(transcript);
+                let finalText = '';
+                let interimText = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript.toLowerCase().trim();
+                    if (event.results[i].isFinal) {
+                        finalText = transcript;
+                    } else {
+                        interimText = transcript;
+                    }
+                }
+
+                // Check for wake word
+                const textToCheck = finalText || interimText;
+                if (textToCheck) {
+                    const hasWakeWord = WAKE_WORDS.some(w => textToCheck.includes(w));
+                    if (hasWakeWord && !wakeWordDetected && !isProcessing) {
+                        wakeWordDetected = true;
+                        const query = textToCheck.replace(new RegExp(WAKE_WORDS.join('|'), 'gi'), '').trim();
+                        orbSub.textContent = 'Wake word detected!';
+                        if (query.length > 0) {
+                            // Stop listening and process
+                            stopListening();
+                            handleUserQuery(query);
+                        } else {
+                            // Just wake up, wait for command
+                            orbSub.textContent = 'Listening for command...';
+                            // Restart listening after a moment
+                            setTimeout(() => {
+                                wakeWordDetected = false;
+                                if (state === STATE.IDLE) startListening();
+                            }, 3000);
+                        }
+                    }
                 }
             };
 
@@ -579,28 +872,82 @@
                 console.error('Speech error:', event.error);
                 if (event.error === 'not-allowed') {
                     orbStatus.textContent = 'Microphone access denied';
-                    orbSub.textContent = 'Please allow microphone access';
                     setOrbState(STATE.IDLE);
                 } else if (event.error === 'no-speech') {
-                    orbSub.textContent = 'No speech detected. Try again.';
-                    scheduleRestart(800);
+                    // Silent restart
                 } else {
-                    orbSub.textContent = 'Error: ' + event.error;
                     scheduleRestart(1000);
                 }
             };
 
             rec.onend = () => {
-                if (state === STATE.LISTENING && !isProcessing && !isRestartScheduled) {
-                    scheduleRestart(300);
-                } else if (!isProcessing && state !== STATE.SPEAKING) {
+                waveform.classList.remove('active');
+                if (!isProcessing && state !== STATE.SPEAKING) {
                     setOrbState(STATE.IDLE);
+                    wakeIndicator.textContent = '● Idle';
+                    wakeIndicator.className = '';
+                    orbSub.textContent = 'Say "Hey Zishu"';
+                    if (!isRestartScheduled) {
+                        scheduleRestart(500);
+                    }
                 }
             };
 
             return rec;
         }
 
+        // ============================================================
+        // ORB CONTROLS
+        // ============================================================
+        function setOrbState(newState) {
+            state = newState;
+            orb.className = newState;
+            const statusMap = {
+                idle: ['Zishu is ready', 'Say "Hey Zishu"'],
+                listening: ['Listening...', 'Speak now'],
+                thinking: ['Thinking...', 'Processing...'],
+                speaking: ['Speaking...', 'Zishu is responding']
+            };
+            const [status, sub] = statusMap[newState] || statusMap.idle;
+            orbStatus.textContent = status;
+            if (newState !== STATE.LISTENING) {
+                orbSub.textContent = sub;
+            }
+            if (newState === STATE.IDLE) {
+                waveform.classList.remove('active');
+                wakeIndicator.textContent = '● Idle';
+                wakeIndicator.className = '';
+            } else if (newState === STATE.LISTENING) {
+                waveform.classList.add('active');
+                wakeIndicator.textContent = '● Listening';
+                wakeIndicator.className = 'active';
+            } else if (newState === STATE.SPEAKING) {
+                waveform.classList.add('active');
+                wakeIndicator.textContent = '● Speaking';
+                wakeIndicator.className = 'active';
+            } else if (newState === STATE.THINKING) {
+                waveform.classList.add('active');
+                wakeIndicator.textContent = '◉ Thinking';
+                wakeIndicator.className = 'active';
+            }
+        }
+
+        orb.addEventListener('click', () => {
+            if (isProcessing) return;
+            if (state === STATE.IDLE || state === STATE.SPEAKING) {
+                // Manual trigger - no wake word needed
+                wakeWordDetected = true;
+                startListening();
+                orbSub.textContent = 'Manual listening...';
+            } else if (state === STATE.LISTENING) {
+                stopListening();
+                setOrbState(STATE.IDLE);
+            }
+        });
+
+        // ============================================================
+        // START/STOP LISTENING
+        // ============================================================
         function startListening() {
             clearRestartTimer();
             if (!recognition) {
@@ -611,16 +958,10 @@
                 recognition.start();
                 setOrbState(STATE.LISTENING);
             } catch (e) {
-                try {
-                    recognition.stop();
-                    setTimeout(() => {
-                        recognition.start();
-                        setOrbState(STATE.LISTENING);
-                    }, 200);
-                } catch (ex) {
-                    console.error('Failed to start:', ex);
-                    setOrbState(STATE.IDLE);
-                }
+                try { recognition.stop(); } catch (ex) {}
+                setTimeout(() => {
+                    try { recognition.start(); } catch (ex) {}
+                }, 200);
             }
         }
 
@@ -654,72 +995,238 @@
         }
 
         // ============================================================
-        // TOOL SYSTEM
+        // INTERRUPT / BARGE-IN
         // ============================================================
-        async function executeTool(toolString) {
-            try {
-                const match = toolString.match(/TOOL:\s*(\w+)\((.*)\)/);
-                if (!match) return null;
-                const [, toolName, params] = match;
-                const args = params ? params.split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')) : [];
+        function interruptSpeaking() {
+            if (currentUtterance) {
+                window.speechSynthesis.cancel();
+                currentUtterance = null;
+                setOrbState(STATE.IDLE);
+                addMessage('Zishu', 'Yes? How can I help you?', 'assistant-msg');
+                scheduleRestart(500);
+                return true;
+            }
+            return false;
+        }
 
-                switch (toolName) {
-                    case 'set_reminder': {
-                        const reminder = { text: args[0] || 'reminder', time: args[1] || 'now' };
-                        const reminders = JSON.parse(localStorage.getItem('zishu_reminders') || '[]');
-                        reminders.push(reminder);
-                        localStorage.setItem('zishu_reminders', JSON.stringify(reminders));
-                        return 'Reminder set: ' + reminder.text + ' at ' + reminder.time;
-                    }
+        // ============================================================
+        // INTENT SYSTEM
+        // ============================================================
+        function detectIntent(query) {
+            const q = query.toLowerCase().trim();
 
-                    case 'create_note': {
-                        const note = args[0] || 'empty note';
-                        const notes = JSON.parse(localStorage.getItem('zishu_notes') || '[]');
-                        notes.push({ text: note, date: new Date().toISOString() });
-                        localStorage.setItem('zishu_notes', JSON.stringify(notes));
-                        return 'Note saved: ' + note;
-                    }
+            // 1. Check for interrupt
+            if (q.includes('stop') || q.includes('ruk jao') || q.includes('bass') || q.includes('हट') || q.includes('रुको')) {
+                return { type: 'interrupt' };
+            }
 
-                    case 'get_weather': {
-                        const city = args[0] || 'Delhi';
-                        const weatherData = await fetchWeather(city);
-                        return 'Weather in ' + city + ': ' + weatherData;
-                    }
-
-                    case 'get_time': {
-                        const tz = args[0] || 'Asia/Kolkata';
-                        const time = new Date().toLocaleString('en-US', { timeZone: tz, hour: '2-digit', minute: '2-digit' });
-                        return 'Current time in ' + tz.split('/').pop() + ': ' + time;
-                    }
-
-                    case 'calculate': {
-                        const expr = args[0] || '0';
-                        const result = Function('"use strict"; return (' + expr + ')')();
-                        return 'Result: ' + result;
-                    }
-
-                    case 'translate': {
-                        const text = args[0] || '';
-                        const lang = args[1] || 'English';
-                        return 'Translated to ' + lang + ': ' + text + ' (demo)';
-                    }
-
-                    default:
-                        return 'Tool ' + toolName + ' not recognized';
+            // 2. Check for app opening (website/app)
+            for (const [site, aliases] of Object.entries(SITE_ALIASES)) {
+                const siteFound = aliases.some(alias => q.includes(alias));
+                if (!siteFound) continue;
+                const wantsOpen = OPEN_WORDS.some(word => q.includes(word)) ||
+                                 aliases.some(alias => q === alias) ||
+                                 q === site;
+                if (wantsOpen) {
+                    return { type: 'open_app', value: site };
                 }
-            } catch (error) {
-                return 'Tool error: ' + error.message;
+            }
+
+            // 3. Check for system apps
+            for (const [app, patterns] of Object.entries(APP_PATTERNS)) {
+                if (patterns.some(p => q.includes(p))) {
+                    return { type: 'open_app', value: app, isSystem: true };
+                }
+            }
+
+            // 4. Check for search
+            if (SEARCH_WORDS.some(w => q.includes(w))) {
+                const searchQuery = q.replace(new RegExp(SEARCH_WORDS.join('|'), 'gi'), '').trim();
+                return { type: 'search', value: searchQuery || q };
+            }
+
+            // 5. Check for weather
+            if (q.includes('weather') || q.includes('mausam') || q.includes('मौसम')) {
+                const cityMatch = q.match(/(?:weather|mausam|मौसम)\s+(?:in|of|for|का|की|में)?\s*([a-zA-Z\u0900-\u097F\s]+)/);
+                return { type: 'weather', value: cityMatch ? cityMatch[1].trim() : 'Delhi' };
+            }
+
+            // 6. Check for time
+            if (q.includes('time') || q.includes('samay') || q.includes('समय') || q.includes('baje')) {
+                return { type: 'time' };
+            }
+
+            // 7. Check for calculation
+            if (q.includes('calculate') || q.includes('solve') || q.includes('हल') || q.includes('गणना')) {
+                const expr = q.replace(/calculate|solve|हल|गणना|करो|karo/g, '').trim();
+                if (expr) return { type: 'calculate', value: expr };
+            }
+
+            // 8. Check for reminder
+            if (q.includes('reminder') || q.includes('remind') || q.includes('याद') || q.includes('alarm')) {
+                const textMatch = q.match(/(?:reminder|remind|याद|alarm)\s+(?:me|mujhe|मुझे)?\s*(.+)/i);
+                if (textMatch) {
+                    return { type: 'reminder', value: textMatch[1].trim() };
+                }
+                return { type: 'reminder', value: q };
+            }
+
+            // 9. Check for note
+            if (q.includes('note') || q.includes('save') || q.includes('लिखो') || q.includes('नोट')) {
+                const textMatch = q.match(/(?:note|save|लिखो|नोट)\s+(.+)/i);
+                if (textMatch) {
+                    return { type: 'note', value: textMatch[1].trim() };
+                }
+                return { type: 'note', value: q };
+            }
+
+            // 10. Default: chat
+            return { type: 'chat', value: query };
+        }
+
+        // ============================================================
+        // EXECUTE INTENT
+        // ============================================================
+        async function executeIntent(intent) {
+            switch (intent.type) {
+                case 'interrupt':
+                    return interruptSpeaking();
+
+                case 'open_app': {
+                    if (intent.isSystem) {
+                        addToolMessage('Opening ' + intent.value + '...');
+                        // For system apps, try to open
+                        try {
+                            window.location.href = APP_URLS[intent.value] || 'settings://';
+                        } catch (e) {
+                            addToolMessage('Could not open ' + intent.value + ' natively. Try manually.');
+                        }
+                        return null;
+                    }
+                    const url = WEBSITE_MAP[intent.value];
+                    if (!url) {
+                        addToolMessage('App not found: ' + intent.value);
+                        return null;
+                    }
+                    addToolMessage('Opening ' + intent.value + '...');
+                    try { window.location.assign(url); return true; }
+                    catch (e) { try { window.location.href = url; return true; } catch (e2) {
+                        const a = document.createElement('a');
+                        a.href = url; a.target = '_blank';
+                        document.body.appendChild(a); a.click(); a.remove();
+                        return true;
+                    }}
+                }
+
+                case 'search': {
+                    const searchQuery = encodeURIComponent(intent.value);
+                    // Check if user wants to search on a specific platform
+                    const platformMatch = intent.value.match(/(youtube|google|wikipedia|github)\s+(.+)/i);
+                    if (platformMatch) {
+                        const platform = platformMatch[1].toLowerCase();
+                        const query = encodeURIComponent(platformMatch[2].trim());
+                        const urls = {
+                            youtube: 'https://youtube.com/results?search_query=' + query,
+                            google: 'https://google.com/search?q=' + query,
+                            wikipedia: 'https://en.wikipedia.org/wiki/' + query,
+                            github: 'https://github.com/search?q=' + query
+                        };
+                        if (urls[platform]) {
+                            addToolMessage('Searching on ' + platform + '...');
+                            window.location.href = urls[platform];
+                            return true;
+                        }
+                    }
+                    // Default Google search
+                    addToolMessage('Searching Google...');
+                    window.location.href = 'https://google.com/search?q=' + searchQuery;
+                    return true;
+                }
+
+                case 'weather': {
+                    const weather = await getWeather(intent.value || 'Delhi');
+                    const reply = 'Weather in ' + (intent.value || 'Delhi') + ': ' + weather;
+                    addMessage('Zishu', reply, 'assistant-msg');
+                    speakText(reply);
+                    return true;
+                }
+
+                case 'time': {
+                    const now = new Date();
+                    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                    const date = now.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
+                    const reply = 'Aaj ' + date + ' hai, abhi ' + time + ' baj rahe hain.';
+                    addMessage('Zishu', reply, 'assistant-msg');
+                    speakText(reply);
+                    return true;
+                }
+
+                case 'calculate': {
+                    try {
+                        const result = Function('"use strict"; return (' + intent.value + ')')();
+                        const reply = 'Result: ' + result;
+                        addMessage('Zishu', reply, 'assistant-msg');
+                        speakText(reply);
+                    } catch (e) {
+                        addMessage('Zishu', 'Could not calculate that.', 'assistant-msg');
+                    }
+                    return true;
+                }
+
+                case 'reminder': {
+                    const reminderText = intent.value;
+                    const reminders = JSON.parse(localStorage.getItem('zishu_reminders') || '[]');
+                    reminders.push({ text: reminderText, time: new Date().toISOString(), id: Date.now() });
+                    localStorage.setItem('zishu_reminders', JSON.stringify(reminders));
+                    const reply = 'Reminder set: ' + reminderText;
+                    addMessage('Zishu', reply, 'assistant-msg');
+                    speakText(reply);
+                    return true;
+                }
+
+                case 'note': {
+                    const noteText = intent.value;
+                    const notes = JSON.parse(localStorage.getItem('zishu_notes') || '[]');
+                    notes.push({ text: noteText, date: new Date().toISOString(), id: Date.now() });
+                    localStorage.setItem('zishu_notes', JSON.stringify(notes));
+                    const reply = 'Note saved: ' + noteText;
+                    addMessage('Zishu', reply, 'assistant-msg');
+                    speakText(reply);
+                    return true;
+                }
+
+                default:
+                    return null;
             }
         }
 
-        async function fetchWeather(city) {
+        // ============================================================
+        // WEATHER
+        // ============================================================
+        async function getWeather(city) {
             try {
                 const response = await fetch('https://wttr.in/' + encodeURIComponent(city) + '?format=%C+%t');
                 const data = await response.text();
                 return data.trim() || 'Weather data unavailable';
-            } catch {
-                return 'Could not fetch weather. Please try again.';
-            }
+            } catch { return 'Could not fetch weather.'; }
+        }
+
+        // ============================================================
+        // ADD MESSAGE
+        // ============================================================
+        function addMessage(sender, text, className) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message ' + className;
+            const senderSpan = document.createElement('span');
+            senderSpan.className = 'sender';
+            senderSpan.textContent = sender;
+            const contentSpan = document.createElement('span');
+            contentSpan.className = 'content';
+            contentSpan.textContent = text;
+            msgDiv.appendChild(senderSpan);
+            msgDiv.appendChild(contentSpan);
+            chatContainer.appendChild(msgDiv);
+            setTimeout(() => chatContainer.scrollTop = chatContainer.scrollHeight, 50);
         }
 
         function addToolMessage(text) {
@@ -727,11 +1234,11 @@
             div.className = 'tool-msg';
             div.textContent = text;
             chatContainer.appendChild(div);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            setTimeout(() => chatContainer.scrollTop = chatContainer.scrollHeight, 50);
         }
 
         // ============================================================
-        // STREAMING RESPONSE
+        // STREAM RESPONSE
         // ============================================================
         async function streamResponse(text) {
             setOrbState(STATE.SPEAKING);
@@ -747,12 +1254,14 @@
             msgDiv.appendChild(contentSpan);
             chatContainer.appendChild(msgDiv);
 
-            let accumulatedText = '';
+            let accumulated = '';
             for (let i = 0; i < text.length; i++) {
-                accumulatedText += text[i];
-                contentSpan.textContent = accumulatedText;
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-                await new Promise(r => setTimeout(r, 10 + Math.random() * 8));
+                accumulated += text[i];
+                contentSpan.textContent = accumulated;
+                if (i % 3 === 0 || i === text.length - 1) {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+                await new Promise(r => setTimeout(r, 8 + Math.random() * 4));
             }
 
             speakText(text);
@@ -760,7 +1269,7 @@
         }
 
         // ============================================================
-        // TTS
+        // TTS - WITH INTERRUPT
         // ============================================================
         function speakText(text) {
             try {
@@ -770,41 +1279,36 @@
 
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'hi-IN';
-                utterance.rate = 0.85;
-                utterance.pitch = 1.1;
+                utterance.rate = 0.9;
+                utterance.pitch = 1.05;
                 utterance.volume = 1;
 
                 const voices = window.speechSynthesis.getVoices();
-                const femaleVoices = voices.filter(v => 
-                    v.lang.startsWith('hi') && 
-                    (v.name.toLowerCase().includes('female') || 
-                     v.name.toLowerCase().includes('swara') ||
-                     v.name.toLowerCase().includes('lekh'))
+                const femaleVoices = voices.filter(v =>
+                    v.lang.startsWith('hi') &&
+                    (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('swara'))
                 );
-                if (femaleVoices.length > 0) {
-                    utterance.voice = femaleVoices[0];
-                } else {
+                if (femaleVoices.length > 0) utterance.voice = femaleVoices[0];
+                else {
                     const hindiVoice = voices.find(v => v.lang.startsWith('hi'));
                     if (hindiVoice) utterance.voice = hindiVoice;
                 }
 
-                utterance.onstart = () => {
-                    setOrbState(STATE.SPEAKING);
-                };
-
+                utterance.onstart = () => setOrbState(STATE.SPEAKING);
                 utterance.onend = () => {
                     currentUtterance = null;
                     if (!isProcessing) {
                         setOrbState(STATE.IDLE);
-                        scheduleRestart(1000);
+                        wakeWordDetected = false;
+                        scheduleRestart(800);
                     }
                 };
-
                 utterance.onerror = () => {
                     currentUtterance = null;
                     if (!isProcessing) {
                         setOrbState(STATE.IDLE);
-                        scheduleRestart(1000);
+                        wakeWordDetected = false;
+                        scheduleRestart(800);
                     }
                 };
 
@@ -815,7 +1319,8 @@
                 console.error('TTS error:', error);
                 if (!isProcessing) {
                     setOrbState(STATE.IDLE);
-                    scheduleRestart(1000);
+                    wakeWordDetected = false;
+                    scheduleRestart(800);
                 }
             }
         }
@@ -829,35 +1334,45 @@
             clearRestartTimer();
             setOrbState(STATE.THINKING);
 
-            // Add user message
-            const userDiv = document.createElement('div');
-            userDiv.className = 'message user-msg';
-            const senderSpan = document.createElement('span');
-            senderSpan.className = 'sender';
-            senderSpan.textContent = 'You';
-            const contentSpan = document.createElement('span');
-            contentSpan.className = 'content';
-            contentSpan.textContent = query;
-            userDiv.appendChild(senderSpan);
-            userDiv.appendChild(contentSpan);
-            chatContainer.appendChild(userDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            addMessage('You', query, 'user-msg');
+
+            // Check for interrupt first
+            if (query.toLowerCase().includes('stop') || query.toLowerCase().includes('ruk jao')) {
+                if (interruptSpeaking()) {
+                    isProcessing = false;
+                    return;
+                }
+            }
 
             // ============================================================
-            // STEP 1: LOCAL COMMAND DETECTION
+            // INTENT SYSTEM
             // ============================================================
-            const localCommand = detectLocalCommand(query);
-            if (localCommand && localCommand.type === 'open_website') {
-                openWebsiteDirectly(localCommand.value);
+            const intent = detectIntent(query);
+            console.log('🎯 INTENT DETECTED:', intent);
+
+            if (intent.type !== 'chat') {
+                const result = await executeIntent(intent);
                 isProcessing = false;
-                setOrbState(STATE.IDLE);
-                scheduleRestart(1200);
+                if (result !== true) {
+                    // If intent didn't produce a response, fallback to chat
+                    await handleChatQuery(query);
+                } else {
+                    setOrbState(STATE.IDLE);
+                    scheduleRestart(800);
+                }
                 return;
             }
 
             // ============================================================
-            // STEP 2: LLM FOR COMPLEX QUERIES
+            // CHAT - LLM
             // ============================================================
+            await handleChatQuery(query);
+        }
+
+        // ============================================================
+        // CHAT QUERY - LLM
+        // ============================================================
+        async function handleChatQuery(query) {
             conversationHistory.push({ role: 'user', content: query });
 
             try {
@@ -869,50 +1384,64 @@
                     },
                     body: JSON.stringify({
                         model: GROQ_MODEL,
-                        messages: conversationHistory,
-                        temperature: 0.4,
+                        messages: [
+                            { role: 'system', content: SYSTEM_PROMPT },
+                            ...conversationHistory
+                        ],
+                        temperature: 0.7,
                         max_tokens: 500,
                         stream: false
                     })
                 });
 
-                if (!response.ok) {
-                    throw new Error('API Error: ' + response.status);
-                }
+                if (!response.ok) throw new Error('API Error: ' + response.status);
 
                 const data = await response.json();
                 let reply = data.choices[0].message.content;
 
-                if (reply.startsWith('TOOL:')) {
-                    const toolResult = await executeTool(reply);
-                    
-                    const toolResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + GROQ_API_KEY
-                        },
-                        body: JSON.stringify({
-                            model: GROQ_MODEL,
-                            messages: [
-                                { role: 'system', content: SYSTEM_PROMPT },
-                                ...conversationHistory,
-                                { role: 'assistant', content: reply },
-                                { role: 'user', content: 'Tool result: ' + toolResult + '. Now respond naturally with a complete, helpful answer.' }
-                            ],
-                            temperature: 0.7,
-                            max_tokens: 500,
-                            stream: false
-                        })
-                    });
-                    const toolData = await toolResponse.json();
-                    const finalReply = toolData.choices[0].message.content;
-                    conversationHistory.push({ role: 'assistant', content: finalReply });
-                    await streamResponse(finalReply);
-                } else {
-                    conversationHistory.push({ role: 'assistant', content: reply });
-                    await streamResponse(reply);
+                // Check for tools in reply
+                if (reply.includes('TOOL:')) {
+                    const toolMatch = reply.match(/TOOL:\s*(\w+)\((.*)\)/);
+                    if (toolMatch) {
+                        const toolName = toolMatch[1];
+                        const args = toolMatch[2] ? toolMatch[2].split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')) : [];
+
+                        if (toolName === 'set_reminder') {
+                            const reminder = { text: args[0] || 'reminder', time: args[1] || 'now' };
+                            const reminders = JSON.parse(localStorage.getItem('zishu_reminders') || '[]');
+                            reminders.push(reminder);
+                            localStorage.setItem('zishu_reminders', JSON.stringify(reminders));
+                            reply = 'Reminder set: ' + reminder.text + ' at ' + reminder.time;
+                        } else if (toolName === 'create_note') {
+                            const note = args[0] || 'empty note';
+                            const notes = JSON.parse(localStorage.getItem('zishu_notes') || '[]');
+                            notes.push({ text: note, date: new Date().toISOString() });
+                            localStorage.setItem('zishu_notes', JSON.stringify(notes));
+                            reply = 'Note saved: ' + note;
+                        } else if (toolName === 'get_weather') {
+                            const city = args[0] || 'Delhi';
+                            const weather = await getWeather(city);
+                            reply = 'Weather in ' + city + ': ' + weather;
+                        } else if (toolName === 'get_time') {
+                            const tz = args[0] || 'Asia/Kolkata';
+                            const now = new Date();
+                            const time = now.toLocaleTimeString('en-US', { timeZone: tz, hour: '2-digit', minute: '2-digit' });
+                            reply = 'Current time in ' + tz.split('/').pop() + ': ' + time;
+                        }
+                    }
                 }
+
+                conversationHistory.push({ role: 'assistant', content: reply });
+
+                // Save memory
+                const memory = JSON.parse(localStorage.getItem('zishu_memory') || '{}');
+                const nameMatch = reply.match(/(?:your name is|aapka naam|tumhara naam|mera naam)\s+([a-zA-Z\u0900-\u097F\s]+)/i);
+                if (nameMatch && !memory.name) {
+                    memory.name = nameMatch[1].trim();
+                    localStorage.setItem('zishu_memory', JSON.stringify(memory));
+                }
+
+                await streamResponse(reply);
 
             } catch (error) {
                 console.error('Error:', error);
@@ -922,6 +1451,7 @@
                 isProcessing = false;
                 if (state !== STATE.LISTENING) {
                     setOrbState(STATE.IDLE);
+                    wakeWordDetected = false;
                     scheduleRestart(1000);
                 }
             }
@@ -933,41 +1463,36 @@
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space' && !e.repeat && !e.target.matches('input, textarea')) {
                 e.preventDefault();
-                toggleListening();
+                if (state === STATE.IDLE || state === STATE.SPEAKING) {
+                    wakeWordDetected = true;
+                    startListening();
+                    orbSub.textContent = 'Manual listening...';
+                } else if (state === STATE.LISTENING) {
+                    stopListening();
+                    setOrbState(STATE.IDLE);
+                }
             }
         });
 
         // ============================================================
-        // PRELOAD TTS VOICES
+        // PRELOAD TTS
         // ============================================================
         if (window.speechSynthesis) {
             window.speechSynthesis.getVoices();
-            window.speechSynthesis.onvoiceschanged = () => {
-                window.speechSynthesis.getVoices();
-            };
+            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
         }
 
         // ============================================================
         // INIT
         // ============================================================
         setOrbState(STATE.IDLE);
-        orbSub.textContent = 'Tap orb to start';
+        addMessage('Zishu', 'Namaste! Main Zishu hoon. Mujhe Zishan ne banaya hai, jo StardustOfficial ke founder hain. "Hey Zishu" boliye aur main aapki madad kar sakti hoon.', 'assistant-msg');
 
-        const welcomeDiv = document.createElement('div');
-        welcomeDiv.className = 'message assistant-msg';
-        const ws = document.createElement('span');
-        ws.className = 'sender';
-        ws.textContent = 'Zishu';
-        const wc = document.createElement('span');
-        wc.className = 'content';
-        wc.textContent = 'Namaste! Main Zishu hoon. Orb dabayein aur baat karein. Main Hindi aur English dono samajhti hoon.';
-        welcomeDiv.appendChild(ws);
-        welcomeDiv.appendChild(wc);
-        chatContainer.appendChild(welcomeDiv);
-
-        console.log('🚀 Zishu AI v2.8 - Hindi + English Aliases');
-        console.log('📝 SITE ALIASES:', Object.keys(SITE_ALIASES).join(', '));
-        console.log('🎯 Press Space or tap orb to start');
+        console.log('🚀 Zishu AI v4.0 - Professional Edition');
+        console.log('👤 Creator: Zishan (StardustOfficial)');
+        console.log('🎯 Wake Word: "Hey Zishu"');
+        console.log('🌐 Total Websites:', Object.keys(WEBSITE_MAP).length);
+        console.log('🎯 Press Space or say "Hey Zishu" to start');
     </script>
 </body>
 </html>
