@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Terms of Service — Zishu AI</title>
+    <meta name="description" content="Terms of Service for Zishu AI Voice Assistant. Understand the terms and conditions for using Zishu." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #F7F9FC;
+            --surface: #FFFFFF;
+            --surface2: #f1f4f9;
+            --text: #111827;
+            --text-secondary: #64748B;
+            --border: #E5E7EB;
+            --accent: #3B82F6;
+            --accent-secondary: #6366F1;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+            --radius: 20px;
+            --max-width: 860px;
+            --nav-bg: rgba(247, 249, 252, 0.85);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0B0F14;
+            --surface: #111827;
+            --surface2: #172033;
+            --text: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --border: #253044;
+            --accent: #60A5FA;
+            --accent-secondary: #818CF8;
+            --nav-bg: rgba(11, 15, 20, 0.88);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            transition: background 0.2s, color 0.2s;
+            min-height: 100vh;
+        }
+
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--nav-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.6rem 0;
+            transition: background 0.2s;
+        }
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.3px;
+            color: var(--text);
+            text-decoration: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .logo span {
+            color: var(--accent);
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+        }
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+        .nav-links a:hover {
+            color: var(--text);
+        }
+        .theme-toggle {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 60px;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover {
+            background: var(--border);
+        }
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .page-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 2rem 1.5rem 3rem;
+        }
+
+        .terms-header {
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5rem;
+        }
+        .terms-header h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            letter-spacing: -0.8px;
+            color: var(--text);
+        }
+        .terms-header h1 span {
+            color: var(--accent);
+        }
+        .terms-header .meta {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+        .terms-header .meta span {
+            display: inline-block;
+            margin-right: 1.5rem;
+        }
+
+        .terms-section {
+            margin: 2rem 0;
+        }
+        .terms-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            margin-bottom: 0.8rem;
+            color: var(--text);
+        }
+        .terms-section h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 1.2rem;
+            margin-bottom: 0.4rem;
+            color: var(--text);
+        }
+        .terms-section p {
+            color: var(--text-secondary);
+            margin-bottom: 0.8rem;
+            line-height: 1.8;
+        }
+        .terms-section ul {
+            color: var(--text-secondary);
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+            list-style-type: disc;
+        }
+        .terms-section ul li {
+            margin-bottom: 0.4rem;
+            line-height: 1.7;
+        }
+        .terms-section .highlight-box {
+            background: var(--surface2);
+            border-left: 4px solid var(--accent);
+            padding: 1.2rem 1.5rem;
+            border-radius: 8px;
+            margin: 1.2rem 0;
+        }
+        .terms-section .highlight-box p {
+            margin-bottom: 0;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 1.5rem;
+            transition: gap 0.2s;
+        }
+        .back-link:hover {
+            gap: 0.8rem;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 2rem 0 1.5rem;
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        footer .footer-links {
+            display: flex;
+            gap: 1.8rem;
+            flex-wrap: wrap;
+        }
+        footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        footer a:hover {
+            color: var(--text);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            .terms-header h1 {
+                font-size: 1.8rem;
+            }
+            .page-container {
+                padding: 1rem 1rem 2rem;
+            }
+            .terms-section h2 {
+                font-size: 1.3rem;
+            }
+            footer {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            footer .footer-links {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .terms-header h1 {
+                font-size: 1.5rem;
+            }
+            .terms-section ul {
+                padding-left: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <a class="logo" href="index.html">ZISH<span>U</span></a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="index.html#explore-page">Explore</a>
+                <a href="index.html#about-page">About Us</a>
+                <a href="privacy.html">Privacy</a>
+                <a href="terms.html" style="color:var(--accent);font-weight:500;">Terms</a>
+            </div>
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">☀️</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-container">
+        <div class="terms-header">
+            <h1>Terms of <span>Service</span></h1>
+            <div class="meta">
+                <span>Effective Date: 21 August 2026</span>
+                <span>Last Updated: 21 August 2026</span>
+            </div>
+        </div>
+
+        <div class="terms-section">
+            <p>Welcome to Zishu AI ("Zishu", "we", "our", or "us"). By using our voice assistant services, website, and related applications (collectively, the "Service"), you agree to be bound by these Terms of Service (the "Terms"). Please read these Terms carefully before using the Service.</p>
+            <p>If you do not agree to these Terms, you may not use the Service. By using the Service, you acknowledge that you have read, understood, and agree to be bound by these Terms.</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>1. Acceptance of Terms</h2>
+            <p>By accessing or using the Service, you agree to comply with and be bound by these Terms. These Terms constitute a legally binding agreement between you and Zishu. If you are using the Service on behalf of an organization, you represent that you have the authority to bind that organization to these Terms.</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>2. Description of Service</h2>
+            <p>Zishu is a voice-based AI assistant that enables users to interact using natural language. The Service includes:</p>
+            <ul>
+                <li>Voice recognition and processing</li>
+                <li>Natural language understanding and AI-powered responses</li>
+                <li>Voice and text-based interaction</li>
+                <li>Ability to perform tasks such as setting reminders, saving notes, and providing information</li>
+                <li>Language support for English and Hindi</li>
+            </ul>
+            <p>The Service is provided "as is" and may be updated, modified, or discontinued at any time without prior notice.</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>3. Eligibility</h2>
+            <p>To use the Service, you must:</p>
+            <ul>
+                <li>Be at least 13 years of age</li>
+                <li>Have the legal capacity to enter into a binding agreement</li>
+                <li>Not be prohibited from using the Service under applicable law</li>
+            </ul>
+            <p>If you are under 18, you represent that you have obtained parental or guardian consent to use the Service.</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>4. User Accounts and Authentication</h2>
+            <p>Zishu does not require user accounts or authentication to use the Service. You may use the Service anonymously without creating an account or providing personal information.</p>
+            <p>However, certain features may be enhanced or become available if you choose to create an account in the future. Any account information you provide will be handled in accordance with our Privacy Policy.</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>5. User Conduct and Responsibilities</h2>
+            <p>You agree to use the Service responsibly and in compliance with all applicable laws and regulations. You agree not to:</p>
+            <ul>
+                <li>Use the Service for any unlawful, harmful, or fraudulent purpose</li>
+                <li>Interfere with or disrupt the operation of the Service</li>
+                <li>Attempt to gain unauthorized access to any systems or data</li>
+                <li>Use the Service to harass, threaten, or abuse others</li>
+                <li>Transmit any malware, viruses, or harmful code</li>
+                <li>Impersonate any person or entity</li>
+                <li>Violate the rights of others, including intellectual property rights</li>
+                <li>Use the Service in any way that could damage, disable, or impair the Service</li>
+            </ul>
+            <p>You are solely responsible for your interactions with the Service and any consequences that may arise from your use.</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>6. Intellectual Property</h2>
+            <p>The Service and all content, features, and functionality, including but not limited to text, graphics, logos, icons, images, audio clips, and software, are owned by Zishu and its licensors and are protected by copyright, trademark, and other intellectual property laws.</p>
+            <h3>6.1 Zishu Brand and Trademarks</h3>
+            <p>The names "Zishu," "ZISHU," and related logos, designs, and slogans are trademarks of StardustOfficial. You may not use these trademarks without our prior written permission.</p>
+            <h3>6.2 User-Generated Content</h3>
+            <p>Any content you create, share, or generate using the Service remains your property. However, by using the Service, you grant us a non-exclusive, worldwide, royalty-free license to use, reproduce, and distribute such content solely for the purpose of providing and improving the Service.</p>
+            <h3>6.3 Feedback and Suggestions</h3>
+            <p>Any feedback, suggestions, or ideas you provide about the Service may be used by us without any obligation to you. We may incorporate your feedback into the Service without compensation or attribution.</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>7. Data Privacy and Security</h2>
+            <p>Your privacy is important to us. Our data practices are described in our Privacy Policy, which is incorporated into these Terms by reference. By using the Service, you consent to the collection, processing, and use of data as described in the Privacy Policy.</p>
+            <div class="highlight-box">
+                <p><strong>Key Privacy Commitments:</strong> Voice inputs are processed in real-time and not permanently stored. Conversation history is temporary and stored locally in your browser. Notes, reminders, and alarms are stored only on your device. We do not require accounts or collect personal information to use the Service.</p>
+            </div>
+        </div>
+
+        <div class="terms-section">
+            <h2>8. Voluntary Support and Payments</h2>
+            <p>Zishu offers voluntary support options that are completely optional. You are not required to make any payment to use the Service.</p>
+            <h3>8.1 Voluntary Contributions</h3>
+            <p>Users may choose to support Zishu through voluntary contributions. These contributions are:</p>
+            <ul>
+                <li>Completely optional and not required for Service access</li>
+                <li>Non-refundable and not a purchase of any product, service, or feature</li>
+                <li>A gesture of support for continued development and improvement</li>
+                <li>Not a subscription, membership fee, or payment for services</li>
+            </ul>
+            <h3>8.2 No Premium Features</h3>
+            <p>Zishu does not offer premium features, subscriptions, or paid plans. All users have access to the same features regardless of whether they choose to support the project.</p>
+            <h3>8.3 Refund Policy</h3>
+            <p>All contributions are considered voluntary donations and are non-refundable. If you believe there has been an error in processing your contribution, please contact us at <a href="mailto:support.stardustofficial@gmail.com" style="color:var(--accent);">support.stardustofficial@gmail.com</a>.</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>9. Third-Party Services</h2>
+            <p>The Service may integrate with or link to third-party services and websites. These third-party services are subject to their own terms and policies, and we are not responsible for their content, practices, or availability.</p>
+            <p>Third-party services we may integrate with include:</p>
+            <ul>
+                <li>AI processing services</li>
+                <li>Firebase services (for backend functionality)</li>
+                <li>Browser-based speech recognition and text-to-speech</li>
+            </ul>
+            <p>Your use of third-party services is at your own risk, and we encourage you to review their terms and privacy policies.</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>10. Disclaimer of Warranties</h2>
+            <p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT ANY WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE, OR THAT ANY DEFECTS WILL BE CORRECTED.</p>
+            <p>TO THE FULLEST EXTENT PERMITTED BY LAW, WE DISCLAIM ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.</p>
+            <p>WE DO NOT WARRANT THE ACCURACY, RELIABILITY, OR COMPLETENESS OF ANY INFORMATION PROVIDED THROUGH THE SERVICE. AI-generated responses may contain errors, inaccuracies, or outdated information.</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>11. Limitation of Liability</h2>
+            <p>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, ZISHU AND ITS AFFILIATES, OFFICERS, DIRECTORS, EMPLOYEES, AND AGENTS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF THE SERVICE.</p>
+            <p>IN NO EVENT SHALL OUR TOTAL LIABILITY TO YOU FOR ALL CLAIMS ARISING OUT OF OR RELATING TO THESE TERMS OR THE SERVICE EXCEED THE AMOUNT YOU HAVE PAID TO US IN THE PAST 12 MONTHS, OR ONE HUNDRED DOLLARS ($100) IF YOU HAVE NOT MADE ANY PAYMENTS.</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>12. Indemnification</h2>
+            <p>You agree to indemnify, defend, and hold harmless Zishu and its affiliates, officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable attorneys' fees) arising out of or in connection with:</p>
+            <ul>
+                <li>Your use of the Service</li>
+                <li>Your violation of these Terms</li>
+                <li>Your violation of any applicable law or regulation</li>
+                <li>Your violation of any third-party rights</li>
+            </ul>
+        </div>
+
+        <div class="terms-section">
+            <h2>13. Termination</h2>
+            <p>We may terminate or suspend your access to the Service at any time, with or without cause or notice, including but not limited to violation of these Terms or applicable law.</p>
+            <p>Upon termination, all provisions of these Terms that by their nature should survive termination shall survive, including but not limited to intellectual property, disclaimer of warranties, limitation of liability, and indemnification.</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>14. Modifications to Terms</h2>
+            <p>We reserve the right to modify these Terms at any time. We will notify you of changes by posting the updated Terms on this page and updating the "Last Updated" date. Your continued use of the Service after any changes constitutes your acceptance of the new Terms.</p>
+            <p>If we make material changes to these Terms, we will provide a more prominent notice on our website or through other appropriate channels.</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>15. Governing Law and Dispute Resolution</h2>
+            <p>These Terms shall be governed by and construed in accordance with the laws of India, without regard to its conflict of law provisions.</p>
+            <p>Any dispute arising out of or relating to these Terms or the Service shall be resolved through good-faith negotiations. If the dispute cannot be resolved through negotiations, it shall be submitted to binding arbitration in accordance with the rules of the Indian Arbitration and Conciliation Act, 1996, with the arbitration to be conducted in English in New Delhi, India.</p>
+            <p>Each party agrees to submit to the exclusive jurisdiction of the courts located in New Delhi, India for any matters not subject to arbitration.</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>16. General Provisions</h2>
+            <h3>16.1 Entire Agreement</h3>
+            <p>These Terms, together with our Privacy Policy, constitute the entire agreement between you and Zishu regarding the Service and supersede all prior agreements and understandings.</p>
+            <h3>16.2 Severability</h3>
+            <p>If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions shall remain in full force and effect.</p>
+            <h3>16.3 No Waiver</h3>
+            <p>Our failure to enforce any right or provision of these Terms shall not be deemed a waiver of such right or provision.</p>
+            <h3>16.4 Assignment</h3>
+            <p>You may not assign these Terms or any rights or obligations hereunder without our prior written consent. We may assign these Terms freely.</p>
+            <h3>16.5 Force Majeure</h3>
+            <p>We shall not be liable for any failure to perform our obligations due to circumstances beyond our reasonable control, including but not limited to acts of God, war, terrorism, strikes, and governmental actions.</p>
+            <h3>16.6 Relationship</h3>
+            <p>Nothing in these Terms creates any agency, partnership, joint venture, or employment relationship between you and Zishu.</p>
+        </div>
+
+        <div class="terms-section">
+            <h2>17. Contact Information</h2>
+            <p>If you have any questions, concerns, or requests regarding these Terms of Service, please contact us:</p>
+            <p>
+                <strong>Email:</strong> <a href="mailto:support.stardustofficial@gmail.com" style="color:var(--accent);">support.stardustofficial@gmail.com</a><br />
+                <strong>Brand:</strong> StardustOfficial<br />
+                <strong>Service:</strong> Zishu AI Voice Assistant
+            </p>
+        </div>
+
+        <a href="index.html" class="back-link">← Back to Zishu</a>
+    </div>
+
+    <footer>
+        <div><span style="font-weight:700;">ZISHU</span> <span style="color:var(--text-secondary)">Your voice. Your assistant.</span></div>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="terms.html" style="color:var(--accent);font-weight:500;">Terms</a>
+        </div>
+        <div style="color:var(--text-secondary);">© 2026 Zishu. All rights reserved.</div>
+    </footer>
+
+    <script>
+        // Theme Toggle
+        (function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const html = document.documentElement;
+            const savedTheme = localStorage.getItem('zishu-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            html.setAttribute('data-theme', savedTheme);
+            themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '☾';
+
+            themeToggle.addEventListener('click', function() {
+                const current = html.getAttribute('data-theme');
+                const next = current === 'dark' ? 'light' : 'dark';
+                html.setAttribute('data-theme', next);
+                localStorage.setItem('zishu-theme', next);
+                themeToggle.textContent = next === 'dark' ? '☀️' : '☾';
+            });
+        })();
+    </script>
+</body>
+</html>
