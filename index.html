@@ -1,795 +1,3916 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zishu AI — Your Voice, Your Assistant</title>
-  <meta name="description" content="Zishu is a personal AI voice assistant for Android that helps you interact naturally using voice." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zishu — Your Personal AI Assistant</title>
+    <meta name="description" content="Zishu is a personal AI voice assistant. Talk naturally, ask questions, and get help through voice." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
 
-    :root {
-      --bg: #F7F9FC;
-      --surface: #FFFFFF;
-      --surface2: #f1f4f9;
-      --text: #111827;
-      --text-secondary: #64748B;
-      --border: #E5E7EB;
-      --accent: #3B82F6;
-      --accent-secondary: #6366F1;
-      --shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
-      --radius: 20px;
-      --max-width: 1160px;
-      --nav-bg: rgba(247, 249, 252, 0.85);
-    }
+    <!-- Firebase SDK (kept for potential future use, auth removed) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js">
+    </script>
 
-    [data-theme="dark"] {
-      --bg: #0B0F14;
-      --surface: #111827;
-      --surface2: #172033;
-      --text: #F8FAFC;
-      --text-secondary: #94A3B8;
-      --border: #253044;
-      --accent: #60A5FA;
-      --accent-secondary: #818CF8;
-      --shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-      --nav-bg: rgba(11, 15, 20, 0.88);
-    }
+    <style>
+        /* ============================================================
+           BASE RESET & VARIABLES (unchanged, keep as is)
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-      transition: background 0.2s, color 0.2s;
-      padding: 0 1.5rem;
-    }
+        :root {
+            --bg: #F7F9FC;
+            --surface: #FFFFFF;
+            --surface2: #f1f4f9;
+            --text: #111827;
+            --text-secondary: #64748B;
+            --border: #E5E7EB;
+            --accent: #3B82F6;
+            --accent-secondary: #6366F1;
+            --accent-light: rgba(59, 130, 246, 0.08);
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.06);
+            --radius: 20px;
+            --radius-lg: 28px;
+            --max-width: 1200px;
+            --nav-bg: rgba(247, 249, 252, 0.85);
+            --zishu-bg: #f4f7fc;
+            --zishu-surface: #FFFFFF;
+            --zishu-border: #e9edf4;
+            --zishu-text: #1a2332;
+            --zishu-text-secondary: #6b7a8f;
+            --zishu-assistant-bg: #f1f4f9;
+            --zishu-user-bg: #3b82f6;
+            --zishu-tool-bg: #e9edf4;
+            --zishu-stop-bg: #f8d7da;
+            --zishu-action-bg: #d4edda;
+            --modal-overlay: rgba(0, 0, 0, 0.4);
+            --notice-bg: #e8f0fe;
+            --notice-border: #b6d4fe;
+            --notice-text: #1a56db;
+        }
 
-    .container {
-      max-width: var(--max-width);
-      margin: 0 auto;
-      padding: 1rem 0 3rem;
-    }
+        [data-theme="dark"] {
+            --bg: #0B0F14;
+            --surface: #111827;
+            --surface2: #172033;
+            --text: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --border: #253044;
+            --accent: #60A5FA;
+            --accent-secondary: #818CF8;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
+            --nav-bg: rgba(11, 15, 20, 0.88);
+            --zishu-bg: #0a0e17;
+            --zishu-surface: #131b2e;
+            --zishu-border: #1e2a3f;
+            --zishu-text: #e8edf5;
+            --zishu-text-secondary: #8aa0c0;
+            --zishu-assistant-bg: #1a2438;
+            --zishu-user-bg: #3b82f6;
+            --zishu-tool-bg: #1a2438;
+            --zishu-stop-bg: #2a1a1a;
+            --zishu-action-bg: #1a2a1a;
+            --modal-overlay: rgba(0, 0, 0, 0.6);
+            --notice-bg: #1a2a3a;
+            --notice-border: #1a3a5a;
+            --notice-text: #7ab7ff;
+        }
 
-    /* NAV */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: var(--nav-bg);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      padding: 0.6rem 0;
-      transition: box-shadow 0.2s, background 0.2s;
-    }
-    nav.scrolled {
-      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-    }
-    .nav-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      max-width: var(--max-width);
-      margin: 0 auto;
-      padding: 0 1.5rem;
-    }
-    .logo {
-      font-weight: 700;
-      font-size: 1.25rem;
-      letter-spacing: -0.3px;
-      color: var(--text);
-      text-decoration: none;
-    }
-    .logo span {
-      color: var(--accent);
-    }
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 2rem;
-      font-size: 0.9rem;
-    }
-    .nav-links a {
-      color: var(--text-secondary);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    .nav-links a:hover {
-      color: var(--text);
-    }
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 1.2rem;
-    }
-    .theme-toggle {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 60px;
-      width: 38px;
-      height: 38px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      cursor: pointer;
-      color: var(--text-secondary);
-      transition: 0.2s;
-    }
-    .theme-toggle:hover {
-      background: var(--border);
-    }
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 0.5rem 1.4rem;
-      border-radius: 60px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      text-decoration: none;
-      display: inline-block;
-      letter-spacing: -0.2px;
-    }
-    .btn-primary:hover {
-      background: var(--accent-secondary);
-      transform: scale(0.97);
-    }
-    .btn-secondary {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.5rem 1.4rem;
-      border-radius: 60px;
-      font-weight: 500;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: 0.2s;
-      text-decoration: none;
-      display: inline-block;
-    }
-    .btn-secondary:hover {
-      background: var(--surface2);
-      border-color: var(--text-secondary);
-    }
-    .hamburger {
-      display: none;
-      flex-direction: column;
-      gap: 4px;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-    }
-    .hamburger span {
-      width: 24px;
-      height: 2px;
-      background: var(--text);
-      border-radius: 4px;
-      transition: 0.2s;
-    }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            transition: background 0.2s, color 0.2s;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-    /* HERO */
-    .hero {
-      display: flex;
-      align-items: center;
-      gap: 4rem;
-      padding: 3rem 0 2rem;
-      flex-wrap: wrap;
-    }
-    .hero-content {
-      flex: 1 1 45%;
-    }
-    .hero-badge {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      padding: 0.2rem 1rem;
-      border-radius: 60px;
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      display: inline-block;
-      margin-bottom: 1.2rem;
-      letter-spacing: 0.3px;
-    }
-    .hero h1 {
-      font-size: 3.4rem;
-      font-weight: 700;
-      line-height: 1.1;
-      letter-spacing: -1.2px;
-      margin-bottom: 1rem;
-    }
-    .hero h1 .highlight {
-      color: var(--accent);
-    }
-    .hero p {
-      color: var(--text-secondary);
-      font-size: 1.15rem;
-      max-width: 480px;
-      margin-bottom: 2rem;
-    }
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      align-items: center;
-      margin-bottom: 1.2rem;
-    }
-    .trust-line {
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .trust-line svg {
-      width: 16px;
-      height: 16px;
-      fill: var(--accent);
-    }
+        /* ============================================================
+           NAV (unchanged)
+           ============================================================ */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--nav-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.6rem 0;
+            transition: box-shadow 0.2s, background 0.2s;
+        }
+        nav.scrolled {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.3px;
+            color: var(--text);
+            text-decoration: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .logo span {
+            color: var(--accent);
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            font-size: 0.9rem;
+        }
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+            cursor: pointer;
+            position: relative;
+            padding: 0.2rem 0;
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.2s ease;
+        }
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+        .nav-links a:hover {
+            color: var(--text);
+        }
+        .nav-links a.active {
+            color: var(--accent);
+            font-weight: 500;
+        }
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
 
-    /* phone mock */
-    .hero-visual {
-      flex: 1 1 40%;
-      display: flex;
-      justify-content: center;
-    }
-    .phone-mock {
-      background: var(--surface);
-      border-radius: 40px;
-      padding: 1.2rem 0.8rem 0.8rem;
-      box-shadow: var(--shadow), 0 20px 60px rgba(0,0,0,0.04);
-      border: 1px solid var(--border);
-      width: 100%;
-      max-width: 320px;
-      transition: background 0.2s;
-    }
-    .phone-screen {
-      background: var(--bg);
-      border-radius: 28px;
-      padding: 1.2rem 1rem;
-      min-height: 480px;
-      display: flex;
-      flex-direction: column;
-      border: 1px solid var(--border);
-    }
-    .phone-header {
-      display: flex;
-      justify-content: space-between;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 0.6rem;
-    }
-    .phone-header span:first-child { color: var(--text); }
-    .orb-area {
-      flex:1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-    }
-    .orb {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent-secondary));
-      box-shadow: 0 0 30px rgba(59,130,246,0.2);
-      animation: breath 2.4s ease-in-out infinite;
-      transition: 0.2s;
-    }
-    @keyframes breath {
-      0% { transform: scale(0.94); opacity: 0.8; }
-      50% { transform: scale(1.04); opacity: 1; }
-      100% { transform: scale(0.94); opacity: 0.8; }
-    }
-    .orb-label {
-      color: var(--text-secondary);
-      font-size: 0.8rem;
-      font-weight: 500;
-      letter-spacing: 0.3px;
-    }
-    .convo-example {
-      background: var(--surface2);
-      border-radius: 18px;
-      padding: 0.8rem 1rem;
-      margin-top: 1rem;
-      font-size: 0.85rem;
-      border: 1px solid var(--border);
-    }
-    .convo-example .you {
-      color: var(--text-secondary);
-      margin-bottom: 0.2rem;
-    }
-    .convo-example .zishu {
-      color: var(--accent);
-      font-weight: 500;
-    }
+        .theme-toggle {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 60px;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover {
+            background: var(--border);
+        }
 
-    /* sections */
-    section {
-      margin: 5rem 0;
-    }
-    .section-title {
-      font-size: 2.4rem;
-      font-weight: 700;
-      letter-spacing: -0.6px;
-      margin-bottom: 0.4rem;
-    }
-    .section-sub {
-      color: var(--text-secondary);
-      font-size: 1.1rem;
-      margin-bottom: 2.5rem;
-    }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1.4rem;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            text-decoration: none;
+            display: inline-block;
+            letter-spacing: -0.2px;
+        }
+        .btn-primary:hover {
+            background: var(--accent-secondary);
+            transform: scale(0.97);
+        }
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 1.4rem;
+            border-radius: 60px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-secondary:hover {
+            background: var(--surface2);
+            border-color: var(--text-secondary);
+        }
 
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
-      gap: 1.8rem;
-    }
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
-      gap: 2rem;
-    }
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.8rem 1.4rem;
-      transition: 0.2s;
-      box-shadow: var(--shadow);
-    }
-    .card:hover {
-      transform: translateY(-3px);
-      border-color: var(--accent);
-    }
-    .card h4 {
-      margin-bottom: 0.3rem;
-      font-weight: 600;
-    }
-    .card p {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-    }
-    .badge-coming {
-      background: var(--surface2);
-      color: var(--text-secondary);
-      font-size: 0.65rem;
-      padding: 0.1rem 0.7rem;
-      border-radius: 60px;
-      display: inline-block;
-      margin-top: 0.4rem;
-      border: 1px solid var(--border);
-    }
+        .btn-ghost {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 60px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-ghost:hover {
+            background: var(--surface2);
+            color: var(--text);
+        }
 
-    .step {
-      text-align: center;
-    }
-    .step-icon {
-      font-size: 2.2rem;
-      background: var(--surface);
-      width: 72px;
-      height: 72px;
-      border-radius: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 1rem;
-      border: 1px solid var(--border);
-    }
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: var(--text);
+            border-radius: 4px;
+            transition: 0.2s;
+        }
 
-    .use-case-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
-      gap: 1.2rem;
-    }
-    .use-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 60px;
-      padding: 0.8rem 1.4rem;
-      font-size: 0.95rem;
-      font-weight: 500;
-      text-align: center;
-      color: var(--text);
-      transition: 0.2s;
-    }
-    .use-card:hover {
-      border-color: var(--accent);
-    }
+        /* ============================================================
+           PAGE CONTAINER
+           ============================================================ */
+        .page-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 1rem 1.5rem 2rem;
+        }
 
-    .pricing-card {
-      max-width: 420px;
-      margin: 0 auto;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 2.5rem 2rem;
-      text-align: center;
-      box-shadow: var(--shadow);
-    }
-    .pricing-card .price {
-      font-size: 3.4rem;
-      font-weight: 700;
-      letter-spacing: -1px;
-      margin: 0.5rem 0;
-    }
-    .pricing-card .price-label {
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-    .pricing-card ul {
-      list-style: none;
-      text-align: left;
-      margin: 1.8rem 0;
-    }
-    .pricing-card ul li {
-      padding: 0.3rem 0;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      color: var(--text-secondary);
-    }
-    .pricing-card ul li::before {
-      content: "✓";
-      color: var(--accent);
-      font-weight: 700;
-    }
-    .btn-block {
-      width: 100%;
-      padding: 0.9rem;
-      font-size: 1rem;
-    }
+        /* ============================================================
+           PAGE VISIBILITY — updated with about page
+           ============================================================ */
+        #home-page {
+            display: block;
+        }
+        #explore-page {
+            display: none;
+        }
+        #support-zishu-page {
+            display: none;
+        }
+        #language-page {
+            display: none;
+        }
+        #customer-support-page {
+            display: none;
+        }
+        #about-page {
+            display: none;
+        }
 
-    /* purchase flow */
-    .purchase-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 2rem;
-      max-width: 520px;
-      margin: 2rem auto;
-      box-shadow: var(--shadow);
-    }
-    .purchase-box input {
-      width: 100%;
-      padding: 0.8rem 1rem;
-      border: 1px solid var(--border);
-      border-radius: 60px;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0.6rem 0 1rem;
-      font-size: 0.95rem;
-    }
-    .purchase-box .status {
-      font-size: 0.9rem;
-      padding: 0.6rem 1rem;
-      border-radius: 60px;
-      background: var(--surface2);
-      margin: 0.6rem 0;
-      border: 1px solid var(--border);
-    }
-    .flex-row {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+        /* ============================================================
+           HOME / ASSISTANT PAGE (unchanged)
+           ============================================================ */
+        .assistant-wrapper {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 0.5rem 0 1rem;
+        }
 
-    .faq-item {
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 0;
-      cursor: pointer;
-    }
-    .faq-question {
-      font-weight: 600;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .faq-answer {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.25s ease, padding 0.2s;
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-    }
-    .faq-item.open .faq-answer {
-      max-height: 300px;
-      padding-top: 0.8rem;
-    }
+        .assistant-header {
+            text-align: center;
+            padding: 0.2rem 0 0.2rem;
+        }
+        .assistant-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text);
+        }
+        .assistant-header h1 span {
+            color: var(--accent);
+        }
+        .assistant-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-top: 0.1rem;
+        }
 
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 2.5rem 0 1.5rem;
-      margin-top: 3rem;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-    }
-    footer .footer-links {
-      display: flex;
-      gap: 1.8rem;
-      flex-wrap: wrap;
-    }
-    footer a {
-      color: var(--text-secondary);
-      text-decoration: none;
-    }
-    footer a:hover {
-      color: var(--text);
-    }
+        /* ============================================================
+           ZISHU ASSISTANT — PRESERVED (unchanged)
+           ============================================================ */
+        .zishu-assistant {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--zishu-bg);
+            color: var(--zishu-text);
+            border-radius: 24px;
+            padding: 20px 28px 18px;
+            transition: background 0.4s ease, color 0.4s ease;
+            user-select: none;
+            margin-top: 0.5rem;
+            border: 1px solid var(--zishu-border);
+        }
+        .zishu-assistant.dark-mode {
+            background: var(--zishu-bg);
+            color: var(--zishu-text);
+        }
+        .zishu-assistant.dark-mode #zishu-chat-wrapper {
+            background: var(--zishu-surface);
+            border-color: var(--zishu-border);
+        }
+        .zishu-assistant.dark-mode #zishu-chat-container::-webkit-scrollbar-track {
+            background: #1a2438;
+        }
+        .zishu-assistant.dark-mode #zishu-chat-container::-webkit-scrollbar-thumb {
+            background: #2a3a55;
+        }
+        .zishu-assistant.dark-mode .zishu-assistant-msg {
+            background: var(--zishu-assistant-bg);
+            color: var(--zishu-text);
+        }
+        .zishu-assistant.dark-mode .zishu-user-msg {
+            background: var(--zishu-user-bg);
+        }
+        .zishu-assistant.dark-mode .zishu-tool-msg {
+            background: var(--zishu-tool-bg);
+            color: var(--zishu-text-secondary);
+        }
+        .zishu-assistant.dark-mode .zishu-stop-msg {
+            background: var(--zishu-stop-bg);
+            color: #ff6b6b;
+        }
+        .zishu-assistant.dark-mode .zishu-action-msg {
+            background: var(--zishu-action-bg);
+            color: #4caf50;
+        }
+        .zishu-assistant.dark-mode #zishu-orb-status {
+            color: var(--zishu-text);
+        }
+        .zishu-assistant.dark-mode #zishu-orb-sub {
+            color: var(--zishu-text-secondary);
+        }
 
-    @media (max-width: 800px) {
-      .hero { flex-direction: column; text-align: center; gap: 2rem; }
-      .hero p { margin-left: auto; margin-right: auto; }
-      .hero-actions { justify-content: center; }
-      .trust-line { justify-content: center; }
-      .nav-links { display: none; }
-      .hamburger { display: flex; }
-      .nav-links.open { display: flex; flex-direction: column; position: absolute; top: 60px; left: 0; right: 0; background: var(--surface); padding: 1.5rem; gap: 1.2rem; border-bottom: 1px solid var(--border); }
-      .section-title { font-size: 2rem; }
-    }
-    @media (max-width: 500px) {
-      body { padding: 0 1rem; }
-      .hero h1 { font-size: 2.5rem; }
-      .pricing-card { padding: 1.8rem 1rem; }
-    }
+        /* Orb Container */
+        #zishu-orb-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0px 0 8px;
+            flex-shrink: 0;
+            position: relative;
+            perspective: 800px;
+        }
 
-    /* utils */
-    .text-center { text-align: center; }
-    .mt-1 { margin-top: 1rem; }
-    .mb-1 { margin-bottom: 1rem; }
-    .gap-1 { gap: 1rem; }
-    .hidden { display: none; }
-  </style>
+        #zishu-orb-wrapper {
+            width: 130px;
+            height: 130px;
+            position: relative;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: zishu-floatOrb 4s ease-in-out infinite;
+            z-index: 10;
+        }
+        #zishu-orb-wrapper:hover {
+            transform: scale(1.05) rotateX(2deg);
+        }
+        #zishu-orb-wrapper:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes zishu-floatOrb {
+            0%,
+            100% {
+                transform: translateY(0px) rotateX(0deg);
+            }
+            50% {
+                transform: translateY(-8px) rotateX(2deg);
+            }
+        }
+
+        #zishu-orb-glow {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            top: -25px;
+            left: -25px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+            filter: blur(20px);
+            animation: zishu-glowPulse 3s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+        @keyframes zishu-glowPulse {
+            0%,
+            100% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+        }
+
+        #zishu-orb {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: radial-gradient(ellipse at 30% 25%, #ffffff, #e8ecf0 50%, #c8ced6 80%, #b0b8c4);
+            box-shadow:
+                inset -20px -20px 40px rgba(0, 0, 0, 0.12),
+                inset 15px 15px 30px rgba(255, 255, 255, 0.8),
+                0 20px 60px rgba(59, 130, 246, 0.15),
+                0 0 40px rgba(59, 130, 246, 0.05);
+            transform: rotateX(-5deg) rotateY(-5deg);
+            transition: all 0.6s ease;
+            z-index: 1;
+            cursor: pointer;
+            background-image:
+                radial-gradient(ellipse at 35% 30%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+                radial-gradient(ellipse at 65% 70%, rgba(200, 210, 220, 0.3) 0%, transparent 40%),
+                radial-gradient(ellipse at 80% 20%, rgba(255, 255, 255, 0.2) 0%, transparent 30%);
+        }
+
+        #zishu-orb-ring {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            top: -5px;
+            left: -5px;
+            border-radius: 50%;
+            border: 2px solid rgba(59, 130, 246, 0.08);
+            box-shadow: inset 0 0 30px rgba(59, 130, 246, 0.03);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        #zishu-orb-visor {
+            position: absolute;
+            width: 80px;
+            height: 56px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateX(5deg);
+            border-radius: 50%;
+            background: radial-gradient(ellipse at 45% 40%, #2a2a3a, #0a0a12 60%, #000000);
+            box-shadow:
+                inset -5px -5px 15px rgba(0, 0, 0, 0.5),
+                inset 5px 5px 15px rgba(255, 255, 255, 0.05),
+                0 0 30px rgba(59, 130, 246, 0.08);
+            z-index: 2;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            overflow: hidden;
+        }
+        #zishu-orb-visor::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 12px;
+            width: 20px;
+            height: 12px;
+            border-radius: 50%;
+            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+            transform: rotate(-20deg);
+        }
+
+        #zishu-orb-eyes {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 20px;
+            z-index: 3;
+        }
+        .zishu-eye {
+            width: 12px;
+            height: 16px;
+            border-radius: 50%;
+            background: radial-gradient(ellipse at 50% 40%, #8cf0ff, #3b82f6 50%, #1a4a8a);
+            box-shadow:
+                0 0 20px rgba(59, 130, 246, 0.4),
+                0 0 40px rgba(59, 130, 246, 0.15),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3);
+            animation: zishu-eyeGlow 3s ease-in-out infinite;
+            transition: all 0.3s ease;
+        }
+        .zishu-eye.left {
+            animation-delay: 0.2s;
+        }
+        .zishu-eye.right {
+            animation-delay: 0.8s;
+        }
+
+        @keyframes zishu-eyeGlow {
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.15);
+                opacity: 1;
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(59, 130, 246, 0.6), 0 0 60px rgba(59, 130, 246, 0.25);
+                opacity: 0.95;
+            }
+        }
+
+        .zishu-eye::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            filter: blur(1px);
+        }
+
+        /* Energy Ribbon */
+        #zishu-orb-ribbon {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            top: -25px;
+            left: -25px;
+            z-index: 4;
+            pointer-events: none;
+            transform: rotateX(-10deg) rotateY(5deg);
+            filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.15));
+        }
+
+        .zishu-ribbon-wave {
+            position: absolute;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: #3b82f6;
+            border-right-color: #7b6cf7;
+            border-bottom-color: #4fc3f7;
+            border-left-color: #00bcd4;
+            opacity: 0.6;
+            animation: zishu-ribbonSpin 8s linear infinite;
+            filter: blur(1px);
+        }
+        .zishu-ribbon-wave:nth-child(1) {
+            width: 170px;
+            height: 170px;
+            top: 5px;
+            left: 5px;
+            border-width: 3px;
+            animation-duration: 12s;
+            border-top-color: #3b82f6;
+            border-right-color: #64b5f6;
+            border-bottom-color: #4fc3f7;
+            border-left-color: #00bcd4;
+            opacity: 0.5;
+        }
+        .zishu-ribbon-wave:nth-child(2) {
+            width: 155px;
+            height: 155px;
+            top: 12px;
+            left: 12px;
+            border-width: 2.5px;
+            animation-duration: 9s;
+            animation-direction: reverse;
+            border-top-color: #7b6cf7;
+            border-right-color: #3b82f6;
+            border-bottom-color: #00bcd4;
+            border-left-color: #4fc3f7;
+            opacity: 0.4;
+        }
+        .zishu-ribbon-wave:nth-child(3) {
+            width: 140px;
+            height: 140px;
+            top: 20px;
+            left: 20px;
+            border-width: 2px;
+            animation-duration: 15s;
+            border-top-color: #4fc3f7;
+            border-right-color: #3b82f6;
+            border-bottom-color: #7b6cf7;
+            border-left-color: #64b5f6;
+            opacity: 0.35;
+        }
+        .zishu-ribbon-wave:nth-child(4) {
+            width: 125px;
+            height: 125px;
+            top: 27px;
+            left: 27px;
+            border-width: 2px;
+            animation-duration: 7s;
+            animation-direction: reverse;
+            border-top-color: #00bcd4;
+            border-right-color: #4fc3f7;
+            border-bottom-color: #3b82f6;
+            border-left-color: #7b6cf7;
+            opacity: 0.3;
+        }
+
+        @keyframes zishu-ribbonSpin {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+            50% {
+                transform: rotate(180deg) scale(1.02);
+            }
+            100% {
+                transform: rotate(360deg) scale(1);
+            }
+        }
+
+        /* Orb States */
+        #zishu-orb-wrapper.listening #zishu-orb {
+            box-shadow:
+                inset -20px -20px 40px rgba(0, 0, 0, 0.12),
+                inset 15px 15px 30px rgba(255, 255, 255, 0.8),
+                0 20px 60px rgba(59, 130, 246, 0.3),
+                0 0 80px rgba(59, 130, 246, 0.1);
+            animation: zishu-orbPulse 1.2s ease-in-out infinite;
+        }
+        #zishu-orb-wrapper.listening #zishu-orb-visor {
+            box-shadow:
+                inset -5px -5px 15px rgba(0, 0, 0, 0.5),
+                inset 5px 5px 15px rgba(255, 255, 255, 0.05),
+                0 0 50px rgba(59, 130, 246, 0.15);
+        }
+        #zishu-orb-wrapper.listening .zishu-eye {
+            animation: zishu-eyeListening 0.8s ease-in-out infinite;
+        }
+
+        #zishu-orb-wrapper.thinking #zishu-orb {
+            box-shadow:
+                inset -20px -20px 40px rgba(0, 0, 0, 0.12),
+                inset 15px 15px 30px rgba(255, 255, 255, 0.8),
+                0 20px 60px rgba(123, 108, 247, 0.3),
+                0 0 80px rgba(123, 108, 247, 0.1);
+            animation: zishu-orbSpin 2s linear infinite;
+        }
+        #zishu-orb-wrapper.thinking #zishu-orb-visor {
+            box-shadow:
+                inset -5px -5px 15px rgba(0, 0, 0, 0.5),
+                inset 5px 5px 15px rgba(255, 255, 255, 0.05),
+                0 0 50px rgba(123, 108, 247, 0.15);
+        }
+        #zishu-orb-wrapper.thinking .zishu-eye {
+            animation: zishu-eyeThinking 1.2s ease-in-out infinite;
+        }
+
+        #zishu-orb-wrapper.speaking #zishu-orb {
+            box-shadow:
+                inset -20px -20px 40px rgba(0, 0, 0, 0.12),
+                inset 15px 15px 30px rgba(255, 255, 255, 0.8),
+                0 20px 60px rgba(59, 130, 246, 0.35),
+                0 0 100px rgba(59, 130, 246, 0.15);
+            animation: zishu-orbSpeak 0.6s ease-in-out infinite alternate;
+        }
+        #zishu-orb-wrapper.speaking #zishu-orb-visor {
+            box-shadow:
+                inset -5px -5px 15px rgba(0, 0, 0, 0.5),
+                inset 5px 5px 15px rgba(255, 255, 255, 0.05),
+                0 0 60px rgba(59, 130, 246, 0.2);
+        }
+        #zishu-orb-wrapper.speaking .zishu-eye {
+            animation: zishu-eyeSpeaking 0.4s ease-in-out infinite alternate;
+        }
+
+        @keyframes zishu-orbPulse {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.03);
+            }
+        }
+        @keyframes zishu-orbSpin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        @keyframes zishu-orbSpeak {
+            0% {
+                transform: scale(1) translateY(0);
+            }
+            100% {
+                transform: scale(1.02) translateY(-3px);
+            }
+        }
+        @keyframes zishu-eyeListening {
+            0%,
+            100% {
+                height: 16px;
+                width: 12px;
+            }
+            50% {
+                height: 18px;
+                width: 14px;
+            }
+        }
+        @keyframes zishu-eyeThinking {
+            0%,
+            100% {
+                border-radius: 50%;
+            }
+            50% {
+                border-radius: 30%;
+            }
+        }
+        @keyframes zishu-eyeSpeaking {
+            0% {
+                height: 16px;
+                width: 12px;
+            }
+            100% {
+                height: 20px;
+                width: 10px;
+            }
+        }
+
+        #zishu-orb-status {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--zishu-text);
+            letter-spacing: -0.2px;
+            transition: color 0.3s ease;
+            z-index: 5;
+            position: relative;
+        }
+        #zishu-orb-sub {
+            font-size: 13px;
+            color: var(--zishu-text-secondary);
+            margin-top: 2px;
+            font-weight: 400;
+            transition: color 0.3s ease;
+            z-index: 5;
+            position: relative;
+        }
+
+        /* ============================================================
+           VOICE STARTUP NOTICE
+           ============================================================ */
+        .voice-notice {
+            background: var(--notice-bg);
+            border: 1px solid var(--notice-border);
+            border-radius: 12px;
+            padding: 0.7rem 1.2rem;
+            margin: 6px auto 8px;
+            max-width: 560px;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.7rem;
+            font-size: 0.82rem;
+            color: var(--notice-text);
+            line-height: 1.5;
+        }
+        .voice-notice-icon {
+            flex-shrink: 0;
+            margin-top: 1px;
+            width: 18px;
+            height: 18px;
+            fill: var(--notice-text);
+        }
+        .voice-notice-text {
+            flex: 1;
+        }
+        .voice-notice strong {
+            font-weight: 600;
+        }
+
+        /* ============================================================
+           CHAT WRAPPER — LARGER
+           ============================================================ */
+        #zishu-chat-wrapper {
+            flex: 1;
+            min-height: 280px;
+            max-height: 500px;
+            width: 100%;
+            margin: 6px auto 0;
+            background: var(--zishu-surface);
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--zishu-border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+        #zishu-chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 18px 22px;
+            scroll-behavior: smooth;
+            will-change: transform;
+            max-height: 440px;
+            min-height: 220px;
+        }
+        #zishu-chat-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        #zishu-chat-container::-webkit-scrollbar-track {
+            background: #f1f4f9;
+            transition: background 0.3s ease;
+        }
+        #zishu-chat-container::-webkit-scrollbar-thumb {
+            background: #d0d8e3;
+            border-radius: 10px;
+        }
+
+        .zishu-message {
+            margin: 6px 0;
+            padding: 10px 16px;
+            border-radius: 16px;
+            max-width: 85%;
+            word-wrap: break-word;
+            animation: zishu-fadeIn 0.25s ease;
+            line-height: 1.6;
+            font-size: 14px;
+            font-weight: 400;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+            will-change: transform, opacity;
+        }
+        .zishu-user-msg {
+            background: var(--zishu-user-bg);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        .zishu-assistant-msg {
+            background: var(--zishu-assistant-bg);
+            color: var(--zishu-text);
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        .zishu-message .zishu-sender {
+            font-weight: 600;
+            font-size: 11px;
+            opacity: 0.7;
+            display: block;
+            margin-bottom: 2px;
+            letter-spacing: 0.3px;
+        }
+        .zishu-assistant-msg .zishu-sender {
+            color: var(--zishu-text-secondary);
+        }
+        .zishu-user-msg .zishu-sender {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .zishu-message .zishu-content {
+            display: block;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .zishu-tool-msg {
+            background: var(--zishu-tool-bg);
+            color: var(--zishu-text-secondary);
+            margin: 4px auto;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            text-align: center;
+            max-width: 90%;
+            font-weight: 450;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        .zishu-stop-msg {
+            background: var(--zishu-stop-bg);
+            color: #721c24;
+            margin: 4px auto;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            text-align: center;
+            max-width: 90%;
+            font-weight: 450;
+            animation: zishu-fadeIn 0.3s ease;
+        }
+        .zishu-action-msg {
+            background: var(--zishu-action-bg);
+            color: #155724;
+            margin: 4px auto;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            text-align: center;
+            max-width: 90%;
+            font-weight: 450;
+            animation: zishu-fadeIn 0.3s ease;
+        }
+
+        #zishu-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 4px 0;
+            flex-shrink: 0;
+            font-size: 11px;
+            color: #9aa9bb;
+            letter-spacing: 0.2px;
+            transition: color 0.3s ease;
+        }
+
+        @keyframes zishu-fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ============================================================
+           EXPLORE PAGE (unchanged)
+           ============================================================ */
+        .explore-hero {
+            text-align: center;
+            padding: 2rem 0 1.5rem;
+        }
+        .explore-hero h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+        .explore-hero h1 span {
+            color: var(--accent);
+        }
+        .explore-hero p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 560px;
+            margin: 0.5rem auto 1.5rem;
+        }
+
+        .explore-section {
+            margin: 3rem 0;
+        }
+        .explore-section .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.3rem;
+        }
+        .explore-section .section-sub {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 1.8rem;
+        }
+        .text-center {
+            text-align: center;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.8rem;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.8rem 1.4rem;
+            transition: 0.2s;
+            box-shadow: var(--shadow);
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent);
+        }
+        .card h4 {
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+        .card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .step {
+            text-align: center;
+        }
+        .step-icon {
+            background: var(--surface);
+            width: 72px;
+            height: 72px;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            border: 1px solid var(--border);
+            font-size: 2rem;
+        }
+
+        .use-case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.2rem;
+        }
+        .use-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 60px;
+            padding: 0.8rem 1.4rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-align: center;
+            color: var(--text);
+            transition: 0.2s;
+            cursor: default;
+        }
+        .use-card:hover {
+            border-color: var(--accent);
+        }
+
+        /* FAQ */
+        .faq-item {
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            cursor: pointer;
+        }
+        .faq-question {
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease, padding 0.2s;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        .faq-item.open .faq-answer {
+            max-height: 300px;
+            padding-top: 0.8rem;
+        }
+
+        /* ============================================================
+           SUPPORT ZISHU PAGE (replaces Premium)
+           ============================================================ */
+        .support-zishu-hero {
+            text-align: center;
+            padding: 2.5rem 0 2rem;
+        }
+        .support-zishu-hero .badge {
+            display: inline-block;
+            background: var(--accent-light);
+            color: var(--accent);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.2rem 1rem;
+            border-radius: 60px;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.3px;
+            border: 1px solid rgba(59, 130, 246, 0.15);
+        }
+        .support-zishu-hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -1.2px;
+        }
+        .support-zishu-hero h1 span {
+            color: var(--accent);
+        }
+        .support-zishu-hero p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0.6rem auto 1.5rem;
+            line-height: 1.7;
+        }
+
+        .support-card {
+            max-width: 480px;
+            margin: 0 auto 2rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+        }
+        .support-card .support-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        .support-card .support-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 1.8rem;
+        }
+        .support-card .btn-support-upi {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.9rem 2.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            color: #fff;
+            border: none;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            text-decoration: none;
+            width: 100%;
+        }
+        .support-card .btn-support-upi:hover {
+            opacity: 0.9;
+            transform: scale(0.98);
+        }
+
+        .support-zishu-info {
+            margin: 2rem 0;
+            text-align: center;
+        }
+        .support-zishu-info p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            max-width: 580px;
+            margin: 0 auto;
+        }
+
+        /* ============================================================
+           CUSTOMER SUPPORT PAGE (renamed from Support)
+           ============================================================ */
+        .customer-support-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2.5rem;
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .customer-support-container h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .customer-support-container p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .customer-support-email-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 60px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+        }
+        .customer-support-email-btn:hover {
+            background: var(--accent-secondary);
+            transform: scale(0.97);
+        }
+        .customer-support-email-btn svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+
+        .customer-support-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* ============================================================
+           LANGUAGE PAGE (unchanged)
+           ============================================================ */
+        .language-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .language-container h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .language-container p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .language-options {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .language-btn {
+            padding: 1rem 2.5rem;
+            border-radius: 60px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 140px;
+        }
+
+        .language-btn:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .language-btn.active {
+            border-color: var(--accent);
+            background: var(--accent);
+            color: #fff;
+        }
+
+        /* ============================================================
+           ABOUT US PAGE — NEW
+           ============================================================ */
+        .about-container {
+            max-width: 820px;
+            margin: 1.5rem auto 2rem;
+            padding: 0 0.5rem;
+        }
+
+        .about-hero {
+            text-align: center;
+            padding: 1.5rem 0 2rem;
+        }
+        .about-hero h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: -1.2px;
+            color: var(--text);
+        }
+        .about-hero h1 span {
+            color: var(--accent);
+        }
+        .about-hero p {
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            max-width: 640px;
+            margin: 0.5rem auto 0;
+            line-height: 1.7;
+        }
+
+        .about-section {
+            margin: 3rem 0;
+        }
+        .about-section .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        .about-section .section-sub {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.7;
+            max-width: 700px;
+        }
+        .about-section .section-sub strong {
+            color: var(--text);
+        }
+
+        .about-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .about-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem 1.8rem;
+            box-shadow: var(--shadow);
+            transition: border-color 0.2s;
+        }
+        .about-card:hover {
+            border-color: var(--accent);
+        }
+        .about-card h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: var(--text);
+        }
+        .about-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .founder-card {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem 2.2rem;
+            box-shadow: var(--shadow);
+            margin-top: 1rem;
+        }
+        .founder-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--accent-light);
+            border: 2px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.6rem;
+            font-weight: 700;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+        .founder-info h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .founder-info .role {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .founder-info .age {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.2rem;
+        }
+        .founder-info .bio {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-top: 0.6rem;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem 1.5rem;
+            margin-top: 0.8rem;
+        }
+        .feature-list li {
+            list-style: none;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .feature-list li::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .founder-message {
+            background: var(--surface2);
+            border-radius: var(--radius);
+            padding: 2rem 2.2rem;
+            border-left: 4px solid var(--accent);
+            margin-top: 1rem;
+        }
+        .founder-message p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.8;
+            font-style: italic;
+        }
+        .founder-message .signature {
+            margin-top: 0.8rem;
+            font-style: normal;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .about-support-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.8rem 2rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            text-decoration: none;
+            margin-top: 0.5rem;
+        }
+        .about-support-btn:hover {
+            background: var(--accent-secondary);
+            transform: scale(0.97);
+        }
+        .about-support-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* ============================================================
+           FOOTER (unchanged)
+           ============================================================ */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 2rem 0 1.5rem;
+            margin-top: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        footer .footer-links {
+            display: flex;
+            gap: 1.8rem;
+            flex-wrap: wrap;
+        }
+        footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        footer a:hover {
+            color: var(--text);
+        }
+
+        /* ============================================================
+           RESPONSIVE (updated for about page)
+           ============================================================ */
+
+        @media (max-width: 1024px) {
+            .support-zishu-hero h1 {
+                font-size: 2.6rem;
+            }
+            #zishu-chat-wrapper {
+                min-height: 240px;
+                max-height: 420px;
+            }
+            #zishu-chat-container {
+                max-height: 360px;
+                min-height: 180px;
+            }
+            .about-hero h1 {
+                font-size: 2.4rem;
+            }
+        }
+
+        @media (max-width: 800px) {
+            .nav-links {
+                display: none;
+            }
+            .hamburger {
+                display: flex;
+            }
+            .nav-links.open {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background: var(--surface);
+                padding: 1.5rem;
+                gap: 1.2rem;
+                border-bottom: 1px solid var(--border);
+            }
+            .nav-links.open a {
+                font-size: 1rem;
+            }
+            .explore-hero h1 {
+                font-size: 2.2rem;
+            }
+            .support-zishu-hero h1 {
+                font-size: 2.2rem;
+            }
+            .assistant-header h1 {
+                font-size: 1.5rem;
+            }
+            .zishu-assistant {
+                padding: 16px 16px 14px;
+            }
+            #zishu-orb-wrapper {
+                width: 110px;
+                height: 110px;
+            }
+            #zishu-orb {
+                width: 110px;
+                height: 110px;
+            }
+            #zishu-orb-visor {
+                width: 68px;
+                height: 48px;
+            }
+            #zishu-orb-eyes {
+                gap: 18px;
+            }
+            .zishu-eye {
+                width: 11px;
+                height: 14px;
+            }
+            #zishu-orb-ribbon {
+                width: 155px;
+                height: 155px;
+                top: -22px;
+                left: -22px;
+            }
+            .zishu-ribbon-wave:nth-child(1) {
+                width: 148px;
+                height: 148px;
+            }
+            .zishu-ribbon-wave:nth-child(2) {
+                width: 134px;
+                height: 134px;
+            }
+            .zishu-ribbon-wave:nth-child(3) {
+                width: 120px;
+                height: 120px;
+            }
+            .zishu-ribbon-wave:nth-child(4) {
+                width: 108px;
+                height: 108px;
+            }
+            #zishu-orb-glow {
+                width: 155px;
+                height: 155px;
+                top: -22px;
+                left: -22px;
+            }
+            #zishu-orb-status {
+                font-size: 14px;
+            }
+            .zishu-message {
+                font-size: 13px;
+                padding: 8px 12px;
+                max-width: 90%;
+            }
+            #zishu-chat-container {
+                padding: 14px 16px;
+                max-height: 280px;
+                min-height: 140px;
+            }
+            #zishu-chat-wrapper {
+                min-height: 180px;
+                max-height: 340px;
+            }
+            .voice-notice {
+                font-size: 0.75rem;
+                padding: 0.5rem 1rem;
+                max-width: 100%;
+            }
+            .support-card {
+                padding: 2rem 1.5rem;
+            }
+            .support-card .btn-support-upi {
+                font-size: 0.95rem;
+                padding: 0.8rem 1.5rem;
+            }
+            .language-container,
+            .customer-support-container {
+                margin: 1rem auto;
+                padding: 1.5rem;
+            }
+            .language-btn {
+                padding: 0.8rem 1.5rem;
+                min-width: 100px;
+                font-size: 1rem;
+            }
+            .about-hero h1 {
+                font-size: 2rem;
+            }
+            .about-grid-2 {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .founder-card {
+                flex-direction: column;
+                text-align: center;
+                padding: 1.8rem;
+            }
+            .feature-list {
+                grid-template-columns: 1fr;
+            }
+            .founder-message {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .page-container {
+                padding: 0.5rem 0.8rem 1.5rem;
+            }
+            .zishu-assistant {
+                padding: 12px 10px 10px;
+                border-radius: 16px;
+            }
+            .assistant-header h1 {
+                font-size: 1.3rem;
+            }
+            .assistant-header p {
+                font-size: 0.85rem;
+            }
+            .explore-hero h1 {
+                font-size: 1.8rem;
+            }
+            .support-zishu-hero h1 {
+                font-size: 1.8rem;
+            }
+            .support-zishu-hero p {
+                font-size: 0.95rem;
+            }
+            .support-card {
+                padding: 1.5rem 1rem;
+            }
+            .support-card .btn-support-upi {
+                font-size: 0.9rem;
+                padding: 0.7rem 1.2rem;
+            }
+            #zishu-orb-wrapper {
+                width: 90px;
+                height: 90px;
+            }
+            #zishu-orb {
+                width: 90px;
+                height: 90px;
+            }
+            #zishu-orb-visor {
+                width: 56px;
+                height: 40px;
+            }
+            #zishu-orb-eyes {
+                gap: 14px;
+            }
+            .zishu-eye {
+                width: 9px;
+                height: 12px;
+            }
+            #zishu-orb-ribbon {
+                width: 130px;
+                height: 130px;
+                top: -18px;
+                left: -18px;
+            }
+            .zishu-ribbon-wave:nth-child(1) {
+                width: 124px;
+                height: 124px;
+            }
+            .zishu-ribbon-wave:nth-child(2) {
+                width: 112px;
+                height: 112px;
+            }
+            .zishu-ribbon-wave:nth-child(3) {
+                width: 100px;
+                height: 100px;
+            }
+            .zishu-ribbon-wave:nth-child(4) {
+                width: 88px;
+                height: 88px;
+            }
+            #zishu-orb-glow {
+                width: 130px;
+                height: 130px;
+                top: -18px;
+                left: -18px;
+            }
+            #zishu-orb-status {
+                font-size: 13px;
+            }
+            #zishu-orb-sub {
+                font-size: 12px;
+            }
+            .zishu-message {
+                font-size: 12px;
+                padding: 6px 10px;
+                max-width: 92%;
+            }
+            #zishu-chat-container {
+                padding: 10px 12px;
+                max-height: 220px;
+                min-height: 100px;
+            }
+            #zishu-chat-wrapper {
+                min-height: 140px;
+                max-height: 280px;
+                border-radius: 14px;
+            }
+            .voice-notice {
+                font-size: 0.7rem;
+                padding: 0.4rem 0.8rem;
+                border-radius: 8px;
+                gap: 0.4rem;
+            }
+            .voice-notice-icon {
+                width: 14px;
+                height: 14px;
+            }
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+            .use-case-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .nav-inner {
+                padding: 0 0.8rem;
+            }
+            footer {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            footer .footer-links {
+                justify-content: center;
+            }
+            .language-options {
+                flex-direction: column;
+                align-items: center;
+            }
+            .language-btn {
+                width: 100%;
+                max-width: 250px;
+            }
+            .about-hero h1 {
+                font-size: 1.6rem;
+            }
+            .about-hero p {
+                font-size: 1rem;
+            }
+            .about-section .section-title {
+                font-size: 1.6rem;
+            }
+            .founder-card {
+                padding: 1.2rem;
+            }
+            .founder-avatar {
+                width: 70px;
+                height: 70px;
+                font-size: 1.8rem;
+            }
+            .founder-info h3 {
+                font-size: 1.2rem;
+            }
+            .customer-support-email-btn {
+                font-size: 0.95rem;
+                padding: 0.8rem 1.2rem;
+            }
+            .about-support-btn {
+                font-size: 0.9rem;
+                padding: 0.6rem 1.2rem;
+            }
+        }
+
+        @media (min-width: 1600px) {
+            .page-container {
+                padding: 1.5rem 2rem 3rem;
+            }
+            #zishu-chat-wrapper {
+                min-height: 340px;
+                max-height: 580px;
+            }
+            #zishu-chat-container {
+                max-height: 500px;
+                min-height: 280px;
+                padding: 24px 28px;
+            }
+            .zishu-message {
+                font-size: 15px;
+                padding: 12px 20px;
+            }
+            .assistant-wrapper {
+                max-width: 880px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <nav id="navbar">
-    <div class="nav-inner">
-      <a href="#" class="logo">ZISH<span>U</span></a>
-      <div class="nav-links" id="navLinks">
-        <a href="#features">Features</a>
-        <a href="#howitworks">How it works</a>
-        <a href="#faq">FAQ</a>
-        <a href="#support">Support</a>
-      </div>
-      <div class="nav-actions">
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">☀️</button>
-        <a href="#purchase" class="btn-primary">Get Zishu</a>
-        <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
-      </div>
+
+    <!-- ============================================================
+    NAV — updated with Support Zishu and Customer Support
+    ============================================================ -->
+    <nav id="navbar">
+        <div class="nav-inner">
+            <a class="logo" id="nav-logo">ZISH<span>U</span></a>
+            <div class="nav-links" id="navLinks">
+                <a class="active" data-page="home">Home</a>
+                <a data-page="explore">Explore</a>
+                <a data-page="about">About Us</a>
+                <a data-page="support-zishu">Support Zishu</a>
+                <a data-page="language">Language</a>
+                <a data-page="customer-support">Customer Support</a>
+            </div>
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">☀️</button>
+                <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================================
+    MAIN CONTAINER
+    ============================================================ -->
+    <div class="page-container">
+
+        <!-- ============================================================
+        HOME / ASSISTANT PAGE (unchanged)
+        ============================================================ -->
+        <div id="home-page">
+            <div class="assistant-wrapper">
+                <div class="assistant-header">
+                    <h1>ZISH<span>U</span></h1>
+                    <p id="assistant-tagline">Your personal AI assistant</p>
+                </div>
+
+                <!-- ZISHU ASSISTANT -->
+                <div class="zishu-assistant" id="zishu-assistant-root">
+
+                    <!-- Orb Container -->
+                    <div id="zishu-orb-container">
+                        <div id="zishu-orb-wrapper">
+                            <div id="zishu-orb-glow"></div>
+                            <div id="zishu-orb-ribbon">
+                                <div class="zishu-ribbon-wave"></div>
+                                <div class="zishu-ribbon-wave"></div>
+                                <div class="zishu-ribbon-wave"></div>
+                                <div class="zishu-ribbon-wave"></div>
+                            </div>
+                            <div id="zishu-orb">
+                                <div id="zishu-orb-ring"></div>
+                                <div id="zishu-orb-visor">
+                                    <div id="zishu-orb-eyes">
+                                        <div class="zishu-eye left"></div>
+                                        <div class="zishu-eye right"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="zishu-orb-status">Tap Orb to start</div>
+                        <div id="zishu-orb-sub">First tap to enable microphone</div>
+                    </div>
+
+                    <!-- Voice startup notice -->
+                    <div class="voice-notice" id="voiceNotice">
+                        <svg class="voice-notice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="12" x2="12" y2="16"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        <span class="voice-notice-text" id="voice-notice-text">
+                            <strong>First-time voice startup may take a little longer.</strong> Zishu is loading the required language, so please wait a moment.
+                        </span>
+                    </div>
+
+                    <!-- Chat Wrapper -->
+                    <div id="zishu-chat-wrapper">
+                        <div id="zishu-chat-container">
+                            <!-- Messages appear here -->
+                        </div>
+                    </div>
+
+                    <div id="zishu-footer">
+                        <span id="footer-private">private · local</span>
+                        <span>v2.8</span>
+                    </div>
+                </div>
+                <!-- END ZISHU ASSISTANT -->
+            </div>
+        </div>
+
+        <!-- ============================================================
+        EXPLORE PAGE (unchanged)
+        ============================================================ -->
+        <div id="explore-page">
+            <div class="explore-hero">
+                <h1>Meet ZISH<span>U</span></h1>
+                <p id="explore-desc">Your personal AI voice assistant. Talk naturally, ask questions, and get help through voice.</p>
+                <a class="btn-primary" id="exploreUseZishuBtn">Use Zishu</a>
+            </div>
+            <div class="explore-section">
+                <h2 class="section-title" id="features-title">Built to be useful.</h2>
+                <div class="grid-2">
+                    <div class="card"><h4>Voice-first</h4><p>Talk naturally instead of typing every command.</p></div>
+                    <div class="card"><h4>AI conversations</h4><p>Ask questions and have natural conversations with Zishu.</p></div>
+                    <div class="card"><h4>Voice commands</h4><p>Use your voice to perform supported actions.</p></div>
+                    <div class="card"><h4>Smart assistance</h4><p>Zishu can understand requests and respond naturally.</p></div>
+                    <div class="card"><h4>Hindi + English</h4><p>Zishu understands Hindi and English conversations.</p></div>
+                    <div class="card"><h4>Memory & notes</h4><p>Create reminders and save notes using your voice.</p></div>
+                </div>
+            </div>
+            <div class="explore-section">
+                <h2 class="section-title text-center" id="how-title">How it works</h2>
+                <div class="grid-3">
+                    <div class="step"><div class="step-icon">🎤</div><h4>Speak</h4><p style="color:var(--text-secondary)">Tell Zishu what you need.</p></div>
+                    <div class="step"><div class="step-icon">🧠</div><h4>Understand</h4><p style="color:var(--text-secondary)">Zishu processes your request and understands what you mean.</p></div>
+                    <div class="step"><div class="step-icon">⚡</div><h4>Respond</h4><p style="color:var(--text-secondary)">Zishu gives you an answer or performs a supported action.</p></div>
+                </div>
+            </div>
+            <div class="explore-section">
+                <h2 class="section-title text-center" id="use-cases-title">Just say what you need.</h2>
+                <div class="use-case-grid">
+                    <div class="use-card">"Zishu, YouTube kholo."</div>
+                    <div class="use-card">"Zishu, ek note save karo."</div>
+                    <div class="use-card">"Zishu, kal 7 baje reminder laga do."</div>
+                    <div class="use-card">"Zishu, mujhe weather batao."</div>
+                    <div class="use-card">"Zishu, 125 × 48 calculate karo."</div>
+                </div>
+            </div>
+            <div class="explore-section">
+                <h2 class="section-title" id="privacy-title">Built with privacy in mind.</h2>
+                <p style="color:var(--text-secondary);max-width:600px;" id="privacy-desc">Zishu uses a separate backend to handle AI requests so sensitive API credentials are not embedded directly in the client application.</p>
+                <div style="display:flex;gap:2rem;margin-top:1.5rem;flex-wrap:wrap;">
+                    <a href="privacy.html" style="color:var(--accent);">Privacy Policy</a>
+                    <a href="terms.html" style="color:var(--accent);">Terms of Service</a>
+                </div>
+            </div>
+            <div class="explore-section" id="faq-section">
+                <h2 class="section-title" id="faq-title">FAQ</h2>
+                <div id="faqContainer">
+                    <div class="faq-item"><div class="faq-question">Can I use Zishu for free? <span>+</span></div><div class="faq-answer">Yes. Zishu can be used without purchasing a subscription or making a payment.</div></div>
+                    <div class="faq-item"><div class="faq-question">Do I need to create an account to use Zishu? <span>+</span></div><div class="faq-answer">No. You can use Zishu directly without creating an account or logging in.</div></div>
+                    <div class="faq-item"><div class="faq-question">Is there a Premium subscription? <span>+</span></div><div class="faq-answer">No. Zishu currently does not require a Premium subscription or paid plan.</div></div>
+                    <div class="faq-item"><div class="faq-question">Can I support Zishu? <span>+</span></div><div class="faq-answer">Yes. If you enjoy using Zishu and want to support its continued development, you can voluntarily support the project.</div></div>
+                    <div class="faq-item"><div class="faq-question">Is supporting Zishu required? <span>+</span></div><div class="faq-answer">No. Supporting Zishu is completely optional. You can continue using Zishu without making a donation.</div></div>
+                    <div class="faq-item"><div class="faq-question">How can I support Zishu? <span>+</span></div><div class="faq-answer">You can use the Support Zishu section to voluntarily support the project through the available UPI payment option.</div></div>
+                    <div class="faq-item"><div class="faq-question">Will supporting Zishu unlock Premium features? <span>+</span></div><div class="faq-answer">No. The support option is voluntary and is not a Premium purchase or subscription.</div></div>
+                    <div class="faq-item"><div class="faq-question">What data does Zishu collect? <span>+</span></div><div class="faq-answer">Zishu processes voice input solely to respond to your requests. No personal data is stored without consent.</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        SUPPORT ZISHU PAGE (replaces Premium)
+        ============================================================ -->
+        <div id="support-zishu-page">
+            <div class="support-zishu-hero">
+                <div class="badge">Support Zishu</div>
+                <h1>Support <span>Zishu</span></h1>
+                <p id="support-zishu-desc">If you enjoy using Zishu and would like to support its continued development and future improvements, you can support the project voluntarily.</p>
+            </div>
+            <div class="support-card">
+                <div class="support-title">Voluntary Support</div>
+                <div class="support-desc">Supporting Zishu is completely optional. You can continue using Zishu without making any payment.</div>
+                <a class="btn-support-upi" href="upi://pay?pa=7654613259@fam&pn=Zishu%20AI" id="supportUpiBtn">
+                    Support Zishu
+                </a>
+            </div>
+            <div class="support-zishu-info">
+                <p>Your support helps keep Zishu running and enables future improvements. Thank you for being part of this journey.</p>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        LANGUAGE PAGE (unchanged)
+        ============================================================ -->
+        <div id="language-page">
+            <div class="language-container">
+                <h2 id="lang-title">🌐 Choose Your Language</h2>
+                <p id="lang-desc">Select your preferred language for the Zishu interface.</p>
+                <div class="language-options">
+                    <button class="language-btn" data-lang="en" id="lang-en">🇬🇧 English</button>
+                    <button class="language-btn" data-lang="hi" id="lang-hi">🇮🇳 हिन्दी</button>
+                </div>
+                <p style="margin-top:1.5rem;font-size:0.85rem;color:var(--text-secondary);" id="lang-saved">Your language preference is saved automatically.</p>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        CUSTOMER SUPPORT PAGE (renamed from Support)
+        ============================================================ -->
+        <div id="customer-support-page">
+            <div class="customer-support-container">
+                <h2 id="customer-support-title">Customer Support</h2>
+                <p id="customer-support-desc">Need help? Reach out to our support team.</p>
+                <a href="mailto:support.stardustofficial@gmail.com" class="customer-support-email-btn" id="customerSupportEmailBtn">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                        <path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-10 6L2 8V6l10 6 10-6v2z"/>
+                    </svg>
+                    support.stardustofficial@gmail.com
+                </a>
+                <p class="customer-support-desc" id="customer-support-info">We typically respond within 24-48 hours. For urgent issues, please include "URGENT" in the subject line.</p>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        ABOUT US PAGE — NEW
+        ============================================================ -->
+        <div id="about-page">
+            <div class="about-container">
+
+                <!-- Hero -->
+                <div class="about-hero">
+                    <h1>About <span>Zishu</span></h1>
+                    <p id="about-hero-desc">Zishu is an AI voice assistant created to make interacting with technology feel more natural, simple and personal.</p>
+                </div>
+
+                <!-- The Story -->
+                <div class="about-section">
+                    <h2 class="section-title" id="about-story-title">The Story Behind Zishu</h2>
+                    <p class="section-sub" id="about-story-text">
+                        Zishu was created from the idea of building a voice assistant that feels simple and natural to use.
+                        Instead of creating an experience that feels complicated or overwhelming, the goal was to make an assistant
+                        that users can simply open, interact with and talk to.
+                        <br><br>
+                        The project has been developed progressively, with continuous improvements to:
+                        <strong>voice interaction, AI conversations, user experience, multilingual support, responsive design,
+                        assistant tools, accessibility, and overall reliability.</strong>
+                    </p>
+                </div>
+
+                <!-- Founder & Brand -->
+                <div class="about-section">
+                    <h2 class="section-title" id="about-founder-title">Meet the Creator</h2>
+                    <div class="founder-card">
+                        <div class="founder-avatar">Z</div>
+                        <div class="founder-info">
+                            <h3>Zishan</h3>
+                            <div class="role">Founder &amp; Developer · StardustOfficial</div>
+                            <div class="age">Age: 16</div>
+                            <div class="bio" id="about-founder-bio">
+                                Zishu is independently created and developed by Zishan, the founder and developer behind StardustOfficial.
+                                The project is being built with a focus on learning, experimentation, product development and creating useful technology.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- StardustOfficial -->
+                <div class="about-section">
+                    <h2 class="section-title" id="about-brand-title">Built by StardustOfficial</h2>
+                    <p class="section-sub" id="about-brand-text">
+                        StardustOfficial is the creative technology brand behind Zishu. The project focuses on building modern digital products
+                        and experimenting with new ways technology can become more useful and accessible.
+                    </p>
+                </div>
+
+                <!-- Vision -->
+                <div class="about-section">
+                    <h2 class="section-title" id="about-vision-title">Our Vision</h2>
+                    <p class="section-sub" id="about-vision-text">
+                        Technology should feel useful, simple and accessible. The long-term vision for Zishu is to continue improving the assistant
+                        so that interacting with AI becomes easier and more natural for everyday users. Future goals include better voice interaction,
+                        more natural conversations, support for more languages, useful assistant capabilities, better personalization,
+                        improved accessibility, and continuous product improvement.
+                    </p>
+                </div>
+
+                <!-- What Zishu Can Do -->
+                <div class="about-section">
+                    <h2 class="section-title" id="about-capabilities-title">What Zishu Can Do</h2>
+                    <p class="section-sub" style="margin-bottom:0.5rem;" id="about-capabilities-desc">
+                        Zishu is designed to help you with everyday tasks using voice and text.
+                    </p>
+                    <ul class="feature-list" id="about-capabilities-list">
+                        <li>Voice interaction</li>
+                        <li>Text-based conversations</li>
+                        <li>AI-powered answers</li>
+                        <li>Weather information</li>
+                        <li>Time information</li>
+                        <li>Calculations</li>
+                        <li>Translation</li>
+                        <li>Notes</li>
+                        <li>Reminders</li>
+                        <li>Website assistance</li>
+                    </ul>
+                </div>
+
+                <!-- Designed for Every Screen -->
+                <div class="about-section">
+                    <h2 class="section-title" id="about-responsive-title">Designed for Every Screen</h2>
+                    <p class="section-sub" id="about-responsive-text">
+                        Zishu is designed to work across mobile, tablet, laptop, and desktop. The interface remains clean,
+                        responsive and easy to use across different screen sizes.
+                    </p>
+                </div>
+
+                <!-- Multilingual Vision -->
+                <div class="about-section">
+                    <h2 class="section-title" id="about-multilingual-title">Made for More Users</h2>
+                    <p class="section-sub" id="about-multilingual-text">
+                        Zishu is being designed to support users across different languages. Multilingual accessibility is
+                        an important part of the project's direction. Currently, the interface supports English and Hindi.
+                    </p>
+                </div>
+
+                <!-- Continuous Development -->
+                <div class="about-section">
+                    <h2 class="section-title" id="about-growth-title">Still Growing</h2>
+                    <p class="section-sub" id="about-growth-text">
+                        Zishu is continuously being improved. New ideas, improvements and capabilities are being explored
+                        as the project grows.
+                    </p>
+                </div>
+
+                <!-- Founder Message -->
+                <div class="about-section">
+                    <h2 class="section-title" id="about-message-title">A Message from the Creator</h2>
+                    <div class="founder-message">
+                        <p id="about-message-text">
+                            Zishu started as an idea to build something useful and has grown into an ongoing project focused on AI,
+                            voice interaction and better digital experiences. My goal is to keep learning, building and improving
+                            Zishu step by step while creating technology that people can actually enjoy using.
+                        </p>
+                        <div class="signature">— Zishan<br>Founder &amp; Developer, StardustOfficial</div>
+                    </div>
+                </div>
+
+                <!-- Contact / Support -->
+                <div class="about-section" style="text-align:center; border-top:1px solid var(--border); padding-top:2rem;">
+                    <p style="color:var(--text-secondary); margin-bottom:0.8rem;" id="about-support-desc">
+                        Have questions or feedback? We're here to help.
+                    </p>
+                    <button class="about-support-btn" id="aboutSupportBtn">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                            <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm0 14H4V4h16v12z"/>
+                        </svg>
+                        Contact Support
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============================================================
+        FOOTER
+        ============================================================ -->
+        <footer>
+            <div><span style="font-weight:700;">ZISHU</span> <span style="color:var(--text-secondary)" id="footer-tagline">Your voice. Your assistant.</span></div>
+            <div class="footer-links">
+                <a data-page="home">Home</a>
+                <a data-page="explore">Explore</a>
+                <a data-page="about">About Us</a>
+                <a data-page="support-zishu">Support Zishu</a>
+                <a data-page="language">Language</a>
+                <a data-page="customer-support">Customer Support</a>
+                <a href="privacy.html">Privacy</a>
+                <a href="terms.html">Terms</a>
+            </div>
+            <div style="color:var(--text-secondary);">© 2026 Zishu. All rights reserved.</div>
+        </footer>
+
     </div>
-  </nav>
+    <!-- END PAGE CONTAINER -->
 
-  <div class="container">
-    <!-- HERO -->
-    <section class="hero">
-      <div class="hero-content">
-        <div class="hero-badge">ZISHU AI • ANDROID</div>
-        <h1>Your voice.<br /><span class="highlight">Your assistant.</span></h1>
-        <p>Zishu is a personal AI voice assistant designed to understand natural conversations, answer questions and help you get things done with simple voice commands.</p>
-        <div class="hero-actions">
-          <a href="#purchase" class="btn-primary">Get Zishu — ₹99</a>
-          <a href="#howitworks" class="btn-secondary">See how it works</a>
-        </div>
-        <div class="trust-line">✅ One-time purchase • No monthly subscription</div>
-      </div>
-      <div class="hero-visual">
-        <div class="phone-mock">
-          <div class="phone-screen">
-            <div class="phone-header"><span>ZISHU</span><span>voice</span></div>
-            <div class="orb-area">
-              <div class="orb"></div>
-              <div class="orb-label">Zishu is ready</div>
-              <div style="font-size:0.7rem;color:var(--text-secondary);">Tap to talk</div>
-            </div>
-            <div class="convo-example">
-              <div class="you">You: "What's the weather today?"</div>
-              <div class="zishu">Zishu: "Let me check that for you."</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- FEATURES -->
-    <section id="features">
-      <h2 class="section-title">Built to be useful.</h2>
-      <div class="grid-2">
-        <div class="card"><h4>Voice-first</h4><p>Talk naturally instead of typing every command.</p></div>
-        <div class="card"><h4>AI conversations</h4><p>Ask questions and have natural conversations with Zishu.</p></div>
-        <div class="card"><h4>Voice commands</h4><p>Use your voice to trigger supported actions.</p></div>
-        <div class="card"><h4>App launching</h4><p>Open supported apps and services with simple commands.</p></div>
-        <div class="card"><h4>Reminders & notes</h4><p>Create useful reminders and save notes using your voice.</p></div>
-        <div class="card"><h4>Smart responses</h4><p>Zishu understands conversational context and responds naturally.</p></div>
-        <div class="card"><h4>Personal memory</h4><p>Remember useful preferences when memory is enabled. <span class="badge-coming">Coming soon</span></p></div>
-        <div class="card"><h4>Continuous improvement</h4><p>Zishu is actively evolving with new capabilities. <span class="badge-coming">Coming soon</span></p></div>
-      </div>
-    </section>
+    <!-- ============================================================
+    JAVASCRIPT
+    ============================================================ -->
+    <script>
+        // ============================================================
+        // LANGUAGE MANAGEMENT — updated with Support Zishu & Customer Support
+        // ============================================================
+        (function languageManager() {
+            const LANG_STORAGE_KEY = 'zishu-language';
+            let currentLang = localStorage.getItem(LANG_STORAGE_KEY) || 'en';
 
-    <!-- HOW IT WORKS -->
-    <section id="howitworks">
-      <h2 class="section-title text-center">How it works</h2>
-      <div class="grid-3">
-        <div class="step"><div class="step-icon">🎤</div><h4>Speak</h4><p style="color:var(--text-secondary)">Tell Zishu what you need.</p></div>
-        <div class="step"><div class="step-icon">🧠</div><h4>Understand</h4><p style="color:var(--text-secondary)">Zishu processes your request and determines what action or response is appropriate.</p></div>
-        <div class="step"><div class="step-icon">⚡</div><h4>Act</h4><p style="color:var(--text-secondary)">Zishu responds or performs the supported action.</p></div>
-      </div>
-    </section>
+            const translations = {
+                en: {
+                    // Nav
+                    'nav-home': 'Home',
+                    'nav-explore': 'Explore',
+                    'nav-about': 'About Us',
+                    'nav-support-zishu': 'Support Zishu',
+                    'nav-language': 'Language',
+                    'nav-customer-support': 'Customer Support',
 
-    <!-- USE CASES -->
-    <section>
-      <h2 class="section-title text-center">Just say what you need.</h2>
-      <div class="use-case-grid">
-        <div class="use-card">"Zishu, YouTube kholo."</div>
-        <div class="use-card">"Zishu, ek note save karo."</div>
-        <div class="use-card">"Zishu, kal 7 baje reminder laga do."</div>
-        <div class="use-card">"Zishu, mujhe weather batao."</div>
-        <div class="use-card">"Zishu, 125 × 48 calculate karo."</div>
-      </div>
-    </section>
+                    // Home
+                    'assistant-tagline': 'Your personal AI assistant',
+                    'orb-status-idle': 'Tap Orb to start',
+                    'orb-sub-idle': 'First tap to enable microphone',
+                    'voice-notice': 'First-time voice startup may take a little longer. Zishu is loading the required language, so please wait a moment.',
+                    'footer-private': 'private · local',
 
-    <!-- PRICING + PURCHASE -->
-    <section id="purchase">
-      <h2 class="section-title text-center">Get Zishu</h2>
-      <div class="pricing-card">
-        <div class="price-label">One-time purchase</div>
-        <div class="price">₹99</div>
-        <ul>
-          <li>Android app access</li><li>Zishu AI assistant</li><li>Voice interaction</li><li>Supported voice commands</li><li>Future updates included according to policy</li>
-        </ul>
-        <button class="btn-primary btn-block" id="showPurchase">Get Zishu — ₹99</button>
-        <div style="margin-top:0.8rem;color:var(--text-secondary);font-size:0.85rem;">No monthly subscription.</div>
-      </div>
+                    // Explore
+                    'explore-desc': 'Your personal AI voice assistant. Talk naturally, ask questions, and get help through voice.',
+                    'features-title': 'Built to be useful.',
+                    'how-title': 'How it works',
+                    'use-cases-title': 'Just say what you need.',
+                    'privacy-title': 'Built with privacy in mind.',
+                    'privacy-desc': 'Zishu uses a separate backend to handle AI requests so sensitive API credentials are not embedded directly in the client application.',
+                    'faq-title': 'FAQ',
 
-      <div id="purchaseFlow" class="purchase-box hidden">
-        <h3>Pay ₹99 using UPI</h3>
-        <p style="color:var(--text-secondary);font-size:0.9rem;">UPI ID: 7654613259@fam (QR placeholder)</p>
-        <div style="background:var(--surface2);border-radius:12px;padding:1rem;border:1px solid var(--border);margin:1rem 0;text-align:center;">📱 Scan QR or pay to zishu@upi</div>
-        <label>Transaction / UPI Reference ID</label>
-        <input type="text" id="txnId" placeholder="e.g. 1234567890" />
-        <button class="btn-primary btn-block" id="submitPayment">Submit Payment</button>
-        <div id="paymentStatus" class="status">Payment verification pending</div>
-        <div id="downloadArea" class="hidden" style="margin-top:1rem;">
-          <p style="color:var(--accent);font-weight:600;">✅ Payment verified</p>
-          <a href="#" class="btn-primary btn-block" style="text-align:center;">Download APK</a>
-          <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.5rem;">Your payment will be verified before download access is enabled.</p>
-        </div>
-      </div>
-    </section>
+                    // Support Zishu
+                    'support-zishu-desc': 'If you enjoy using Zishu and would like to support its continued development and future improvements, you can support the project voluntarily.',
 
-    <!-- SECURITY & PRIVACY -->
-    <section>
-      <h2 class="section-title">Built with privacy in mind.</h2>
-      <p style="color:var(--text-secondary);max-width:600px;">Zishu uses a separate backend to handle AI requests so sensitive API credentials are not embedded directly in the client application.</p>
-      <div style="display:flex;gap:2rem;margin-top:1.5rem;flex-wrap:wrap;">
-        <a href="#" style="color:var(--accent);">Privacy Policy</a>
-        <a href="#" style="color:var(--accent);">Terms of Service</a>
-      </div>
-    </section>
+                    // Customer Support
+                    'customer-support-title': 'Customer Support',
+                    'customer-support-desc': 'Need help? Reach out to our support team.',
+                    'customer-support-info': 'We typically respond within 24-48 hours. For urgent issues, please include "URGENT" in the subject line.',
 
-    <!-- FAQ -->
-    <section id="faq">
-      <h2 class="section-title">FAQ</h2>
-      <div id="faqContainer">
-        <div class="faq-item"><div class="faq-question">What is Zishu? <span>+</span></div><div class="faq-answer">Zishu is a personal AI voice assistant for Android that responds to natural voice commands.</div></div>
-        <div class="faq-item"><div class="faq-question">Is Zishu free? <span>+</span></div><div class="faq-answer">Zishu Android is available through a one-time purchase of ₹99.</div></div>
-        <div class="faq-item"><div class="faq-question">Is this a subscription? <span>+</span></div><div class="faq-answer">No. The current purchase is a one-time ₹99 payment.</div></div>
-        <div class="faq-item"><div class="faq-question">Which devices are supported? <span>+</span></div><div class="faq-answer">Android devices running version 8.0+.</div></div>
-        <div class="faq-item"><div class="faq-question">How do I receive the APK? <span>+</span></div><div class="faq-answer">After payment verification, you can download the APK from this page.</div></div>
-        <div class="faq-item"><div class="faq-question">How does payment verification work? <span>+</span></div><div class="faq-answer">You submit your UPI reference ID; we verify it manually before enabling download.</div></div>
-        <div class="faq-item"><div class="faq-question">Can I reinstall Zishu? <span>+</span></div><div class="faq-answer">Yes, you can reinstall using the same APK. Keep your purchase reference.</div></div>
-        <div class="faq-item"><div class="faq-question">What happens if I change my phone? <span>+</span></div><div class="faq-answer">You can install Zishu on your new device using the same APK.</div></div>
-        <div class="faq-item"><div class="faq-question">Is internet required? <span>+</span></div><div class="faq-answer">Yes, Zishu requires an internet connection for AI processing.</div></div>
-        <div class="faq-item"><div class="faq-question">How can I contact support? <span>+</span></div><div class="faq-answer">Email us at support@example.com</div></div>
-        <div class="faq-item"><div class="faq-question">Are future updates included? <span>+</span></div><div class="faq-answer">Updates are included according to the product's update policy.</div></div>
-        <div class="faq-item"><div class="faq-question">What data does Zishu collect? <span>+</span></div><div class="faq-answer">Zishu collects voice input solely to process your requests; no personal data is stored without consent.</div></div>
-      </div>
-    </section>
+                    // Language
+                    'lang-title': 'Choose Your Language',
+                    'lang-desc': 'Select your preferred language for the Zishu interface.',
+                    'lang-saved': 'Your language preference is saved automatically.',
 
-    <!-- SUPPORT -->
-    <section id="support">
-      <h2 class="section-title">Need help?</h2>
-      <p style="color:var(--text-secondary)">Having trouble with installation, activation or Zishu?</p>
-      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.2rem;">
-        <a href="mailto:support@example.com" class="btn-secondary">Contact Support</a>
-        <a href="#" class="btn-secondary">Report a Problem</a>
-      </div>
-    </section>
+                    // Footer
+                    'footer-tagline': 'Your voice. Your assistant.',
 
-    <!-- FOOTER -->
-    <footer>
-      <div><span style="font-weight:700;">ZISHU</span> <span style="color:var(--text-secondary)">Your voice. Your assistant.</span></div>
-      <div class="footer-links">
-        <a href="#features">Features</a><a href="#howitworks">How it works</a><a href="#faq">FAQ</a><a href="#support">Support</a><a href="#">Privacy</a><a href="#">Terms</a>
-      </div>
-      <div style="color:var(--text-secondary);">© 2026 Zishu. All rights reserved.</div>
-    </footer>
-  </div>
+                    // About Us
+                    'about-hero-desc': 'Zishu is an AI voice assistant created to make interacting with technology feel more natural, simple and personal.',
+                    'about-story-title': 'The Story Behind Zishu',
+                    'about-story-text': 'Zishu was created from the idea of building a voice assistant that feels simple and natural to use. Instead of creating an experience that feels complicated or overwhelming, the goal was to make an assistant that users can simply open, interact with and talk to.\n\nThe project has been developed progressively, with continuous improvements to: voice interaction, AI conversations, user experience, multilingual support, responsive design, assistant tools, accessibility, and overall reliability.',
+                    'about-founder-title': 'Meet the Creator',
+                    'about-founder-bio': 'Zishu is independently created and developed by Zishan, the founder and developer behind StardustOfficial. The project is being built with a focus on learning, experimentation, product development and creating useful technology.',
+                    'about-brand-title': 'Built by StardustOfficial',
+                    'about-brand-text': 'StardustOfficial is the creative technology brand behind Zishu. The project focuses on building modern digital products and experimenting with new ways technology can become more useful and accessible.',
+                    'about-vision-title': 'Our Vision',
+                    'about-vision-text': 'Technology should feel useful, simple and accessible. The long-term vision for Zishu is to continue improving the assistant so that interacting with AI becomes easier and more natural for everyday users. Future goals include better voice interaction, more natural conversations, support for more languages, useful assistant capabilities, better personalization, improved accessibility, and continuous product improvement.',
+                    'about-capabilities-title': 'What Zishu Can Do',
+                    'about-capabilities-desc': 'Zishu is designed to help you with everyday tasks using voice and text.',
+                    'about-capabilities-list': ['Voice interaction', 'Text-based conversations', 'AI-powered answers', 'Weather information', 'Time information', 'Calculations', 'Translation', 'Notes', 'Reminders', 'Website assistance'],
+                    'about-responsive-title': 'Designed for Every Screen',
+                    'about-responsive-text': 'Zishu is designed to work across mobile, tablet, laptop, and desktop. The interface remains clean, responsive and easy to use across different screen sizes.',
+                    'about-multilingual-title': 'Made for More Users',
+                    'about-multilingual-text': 'Zishu is being designed to support users across different languages. Multilingual accessibility is an important part of the project\'s direction. Currently, the interface supports English and Hindi.',
+                    'about-growth-title': 'Still Growing',
+                    'about-growth-text': 'Zishu is continuously being improved. New ideas, improvements and capabilities are being explored as the project grows.',
+                    'about-message-title': 'A Message from the Creator',
+                    'about-message-text': 'Zishu started as an idea to build something useful and has grown into an ongoing project focused on AI, voice interaction and better digital experiences. My goal is to keep learning, building and improving Zishu step by step while creating technology that people can actually enjoy using.',
+                    'about-support-desc': 'Have questions or feedback? We\'re here to help.',
+                },
+                hi: {
+                    // Nav
+                    'nav-home': 'होम',
+                    'nav-explore': 'एक्सप्लोर',
+                    'nav-about': 'हमारे बारे में',
+                    'nav-support-zishu': 'Zishu को सपोर्ट करें',
+                    'nav-language': 'भाषा',
+                    'nav-customer-support': 'ग्राहक सहायता',
 
-  <script>
-    (function() {
-      // Theme
-      const themeToggle = document.getElementById('themeToggle');
-      const html = document.documentElement;
-      const savedTheme = localStorage.getItem('zishu-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      html.setAttribute('data-theme', savedTheme);
-      themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '☾';
+                    // Home
+                    'assistant-tagline': 'आपका निजी AI सहायक',
+                    'orb-status-idle': 'शुरू करने के लिए ऑर्ब टैप करें',
+                    'orb-sub-idle': 'पहली बार माइक्रोफोन सक्षम करने के लिए टैप करें',
+                    'voice-notice': 'पहली बार वॉइस स्टार्टअप में थोड़ा समय लग सकता है। Zishu आवश्यक भाषा लोड कर रहा है, कृपया एक क्षण प्रतीक्षा करें।',
+                    'footer-private': 'निजी · स्थानीय',
 
-      themeToggle.addEventListener('click', function() {
-        const current = html.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', next);
-        localStorage.setItem('zishu-theme', next);
-        themeToggle.textContent = next === 'dark' ? '☀️' : '☾';
-      });
+                    // Explore
+                    'explore-desc': 'आपका निजी AI वॉइस असिस्टेंट। स्वाभाविक रूप से बात करें, सवाल पूछें और वॉइस के माध्यम से मदद लें।',
+                    'features-title': 'उपयोगी बनाया गया।',
+                    'how-title': 'यह कैसे काम करता है',
+                    'use-cases-title': 'बस बताएं कि आपको क्या चाहिए।',
+                    'privacy-title': 'गोपनीयता को ध्यान में रखकर बनाया गया।',
+                    'privacy-desc': 'Zishu AI अनुरोधों को संभालने के लिए एक अलग बैकेंड का उपयोग करता है ताकि संवेदनशील API क्रेडेंशियल्स सीधे क्लाइंट एप्लिकेशन में एम्बेड न हों।',
+                    'faq-title': 'सामान्य प्रश्न',
 
-      // Nav scroll
-      const nav = document.getElementById('navbar');
-      window.addEventListener('scroll', function() {
-        nav.classList.toggle('scrolled', window.scrollY > 20);
-      });
+                    // Support Zishu
+                    'support-zishu-desc': 'यदि आप Zishu का उपयोग करना पसंद करते हैं और इसके निरंतर विकास और भविष्य के सुधारों का समर्थन करना चाहते हैं, तो आप स्वेच्छा से परियोजना का समर्थन कर सकते हैं।',
 
-      // Hamburger
-      const hamburger = document.getElementById('hamburger');
-      const navLinks = document.getElementById('navLinks');
-      hamburger.addEventListener('click', function() {
-        navLinks.classList.toggle('open');
-      });
+                    // Customer Support
+                    'customer-support-title': 'ग्राहक सहायता',
+                    'customer-support-desc': 'मदद चाहिए? हमारी सहायता टीम से संपर्क करें।',
+                    'customer-support-info': 'हम आमतौर पर 24-48 घंटों के भीतर जवाब देते हैं। तत्काल मामलों के लिए, कृपया विषय पंक्ति में "URGENT" शामिल करें।',
 
-      // FAQ accordion
-      document.querySelectorAll('.faq-item').forEach(item => {
-        item.querySelector('.faq-question').addEventListener('click', function() {
-          item.classList.toggle('open');
-          const span = this.querySelector('span');
-          span.textContent = item.classList.contains('open') ? '−' : '+';
-        });
-      });
+                    // Language
+                    'lang-title': 'अपनी भाषा चुनें',
+                    'lang-desc': 'Zishu इंटरफेस के लिए अपनी पसंदीदा भाषा चुनें।',
+                    'lang-saved': 'आपकी भाषा प्राथमिकता स्वचालित रूप से सहेजी गई है।',
 
-      // Purchase flow
-      const showPurchaseBtn = document.getElementById('showPurchase');
-      const purchaseFlow = document.getElementById('purchaseFlow');
-      const submitBtn = document.getElementById('submitPayment');
-      const txnInput = document.getElementById('txnId');
-      const statusDiv = document.getElementById('paymentStatus');
-      const downloadArea = document.getElementById('downloadArea');
+                    // Footer
+                    'footer-tagline': 'आपकी आवाज़। आपका सहायक।',
 
-      showPurchaseBtn.addEventListener('click', function() {
-        purchaseFlow.classList.toggle('hidden');
-        if (!purchaseFlow.classList.contains('hidden')) {
-          purchaseFlow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // About Us
+                    'about-hero-desc': 'Zishu एक AI वॉइस असिस्टेंट है जिसे तकनीक के साथ बातचीत को अधिक प्राकृतिक, सरल और व्यक्तिगत बनाने के लिए बनाया गया है।',
+                    'about-story-title': 'Zishu के पीछे की कहानी',
+                    'about-story-text': 'Zishu एक ऐसा वॉइस असिस्टेंट बनाने के विचार से बनाया गया था जो उपयोग करने में सरल और प्राकृतिक लगे। एक ऐसा अनुभव बनाने के बजाय जो जटिल या भारी लगे, लक्ष्य एक ऐसा सहायक बनाना था जिसे उपयोगकर्ता आसानी से खोल सकें, बातचीत कर सकें और बात कर सकें।\n\nइस परियोजना को धीरे-धीरे विकसित किया गया है, जिसमें निरंतर सुधार किए गए हैं: वॉइस इंटरैक्शन, AI संवाद, उपयोगकर्ता अनुभव, बहुभाषी समर्थन, उत्तरदायी डिज़ाइन, सहायक उपकरण, पहुंच और समग्र विश्वसनीयता।',
+                    'about-founder-title': 'निर्माता से मिलें',
+                    'about-founder-bio': 'Zishu को स्वतंत्र रूप से Zishan द्वारा बनाया और विकसित किया गया है, जो StardustOfficial के संस्थापक और डेवलपर हैं। यह परियोजना सीखने, प्रयोग, उत्पाद विकास और उपयोगी तकनीक बनाने पर केंद्रित है।',
+                    'about-brand-title': 'StardustOfficial द्वारा निर्मित',
+                    'about-brand-text': 'StardustOfficial Zishu के पीछे का क्रिएटिव टेक्नोलॉजी ब्रांड है। यह परियोजना आधुनिक डिजिटल उत्पादों के निर्माण और नए तरीकों के साथ प्रयोग करने पर केंद्रित है ताकि तकनीक अधिक उपयोगी और सुलभ हो सके।',
+                    'about-vision-title': 'हमारा दृष्टिकोण',
+                    'about-vision-text': 'तकनीक उपयोगी, सरल और सुलभ होनी चाहिए। Zishu के लिए दीर्घकालिक दृष्टिकोण सहायक में सुधार जारी रखना है ताकि AI के साथ बातचीत करना आम उपयोगकर्ताओं के लिए आसान और अधिक प्राकृतिक हो जाए। भविष्य के लक्ष्यों में बेहतर वॉइस इंटरैक्शन, अधिक प्राकृतिक संवाद, अधिक भाषाओं के लिए समर्थन, उपयोगी सहायक क्षमताएँ, बेहतर वैयक्तिकरण, बेहतर पहुंच और निरंतर उत्पाद सुधार शामिल हैं।',
+                    'about-capabilities-title': 'Zishu क्या कर सकता है',
+                    'about-capabilities-desc': 'Zishu को वॉइस और टेक्स्ट का उपयोग करके दैनिक कार्यों में आपकी मदद करने के लिए डिज़ाइन किया गया है।',
+                    'about-capabilities-list': ['वॉइस इंटरैक्शन', 'टेक्स्ट-आधारित बातचीत', 'AI-संचालित उत्तर', 'मौसम की जानकारी', 'समय की जानकारी', 'गणनाएँ', 'अनुवाद', 'नोट्स', 'रिमाइंडर', 'वेबसाइट सहायता'],
+                    'about-responsive-title': 'हर स्क्रीन के लिए डिज़ाइन किया गया',
+                    'about-responsive-text': 'Zishu को मोबाइल, टैबलेट, लैपटॉप और डेस्कटॉप पर काम करने के लिए डिज़ाइन किया गया है। इंटरफेस विभिन्न स्क्रीन आकारों में स्वच्छ, उत्तरदायी और उपयोग में आसान रहता है।',
+                    'about-multilingual-title': 'अधिक उपयोगकर्ताओं के लिए बनाया गया',
+                    'about-multilingual-text': 'Zishu को विभिन्न भाषाओं में उपयोगकर्ताओं का समर्थन करने के लिए डिज़ाइन किया जा रहा है। बहुभाषी पहुंच परियोजना की दिशा का एक महत्वपूर्ण हिस्सा है। वर्तमान में, इंटरफेस अंग्रेजी और हिंदी का समर्थन करता है।',
+                    'about-growth-title': 'अभी भी बढ़ रहा है',
+                    'about-growth-text': 'Zishu में लगातार सुधार किया जा रहा है। परियोजना के बढ़ने के साथ नए विचारों, सुधारों और क्षमताओं की खोज की जा रही है।',
+                    'about-message-title': 'निर्माता का संदेश',
+                    'about-message-text': 'Zishu कुछ उपयोगी बनाने के विचार से शुरू हुआ और AI, वॉइस इंटरैक्शन और बेहतर डिजिटल अनुभवों पर केंद्रित एक चल रही परियोजना में विकसित हुआ है। मेरा लक्ष्य सीखते रहना, निर्माण करते रहना और Zishu को चरण-दर-चरण सुधारते रहना है, साथ ही ऐसी तकनीक बनाना जिसका उपयोग लोग वास्तव में आनंद के साथ कर सकें।',
+                    'about-support-desc': 'कोई सवाल या सुझाव? हम मदद के लिए यहाँ हैं।',
+                }
+            };
+
+            function getTranslation(key) {
+                return translations[currentLang]?.[key] || translations.en[key] || key;
+            }
+
+            function applyLanguage(lang) {
+                currentLang = lang;
+                localStorage.setItem(LANG_STORAGE_KEY, lang);
+
+                // Nav links
+                document.querySelectorAll('.nav-links a[data-page]').forEach(el => {
+                    const page = el.getAttribute('data-page');
+                    const key = 'nav-' + page;
+                    el.textContent = getTranslation(key);
+                });
+
+                // Elements with id
+                const idMap = {
+                    'assistant-tagline': 'assistant-tagline',
+                    'explore-desc': 'explore-desc',
+                    'features-title': 'features-title',
+                    'how-title': 'how-title',
+                    'use-cases-title': 'use-cases-title',
+                    'privacy-title': 'privacy-title',
+                    'privacy-desc': 'privacy-desc',
+                    'faq-title': 'faq-title',
+                    'support-zishu-desc': 'support-zishu-desc',
+                    'customer-support-title': 'customer-support-title',
+                    'customer-support-desc': 'customer-support-desc',
+                    'customer-support-info': 'customer-support-info',
+                    'lang-title': 'lang-title',
+                    'lang-desc': 'lang-desc',
+                    'lang-saved': 'lang-saved',
+                    'footer-tagline': 'footer-tagline',
+                    // About
+                    'about-hero-desc': 'about-hero-desc',
+                    'about-story-title': 'about-story-title',
+                    'about-story-text': 'about-story-text',
+                    'about-founder-title': 'about-founder-title',
+                    'about-founder-bio': 'about-founder-bio',
+                    'about-brand-title': 'about-brand-title',
+                    'about-brand-text': 'about-brand-text',
+                    'about-vision-title': 'about-vision-title',
+                    'about-vision-text': 'about-vision-text',
+                    'about-capabilities-title': 'about-capabilities-title',
+                    'about-capabilities-desc': 'about-capabilities-desc',
+                    'about-responsive-title': 'about-responsive-title',
+                    'about-responsive-text': 'about-responsive-text',
+                    'about-multilingual-title': 'about-multilingual-title',
+                    'about-multilingual-text': 'about-multilingual-text',
+                    'about-growth-title': 'about-growth-title',
+                    'about-growth-text': 'about-growth-text',
+                    'about-message-title': 'about-message-title',
+                    'about-message-text': 'about-message-text',
+                    'about-support-desc': 'about-support-desc',
+                };
+
+                Object.keys(idMap).forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        const key = idMap[id];
+                        el.textContent = getTranslation(key);
+                    }
+                });
+
+                // Capabilities list (dynamic)
+                const listEl = document.getElementById('about-capabilities-list');
+                if (listEl) {
+                    const items = getTranslation('about-capabilities-list');
+                    if (Array.isArray(items)) {
+                        listEl.innerHTML = items.map(item => `<li>${item}</li>`).join('');
+                    }
+                }
+
+                // Orb status
+                const orbStatus = document.getElementById('zishu-orb-status');
+                const orbSub = document.getElementById('zishu-orb-sub');
+                if (orbStatus) orbStatus.textContent = getTranslation('orb-status-idle');
+                if (orbSub) orbSub.textContent = getTranslation('orb-sub-idle');
+
+                // Voice notice
+                const voiceNoticeText = document.getElementById('voice-notice-text');
+                if (voiceNoticeText) {
+                    const txt = getTranslation('voice-notice');
+                    const parts = txt.split(' ');
+                    if (parts.length > 4) {
+                        voiceNoticeText.innerHTML = '<strong>' + parts.slice(0, 4).join(' ') + '</strong> ' + parts.slice(4)
+                            .join(' ');
+                    } else {
+                        voiceNoticeText.innerHTML = txt;
+                    }
+                }
+
+                // Footer private
+                const footerPrivate = document.getElementById('footer-private');
+                if (footerPrivate) footerPrivate.textContent = getTranslation('footer-private');
+
+                // Language buttons
+                document.querySelectorAll('.language-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+                });
+
+                document.documentElement.lang = lang === 'hi' ? 'hi' : 'en';
+            }
+
+            window.getTranslation = getTranslation;
+            window.applyLanguage = applyLanguage;
+            window.currentLang = currentLang;
+
+            document.addEventListener('DOMContentLoaded', function() {
+                applyLanguage(currentLang);
+                document.querySelectorAll('.language-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        applyLanguage(this.getAttribute('data-lang'));
+                    });
+                });
+            });
+
+            if (document.readyState === 'complete') {
+                applyLanguage(currentLang);
+            } else {
+                window.addEventListener('load', function() {
+                    applyLanguage(currentLang);
+                });
+            }
+        })();
+
+
+        // ============================================================
+        // FIREBASE CONFIG (kept for potential future use, auth removed)
+        // ============================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCV69BI7Rw-4o4yHQxBp-v0dXvEl7Tpmq0",
+            authDomain: "zishu-ai.firebaseapp.com",
+            databaseURL: "https://zishu-ai-default-rtdb.firebaseio.com",
+            projectId: "zishu-ai",
+            storageBucket: "zishu-ai.firebasestorage.app",
+            messagingSenderId: "266786650911",
+            appId: "1:266786650911:web:207498caea84e3c661ce2a",
+            measurementId: "G-PEXRS2X6JQ"
+        };
+
+        let firebaseInitialized = false;
+
+        function initFirebase() {
+            if (firebaseInitialized) return;
+            try {
+                firebase.initializeApp(firebaseConfig);
+                firebaseInitialized = true;
+            } catch (e) {
+                console.warn('Firebase init error:', e);
+            }
         }
-      });
 
-      submitBtn.addEventListener('click', function() {
-        const txn = txnInput.value.trim();
-        if (!txn) { statusDiv.textContent = '⚠️ Please enter a transaction ID.'; return; }
-        statusDiv.textContent = '⏳ Checking...';
-        setTimeout(() => {
-          statusDiv.textContent = '✅ Payment submitted. Verification pending.';
-          setTimeout(() => {
-            statusDiv.textContent = '✅ Payment verified (manual)';
-            downloadArea.classList.remove('hidden');
-          }, 1800);
-        }, 1200);
-      });
-    })();
-  </script>
+
+        // ============================================================
+        // MARKETING — Theme, Nav, FAQ, Page Switching (updated with new pages & hash)
+        // ============================================================
+        (function marketing() {
+            // Theme
+            const themeToggle = document.getElementById('themeToggle');
+            const html = document.documentElement;
+            const savedTheme = localStorage.getItem('zishu-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ?
+                'dark' : 'light');
+            html.setAttribute('data-theme', savedTheme);
+            themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '☾';
+
+            themeToggle.addEventListener('click', function() {
+                const current = html.getAttribute('data-theme');
+                const next = current === 'dark' ? 'light' : 'dark';
+                html.setAttribute('data-theme', next);
+                localStorage.setItem('zishu-theme', next);
+                themeToggle.textContent = next === 'dark' ? '☀️' : '☾';
+                const assistant = document.getElementById('zishu-assistant-root');
+                if (assistant) {
+                    if (next === 'dark') {
+                        assistant.classList.add('dark-mode');
+                    } else {
+                        assistant.classList.remove('dark-mode');
+                    }
+                }
+            });
+
+            // Nav scroll
+            const nav = document.getElementById('navbar');
+            window.addEventListener('scroll', function() {
+                nav.classList.toggle('scrolled', window.scrollY > 20);
+            });
+
+            // Hamburger
+            const hamburger = document.getElementById('hamburger');
+            const navLinks = document.getElementById('navLinks');
+            hamburger.addEventListener('click', function() {
+                navLinks.classList.toggle('open');
+            });
+
+            // Pages
+            const homePage = document.getElementById('home-page');
+            const explorePage = document.getElementById('explore-page');
+            const supportZishuPage = document.getElementById('support-zishu-page');
+            const languagePage = document.getElementById('language-page');
+            const customerSupportPage = document.getElementById('customer-support-page');
+            const aboutPage = document.getElementById('about-page');
+            const navLinksItems = navLinks.querySelectorAll('a[data-page]');
+            const footerLinks = document.querySelectorAll('footer a[data-page]');
+            const logo = document.getElementById('nav-logo');
+            const exploreUseBtn = document.getElementById('exploreUseZishuBtn');
+
+            function switchPage(page) {
+                // Hide all
+                homePage.style.display = 'none';
+                explorePage.style.display = 'none';
+                supportZishuPage.style.display = 'none';
+                languagePage.style.display = 'none';
+                customerSupportPage.style.display = 'none';
+                aboutPage.style.display = 'none';
+
+                // Show selected
+                if (page === 'home') homePage.style.display = 'block';
+                else if (page === 'explore') explorePage.style.display = 'block';
+                else if (page === 'support-zishu') supportZishuPage.style.display = 'block';
+                else if (page === 'language') languagePage.style.display = 'block';
+                else if (page === 'customer-support') customerSupportPage.style.display = 'block';
+                else if (page === 'about') aboutPage.style.display = 'block';
+
+                // Update nav active
+                navLinksItems.forEach(el => {
+                    el.classList.toggle('active', el.getAttribute('data-page') === page);
+                });
+
+                // Update URL hash
+                if (page === 'home') {
+                    history.pushState(null, '', window.location.pathname);
+                } else {
+                    history.pushState(null, '', '#' + page);
+                }
+
+                navLinks.classList.remove('open');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // Nav click
+            navLinksItems.forEach(el => {
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    switchPage(this.getAttribute('data-page'));
+                });
+            });
+
+            // Footer links
+            footerLinks.forEach(el => {
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    switchPage(this.getAttribute('data-page'));
+                });
+            });
+
+            logo.addEventListener('click', function() {
+                switchPage('home');
+            });
+
+            if (exploreUseBtn) {
+                exploreUseBtn.addEventListener('click', function() {
+                    switchPage('home');
+                });
+            }
+
+            // About Support button
+            document.getElementById('aboutSupportBtn').addEventListener('click', function() {
+                switchPage('customer-support');
+            });
+
+            // Hash-based routing on load
+            function handleHash() {
+                const hash = window.location.hash.replace('#', '');
+                if (hash && ['home', 'explore', 'about', 'support-zishu', 'language', 'customer-support'].includes(hash)) {
+                    switchPage(hash);
+                } else {
+                    switchPage('home');
+                }
+            }
+
+            window.addEventListener('hashchange', handleHash);
+            // Initial load
+            if (document.readyState === 'complete') {
+                handleHash();
+            } else {
+                window.addEventListener('load', handleHash);
+            }
+
+            // FAQ accordion
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.querySelector('.faq-question').addEventListener('click', function() {
+                    item.classList.toggle('open');
+                    const span = this.querySelector('span');
+                    span.textContent = item.classList.contains('open') ? '−' : '+';
+                });
+            });
+
+            initFirebase();
+        })();
+
+
+        // ============================================================
+        // ZISHU ASSISTANT — COMPLETE PRESERVED (unchanged)
+        // ============================================================
+        (function zishuAssistant() {
+            // ============================================================
+            // CONFIG
+            // ============================================================
+            const BACKEND_URL = 'https://zishu-backend.onrender.com/api/chat';
+
+            // ============================================================
+            // STATE MACHINE
+            // ============================================================
+            const STATE = {
+                IDLE: 'idle',
+                LISTENING: 'listening',
+                THINKING: 'thinking',
+                SPEAKING: 'speaking'
+            };
+
+            let state = STATE.IDLE;
+            let recognition = null;
+            let isProcessing = false;
+            let currentUtterance = null;
+            let restartTimer = null;
+            let isRestartScheduled = false;
+            let isFirstActivation = true;
+            let conversationHistory = [];
+            let isStopped = false;
+            let isSpeakingNow = false;
+            let utteranceResolve = null;
+
+            // ============================================================
+            // DOM REFS
+            // ============================================================
+            const orbWrapper = document.getElementById('zishu-orb-wrapper');
+            const orbStatus = document.getElementById('zishu-orb-status');
+            const orbSub = document.getElementById('zishu-orb-sub');
+            const chatContainer = document.getElementById('zishu-chat-container');
+            const assistantRoot = document.getElementById('zishu-assistant-root');
+
+            // ============================================================
+            // WAKE WORDS
+            // ============================================================
+            const WAKE_WORDS = ['zishu', 'hey zishu', 'hi zishu', 'hello zishu', 'ok zishu'];
+
+            function isWakeWord(query) {
+                const q = query.toLowerCase().trim();
+                return WAKE_WORDS.some(function(word) { return q === word || q.includes(word); });
+            }
+
+            // ============================================================
+            // ACTION HANDLERS (preserved)
+            // ============================================================
+            function handleActions(query) {
+                var q = query.toLowerCase().trim();
+
+                if (q.includes('alarm') || q.includes('अलार्म') || q.includes('alarm lagao')) {
+                    var timeMatch = q.match(/(\d{1,2})\s*(?:baje|:|\s*)(\d{0,2})?\s*(?:am|pm|सुबह|शाम|रात)?/i);
+                    if (timeMatch) {
+                        var hours = parseInt(timeMatch[1]);
+                        var minutes = parseInt(timeMatch[2]) || 0;
+                        if (q.includes('pm') || q.includes('शाम') || q.includes('रात')) {
+                            if (hours < 12) hours += 12;
+                        }
+                        if (q.includes('am') || q.includes('सुबह')) {
+                            if (hours === 12) hours = 0;
+                        }
+                        var alarmTime = new Date();
+                        alarmTime.setHours(hours, minutes, 0, 0);
+                        var now = new Date();
+                        if (alarmTime < now) {
+                            alarmTime.setDate(alarmTime.getDate() + 1);
+                        }
+                        var diff = alarmTime - now;
+                        if (diff > 0) {
+                            var alarms = JSON.parse(localStorage.getItem('zishu_alarms') || '[]');
+                            alarms.push({
+                                time: alarmTime.toISOString(),
+                                message: query,
+                                active: true
+                            });
+                            localStorage.setItem('zishu_alarms', JSON.stringify(alarms));
+                            return 'Alarm set for ' + alarmTime.toLocaleTimeString('hi-IN') +
+                                '. Main yaad dilaunga!';
+                        }
+                    }
+                    return "Alarm ke liye time batao jaise 'alarm 7 baje' ya 'alarm 9:30 am'";
+                }
+
+                if (q.includes('remind') || q.includes('reminder') || q.includes('याद') || q.includes('याद दिलाओ')) {
+                    var match = q.match(/(?:remind|याद दिलाओ|reminder)\s*(?:me|मुझे)?\s*(?:to|कि)?\s*(.+)/i);
+                    if (match && match[1]) {
+                        var reminders = JSON.parse(localStorage.getItem('zishu_reminders') || '[]');
+                        reminders.push({
+                            text: match[1].trim(),
+                            date: new Date().toISOString(),
+                            done: false
+                        });
+                        localStorage.setItem('zishu_reminders', JSON.stringify(reminders));
+                        return 'Reminder saved: "' + match[1].trim() + '". Main yaad dilaunga!';
+                    }
+                    return "Reminder ke liye batao jaise 'remind me to call mom' ya 'मुझे दवा लेनी है याद दिलाओ'";
+                }
+
+                if (q.includes('note') || q.includes('नोट') || q.includes('save') || q.includes('सेव') || q.includes(
+                        'save note')) {
+                    var match = q.match(/(?:note|नोट|save|सेव)\s*(?:this|यह)?\s*(.+)/i);
+                    if (match && match[1]) {
+                        var notes = JSON.parse(localStorage.getItem('zishu_notes') || '[]');
+                        notes.push({
+                            text: match[1].trim(),
+                            date: new Date().toISOString()
+                        });
+                        localStorage.setItem('zishu_notes', JSON.stringify(notes));
+                        return 'Note saved: "' + match[1].trim() + '"';
+                    }
+                    return "Note ke liye batao jaise 'note shopping list' ya 'नोट आज बारिश हो रही है'";
+                }
+
+                if (q.includes('show notes') || q.includes('दिखाओ नोट') || q.includes('my notes')) {
+                    var notes = JSON.parse(localStorage.getItem('zishu_notes') || '[]');
+                    if (notes.length === 0) return "Koi note nahi hai. Pehle note save karo!";
+                    var noteList = notes.map(function(n, i) { return (i + 1) + '. ' + n.text; }).join('\n');
+                    return 'Aapke notes:\n' + noteList;
+                }
+
+                if (q.includes('show reminders') || q.includes('दिखाओ रिमाइंडर') || q.includes('my reminders')) {
+                    var reminders = JSON.parse(localStorage.getItem('zishu_reminders') || '[]');
+                    if (reminders.length === 0) return "Koi reminder nahi hai. Pehle reminder set karo!";
+                    var remList = reminders.filter(function(r) { return !r.done; }).map(function(r, i) { return (i +
+                            1) + '. ' + r.text; }).join('\n');
+                    return 'Aapke reminders:\n' + remList;
+                }
+
+                return null;
+            }
+
+            function checkAlarms() {
+                var alarms = JSON.parse(localStorage.getItem('zishu_alarms') || '[]');
+                var now = new Date();
+                alarms.forEach(function(alarm, index) {
+                    if (alarm.active) {
+                        var alarmTime = new Date(alarm.time);
+                        if (alarmTime <= now) {
+                            alarm.active = false;
+                            var msg = 'ALARM! ' + alarm.message;
+                            addToolMessage('🔔 ' + msg);
+                            if (!isProcessing) {
+                                speakText('उठो! ' + alarm.message);
+                            }
+                            localStorage.setItem('zishu_alarms', JSON.stringify(alarms));
+                        }
+                    }
+                });
+            }
+            setInterval(checkAlarms, 30000);
+
+            var STOP_WORDS = [
+                'stop', 'ruko', 'bas', 'band karo', 'band kar', 'rok', 'rok do',
+                'बंद करो', 'बंद कर', 'रुको', 'बस', 'बस करो', 'रोको',
+                'enough', 'thats enough', 'bass', 'rokna', 'rok do',
+                'quit', 'cancel', 'shut up', 'chup', 'चुप'
+            ];
+
+            var SPECIAL_CHARS = {
+                '*': ' ',
+                '_': ' ',
+                '-': ' ',
+                '•': ' ',
+                '·': ' ',
+                '➡️': ' ',
+                '👉': ' ',
+                '✅': ' ',
+                '⭐': ' ',
+                '🔹': ' ',
+                '🔸': ' ',
+                '▪️': ' ',
+                '▫️': ' ',
+                '◆': ' ',
+                '◇': ' ',
+                '●': ' ',
+                '○': ' ',
+                '★': ' ',
+                '☆': ' '
+            };
+
+            function cleanTextForSpeech(text) {
+                var cleaned = text;
+                for (var key in SPECIAL_CHARS) {
+                    if (SPECIAL_CHARS.hasOwnProperty(key)) {
+                        cleaned = cleaned.split(key).join(SPECIAL_CHARS[key]);
+                    }
+                }
+                cleaned = cleaned.replace(/\s+/g, ' ');
+                cleaned = cleaned.replace(/\*\*/g, '');
+                cleaned = cleaned.replace(/\*/g, '');
+                cleaned = cleaned.replace(/\_\_/g, '');
+                cleaned = cleaned.replace(/\_/g, '');
+                cleaned = cleaned.replace(/\~\~/g, '');
+                cleaned = cleaned.replace(/\~/g, '');
+                cleaned = cleaned.replace(/^#+\s*/gm, '');
+                cleaned = cleaned.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+                cleaned = cleaned.replace(/```[\s\S]*?```/g, '');
+                cleaned = cleaned.replace(/`[^`]*`/g, '');
+                cleaned = cleaned.replace(/^\s*[-*+]\s+/gm, '');
+                cleaned = cleaned.replace(/^\s*\d+\.\s+/gm, '');
+                cleaned = cleaned.replace(/\s+/g, ' ').trim();
+                return cleaned;
+            }
+
+            var SITE_ALIASES = {
+                youtube: ['youtube', 'you tube', 'यूट्यूब', 'यू ट्यूब'],
+                instagram: ['instagram', 'insta', 'इंस्टाग्राम', 'इंस्टा'],
+                facebook: ['facebook', 'fb', 'फेसबुक', 'फेसबुक'],
+                twitter: ['twitter', 'x', 'ट्विटर', 'ट्विटर'],
+                whatsapp: ['whatsapp', 'whats app', 'व्हाट्सएप', 'व्हाट्सऐप'],
+                telegram: ['telegram', 'टेलीग्राम', 'टेलीग्राम'],
+                snapchat: ['snapchat', 'स्नैपचैट', 'स्नैपचैट'],
+                pinterest: ['pinterest', 'पिनट्रेस्ट', 'पिनट्रेस्ट'],
+                tumblr: ['tumblr', 'टम्बलर', 'टम्बलर'],
+                linkedin: ['linkedin', 'linkdin', 'लिंक्डइन', 'लिंक्डइन'],
+                reddit: ['reddit', 'रेडिट', 'रेडिट'],
+                discord: ['discord', 'डिस्कॉर्ड', 'डिस्कॉर्ड'],
+                tiktok: ['tiktok', 'टिकटॉक', 'टिकटोक'],
+                threads: ['threads', 'थ्रेड्स', 'थ्रेड्स'],
+                bluesky: ['bluesky', 'ब्लूस्काई', 'ब्लूस्काई'],
+                mastodon: ['mastodon', 'मास्टोडन', 'मास्टोडन'],
+                google: ['google', 'गूगल', 'गूगल'],
+                gmail: ['gmail', 'जीमेल', 'जी मेल'],
+                maps: ['google maps', 'maps', 'गूगल मैप्स', 'मैप्स', 'map'],
+                drive: ['google drive', 'drive', 'गूगल ड्राइव', 'ड्राइव'],
+                docs: ['google docs', 'docs', 'गूगल डॉक्स', 'डॉक्स'],
+                sheets: ['google sheets', 'sheets', 'गूगल शीट्स', 'शीट्स'],
+                slides: ['google slides', 'slides', 'गूगल स्लाइड्स', 'स्लाइड्स'],
+                translate: ['google translate', 'translate', 'गूगल ट्रांसलेट', 'ट्रांसलेट'],
+                calendar: ['google calendar', 'calendar', 'गूगल कैलेंडर', 'कैलेंडर'],
+                photos: ['google photos', 'photos', 'गूगल फोटो', 'फोटो'],
+                keep: ['google keep', 'keep', 'गूगल कीप', 'कीप'],
+                tasks: ['google tasks', 'tasks', 'गूगल टास्क', 'टास्क'],
+                meet: ['google meet', 'meet', 'गूगल मीट', 'मीट'],
+                netflix: ['netflix', 'नेटफ्लिक्स', 'नेटफ्लिक्स'],
+                spotify: ['spotify', 'स्पॉटिफाई', 'स्पॉटिफाई', 'स्पॉटिफाय'],
+                primevideo: ['prime video', 'amazon prime', 'prime', 'प्राइम वीडियो', 'प्राइम'],
+                hotstar: ['hotstar', 'हॉटस्टार', 'हॉटस्टार'],
+                sonyliv: ['sony liv', 'sonyliv', 'सोनी लिव', 'सोनी'],
+                voot: ['voot', 'वूट', 'वूट'],
+                zee5: ['zee5', 'z5', 'ज़ी5', 'ज़ी'],
+                mxplayer: ['mx player', 'mx', 'एमएक्स प्लेयर', 'एमएक्स'],
+                jiosaavn: ['jiosaavn', 'saavn', 'जियोसावन', 'सावन'],
+                wynk: ['wynk', 'विन्क', 'विन्क'],
+                gaana: ['gaana', 'गाना', 'गाना'],
+                hungama: ['hungama', 'हंगामा', 'हंगामा'],
+                apple: ['apple music', 'apple', 'एप्पल म्यूजिक', 'एप्पल'],
+                soundcloud: ['soundcloud', 'साउंडक्लाउड', 'साउंडक्लाउड'],
+                tidal: ['tidal', 'टाइडल', 'टाइडल'],
+                amazon: ['amazon', 'अमेज़न', 'अमेजन', 'अमेज़न'],
+                flipkart: ['flipkart', 'फ्लिपकार्ट', 'फ्लिपकार्ट'],
+                myntra: ['myntra', 'मिंत्रा', 'मिंत्रा'],
+                ajio: ['ajio', 'अजियो', 'अजियो'],
+                nykaa: ['nykaa', 'नायका', 'नायका'],
+                meesho: ['meesho', 'मीशो', 'मीशो'],
+                snapdeal: ['snapdeal', 'स्नैपडील', 'स्नैपडील'],
+                paytm: ['paytm', 'पेटीएम', 'पेटीएम'],
+                phonepe: ['phonepe', 'फोनपे', 'फोनपे'],
+                gpay: ['google pay', 'gpay', 'गूगल पे', 'गूगलपे'],
+                croma: ['croma', 'क्रोमा', 'क्रोमा'],
+                reliance: ['reliance digital', 'reliance', 'रिलायंस', 'रिलायंस डिजिटल'],
+                tata: ['tata cliq', 'tata', 'ताता क्लिक', 'ताता'],
+                shopclues: ['shopclues', 'शॉपक्लूज़', 'शॉपक्लूज़'],
+                zomato: ['zomato', 'जोमैटो', 'जोमैटो'],
+                swiggy: ['swiggy', 'स्विगी', 'स्विगी'],
+                dominos: ['dominos', 'डोमिनोस', 'डोमिनोज़'],
+                pizza: ['pizza hut', 'पिज़्ज़ा', 'पिज्जा हट'],
+                kfc: ['kfc', 'केएफसी', 'केएफसी'],
+                mcdonalds: ['mcdonalds', 'macdonald', 'मैकडोनाल्ड', 'मैक्डोनाल्ड'],
+                burgerking: ['burger king', 'बर्गर किंग', 'बर्गर किंग'],
+                subway: ['subway', 'सबवे', 'सबवे'],
+                starbucks: ['starbucks', 'स्टारबक्स', 'स्टारबक्स'],
+                uber: ['uber', 'उबर', 'उबर'],
+                ola: ['ola', 'ओला', 'ओला'],
+                timesofindia: ['times of india', 'toi', 'टाइम्स ऑफ इंडिया', 'टाइम्स'],
+                hindustantimes: ['hindustan times', 'हिंदुस्तान टाइम्स', 'हिंदुस्तान'],
+                ndtv: ['ndtv', 'एनडीटीवी', 'एनडीटीवी'],
+                bbc: ['bbc', 'बीबीसी', 'बीबीसी'],
+                cnn: ['cnn', 'सीएनएन', 'सीएनएन'],
+                thehindu: ['the hindu', 'हिन्दू', 'द हिन्दू'],
+                indianexpress: ['indian express', 'इंडियन एक्सप्रेस', 'इंडियन एक्सप्रेस'],
+                livemint: ['livemint', 'लाइवमिंट', 'लाइवमिंट'],
+                moneycontrol: ['moneycontrol', 'मनीकंट्रोल', 'मनीकंट्रोल'],
+                bloomberg: ['bloomberg', 'ब्लूमबर्ग', 'ब्लूमबर्ग'],
+                reuters: ['reuters', 'रॉयटर्स', 'रॉयटर्स'],
+                github: ['github', 'git hub', 'गिटहब', 'गिट हब'],
+                stackoverflow: ['stack overflow', 'stackoverflow', 'स्टैक ओवरफ्लो', 'स्टैक'],
+                codepen: ['codepen', 'कोडपेन', 'कोडपेन'],
+                devto: ['dev.to', 'devto', 'डेव', 'डेव टू'],
+                producthunt: ['product hunt', 'producthunt', 'प्रोडक्ट हंट', 'हंट'],
+                gitlab: ['gitlab', 'गिटलैब', 'गिटलैब'],
+                bitbucket: ['bitbucket', 'बिटबकेट', 'बिटबकेट'],
+                docker: ['docker', 'डॉकर', 'डॉकर'],
+                kubernetes: ['kubernetes', 'k8s', 'कुबेरनेट्स', 'कुबेरनेट्स'],
+                aws: ['aws', 'amazon web services', 'एडब्ल्यूएस', 'एमज़ॉन वेब सर्विस'],
+                azure: ['azure', 'microsoft azure', 'एज़्योर', 'माइक्रोसॉफ्ट एज़्योर'],
+                googlecloud: ['google cloud', 'gcp', 'गूगल क्लाउड', 'जीसीपी'],
+                chatgpt: ['chatgpt', 'chat gpt', 'चैटजीपीटी', 'चैट जीपीटी'],
+                bard: ['bard', 'google bard', 'बार्ड', 'गूगल बार्ड'],
+                claude: ['claude', 'क्लॉड', 'क्लॉड'],
+                perplexity: ['perplexity', 'परप्लेक्सिटी', 'परप्लेक्सिटी'],
+                midjourney: ['midjourney', 'मिडजर्नी', 'मिडजर्नी'],
+                dalle: ['dalle', 'dall-e', 'डाली', 'डाल-ई'],
+                stable: ['stable diffusion', 'स्टेबल डिफ्यूजन', 'स्टेबल डिफ्यूजन'],
+                huggingface: ['hugging face', 'huggingface', 'हगिंग फेस', 'हगिंगफेस'],
+                replicate: ['replicate', 'रिप्लिकेट', 'रिप्लिकेट'],
+                wikipedia: ['wikipedia', 'विकिपीडिया', 'विकिपीडिया'],
+                khanacademy: ['khan academy', 'khanacademy', 'खान अकादमी', 'खान'],
+                coursera: ['coursera', 'कोर्सेरा', 'कोर्सेरा'],
+                udemy: ['udemy', 'यूडेमी', 'यूडेमी'],
+                byjus: ['byjus', 'बायजू', 'बायजू'],
+                unacademy: ['unacademy', 'यूनाकेडमी', 'यूनाकेडमी'],
+                vedantu: ['vedantu', 'वेदांतु', 'वेदांतु'],
+                duolingo: ['duolingo', 'डुओलिंगो', 'डुओलिंगो'],
+                britannica: ['britannica', 'ब्रिटैनिका', 'ब्रिटैनिका'],
+                mit: ['mit', 'एमआईटी', 'एमआईटी'],
+                stanford: ['stanford', 'स्टैनफोर्ड', 'स्टैनफोर्ड'],
+                chess: ['chess', 'शतरंज', 'शतरंज'],
+                ludo: ['ludo', 'लूडो', 'लूडो'],
+                carrom: ['carrom', 'कैरम', 'कैरम'],
+                pubg: ['pubg', 'पबजी', 'पबजी'],
+                freefire: ['free fire', 'freefire', 'फ्री फायर', 'फ्रीफायर'],
+                minecraft: ['minecraft', 'माइनक्राफ्ट', 'माइनक्राफ्ट'],
+                clashofclans: ['clash of clans', 'coc', 'क्लैश ऑफ क्लैंस', 'क्लैश'],
+                valorant: ['valorant', 'वैलोरेंट', 'वैलोरेंट'],
+                fortnite: ['fortnite', 'फोर्टनाइट', 'फोर्टनाइट'],
+                apex: ['apex legends', 'apex', 'एपेक्स लीजेंड्स', 'एपेक्स'],
+                cod: ['call of duty', 'cod', 'कॉल ऑफ ड्यूटी', 'कॉल ऑफ ड्यूटी'],
+                gta: ['gta', 'grand theft auto', 'जीटीए', 'ग्रैंड थेफ्ट ऑटो'],
+                roblox: ['roblox', 'रोब्लॉक्स', 'रोब्लॉक्स'],
+                amongus: ['among us', 'अमंग अस', 'अमंग अस'],
+                candycrush: ['candy crush', 'कैंडी क्रश', 'कैंडी क्रश'],
+                temple: ['temple run', 'टेंपल रन', 'टेंपल रन'],
+                duckduckgo: ['duckduckgo', 'duck duck go', 'डकडकगो', 'डक डक गो'],
+                medium: ['medium', 'मीडियम', 'मीडियम'],
+                quora: ['quora', 'कोरा', 'कोरा'],
+                canva: ['canva', 'कैनवा', 'कैनवा'],
+                figma: ['figma', 'फिग्मा', 'फिग्मा'],
+                notion: ['notion', 'नोशन', 'नोशन'],
+                slack: ['slack', 'स्लैक', 'स्लैक'],
+                zoom: ['zoom', 'ज़ूम', 'ज़ूम'],
+                teams: ['microsoft teams', 'teams', 'माइक्रोसॉफ्ट टीम्स', 'टीम्स'],
+                trello: ['trello', 'ट्रेलो', 'ट्रेलो'],
+                asana: ['asana', 'असाना', 'असाना'],
+                jira: ['jira', 'जिरा', 'जिरा'],
+                confluence: ['confluence', 'कॉन्फ्लुएंस', 'कॉन्फ्लुएंस'],
+                airtable: ['airtable', 'एयरटेबल', 'एयरटेबल'],
+                webflow: ['webflow', 'वेबफ्लो', 'वेबफ्लो'],
+                wix: ['wix', 'विक्स', 'विक्स'],
+                squarespace: ['squarespace', 'स्क्वेयरस्पेस', 'स्क्वेयरस्पेस'],
+                shopify: ['shopify', 'शॉपिफाई', 'शॉपिफाई'],
+                wordpress: ['wordpress', 'वर्डप्रेस', 'वर्डप्रेस'],
+                godaddy: ['godaddy', 'गोडैडी', 'गोडैडी'],
+                namecheap: ['namecheap', 'नेमचीप', 'नेमचीप']
+            };
+
+            var WEBSITE_MAP = {
+                youtube: 'https://youtube.com',
+                instagram: 'https://instagram.com',
+                facebook: 'https://facebook.com',
+                twitter: 'https://twitter.com',
+                whatsapp: 'https://web.whatsapp.com',
+                telegram: 'https://web.telegram.org',
+                snapchat: 'https://snapchat.com',
+                pinterest: 'https://pinterest.com',
+                tumblr: 'https://tumblr.com',
+                linkedin: 'https://linkedin.com',
+                reddit: 'https://reddit.com',
+                discord: 'https://discord.com',
+                tiktok: 'https://tiktok.com',
+                threads: 'https://threads.net',
+                bluesky: 'https://bsky.app',
+                mastodon: 'https://mastodon.social',
+                google: 'https://google.com',
+                gmail: 'https://gmail.com',
+                maps: 'https://maps.google.com',
+                drive: 'https://drive.google.com',
+                docs: 'https://docs.google.com',
+                sheets: 'https://sheets.google.com',
+                slides: 'https://slides.google.com',
+                translate: 'https://translate.google.com',
+                calendar: 'https://calendar.google.com',
+                photos: 'https://photos.google.com',
+                keep: 'https://keep.google.com',
+                tasks: 'https://tasks.google.com',
+                meet: 'https://meet.google.com',
+                netflix: 'https://netflix.com',
+                spotify: 'https://spotify.com',
+                primevideo: 'https://primevideo.com',
+                hotstar: 'https://hotstar.com',
+                sonyliv: 'https://sonyliv.com',
+                voot: 'https://voot.com',
+                zee5: 'https://zee5.com',
+                mxplayer: 'https://mxplayer.com',
+                jiosaavn: 'https://jiosaavn.com',
+                wynk: 'https://wynk.in',
+                gaana: 'https://gaana.com',
+                hungama: 'https://hungama.com',
+                apple: 'https://music.apple.com',
+                soundcloud: 'https://soundcloud.com',
+                tidal: 'https://tidal.com',
+                amazon: 'https://amazon.in',
+                flipkart: 'https://flipkart.com',
+                myntra: 'https://myntra.com',
+                ajio: 'https://ajio.com',
+                nykaa: 'https://nykaa.com',
+                meesho: 'https://meesho.com',
+                snapdeal: 'https://snapdeal.com',
+                paytm: 'https://paytm.com',
+                phonepe: 'https://phonepe.com',
+                gpay: 'https://pay.google.com',
+                croma: 'https://croma.com',
+                reliance: 'https://reliance.com',
+                tata: 'https://tatacliq.com',
+                shopclues: 'https://shopclues.com',
+                zomato: 'https://zomato.com',
+                swiggy: 'https://swiggy.com',
+                dominos: 'https://dominos.in',
+                pizza: 'https://pizzahut.in',
+                kfc: 'https://kfc.co.in',
+                mcdonalds: 'https://mcdonalds.com',
+                burgerking: 'https://burgerking.in',
+                subway: 'https://subway.com',
+                starbucks: 'https://starbucks.in',
+                uber: 'https://uber.com',
+                ola: 'https://ola.com',
+                timesofindia: 'https://timesofindia.com',
+                hindustantimes: 'https://hindustantimes.com',
+                ndtv: 'https://ndtv.com',
+                bbc: 'https://bbc.com',
+                cnn: 'https://cnn.com',
+                thehindu: 'https://thehindu.com',
+                indianexpress: 'https://indianexpress.com',
+                livemint: 'https://livemint.com',
+                moneycontrol: 'https://moneycontrol.com',
+                bloomberg: 'https://bloomberg.com',
+                reuters: 'https://reuters.com',
+                github: 'https://github.com',
+                stackoverflow: 'https://stackoverflow.com',
+                codepen: 'https://codepen.io',
+                devto: 'https://dev.to',
+                producthunt: 'https://producthunt.com',
+                gitlab: 'https://gitlab.com',
+                bitbucket: 'https://bitbucket.org',
+                docker: 'https://docker.com',
+                kubernetes: 'https://kubernetes.io',
+                aws: 'https://aws.amazon.com',
+                azure: 'https://azure.microsoft.com',
+                googlecloud: 'https://cloud.google.com',
+                chatgpt: 'https://chatgpt.com',
+                bard: 'https://bard.google.com',
+                claude: 'https://claude.ai',
+                perplexity: 'https://perplexity.ai',
+                midjourney: 'https://midjourney.com',
+                dalle: 'https://openai.com/dall-e',
+                stable: 'https://stablediffusionweb.com',
+                huggingface: 'https://huggingface.co',
+                replicate: 'https://replicate.com',
+                wikipedia: 'https://wikipedia.org',
+                khanacademy: 'https://khanacademy.org',
+                coursera: 'https://coursera.org',
+                udemy: 'https://udemy.com',
+                byjus: 'https://byjus.com',
+                unacademy: 'https://unacademy.com',
+                vedantu: 'https://vedantu.com',
+                duolingo: 'https://duolingo.com',
+                britannica: 'https://britannica.com',
+                mit: 'https://mit.edu',
+                stanford: 'https://stanford.edu',
+                chess: 'https://chess.com',
+                ludo: 'https://ludo.king.com',
+                carrom: 'https://carrom.com',
+                pubg: 'https://pubg.com',
+                freefire: 'https://freefire.com',
+                minecraft: 'https://minecraft.net',
+                clashofclans: 'https://clashofclans.com',
+                valorant: 'https://valorant.com',
+                fortnite: 'https://fortnite.com',
+                apex: 'https://apexlegends.com',
+                cod: 'https://callofduty.com',
+                gta: 'https://rockstargames.com',
+                roblox: 'https://roblox.com',
+                amongus: 'https://amongus.com',
+                candycrush: 'https://candycrush.com',
+                temple: 'https://templerun.com',
+                duckduckgo: 'https://duckduckgo.com',
+                medium: 'https://medium.com',
+                quora: 'https://quora.com',
+                canva: 'https://canva.com',
+                figma: 'https://figma.com',
+                notion: 'https://notion.so',
+                slack: 'https://slack.com',
+                zoom: 'https://zoom.us',
+                teams: 'https://teams.microsoft.com',
+                trello: 'https://trello.com',
+                asana: 'https://asana.com',
+                jira: 'https://jira.com',
+                confluence: 'https://atlassian.com/software/confluence',
+                airtable: 'https://airtable.com',
+                webflow: 'https://webflow.com',
+                wix: 'https://wix.com',
+                squarespace: 'https://squarespace.com',
+                shopify: 'https://shopify.com',
+                wordpress: 'https://wordpress.com',
+                godaddy: 'https://godaddy.com',
+                namecheap: 'https://namecheap.com'
+            };
+
+            function getLocalAnswer(query) {
+                var q = query.toLowerCase().trim();
+
+                if (q.includes('tumhe kisne banaya') || q.includes('tum kisne banaya') ||
+                    q.includes('tumhari creator') || q.includes('tumhara maker') ||
+                    q.includes('who created you') || q.includes('who made you')) {
+                    return "मुझे Zishan ने बनाया है। Zishan ek talented developer hain aur unka vision hai ki AI ko sabke liye accessible banana.";
+                }
+
+                if ((q.includes('zishan') && (q.includes('kaun') || q.includes('who') ||
+                        q.includes('के बारे') || q.includes('about') || q.includes('कौन'))) ||
+                    q.includes('zishan kaun hai')) {
+                    return "Zishan StardustOfficial ke founder hain. Wo ek passionate developer hain jo AI aur technology mein deep interest rakhte hain. Unka maqsad hai ki AI ko simple aur useful banana.";
+                }
+
+                if (q.includes('stardustofficial') || q.includes('stardust official') ||
+                    q.includes('स्टारडस्ट') || (q.includes('stardust') && q.includes('about'))) {
+                    return "StardustOfficial ek innovative tech company hai jo AI solutions, web development, aur digital products mein specialize karti hai. Company ka mission hai ki technology ko accessible aur impactful banana. Zishan is company ke founder aur CEO hain.";
+                }
+
+                if (q.includes('date') || q.includes('today') || q.includes('aaj') ||
+                    q.includes('तारीख') || q.includes('date kya hai') || q.includes('aaj ka')) {
+                    var now = new Date();
+                    var options = { year: 'numeric', month: 'long', day: 'numeric' };
+                    return 'Aaj ki tareekh ' + now.toLocaleDateString('hi-IN', options) + ' hai.';
+                }
+
+                if (q.includes('time') || q.includes('samay') || q.includes('समय') ||
+                    q.includes('kya time') || q.includes('time kya hai')) {
+                    var now = new Date();
+                    var hours = String(now.getHours()).padStart(2, '0');
+                    var minutes = String(now.getMinutes()).padStart(2, '0');
+                    return 'Abhi ' + hours + ':' + minutes + ' baj rahe hain.';
+                }
+
+                if (q.includes('tum kaun ho') || q.includes('who are you') || q.includes('तुम कौन हो') ||
+                    q.includes('tum kya ho') || q.includes('what are you')) {
+                    return "Main Zishu AI hoon - ek voice assistant jo Zishan ne banaya hai. Main StardustOfficial ka AI project hoon. Main Hindi aur English dono mein baat kar sakta hoon aur 200+ websites bhi open kar sakta hoon!";
+                }
+
+                return null;
+            }
+
+            function detectLocalCommand(query) {
+                var q = query.toLowerCase().trim();
+                var openWords = [
+                    'open', 'open karo', 'open kar', 'kholo', 'khol', 'khol do', 'khol de',
+                    'chalao', 'chala do', 'start', 'launch',
+                    'खोलो', 'खोल', 'खोल दो', 'खोल दे', 'खोलना', 'चलाओ', 'चला दो',
+                    'शुरू करो', 'शुरू कर', 'op', 'opn', 'ओपन', 'ओपन करो', 'ओपन कर'
+                ];
+
+                for (var site in SITE_ALIASES) {
+                    if (SITE_ALIASES.hasOwnProperty(site)) {
+                        var aliases = SITE_ALIASES[site];
+                        var siteFound = aliases.some(function(alias) { return q.includes(alias); });
+                        if (!siteFound) continue;
+
+                        var wantsOpen = openWords.some(function(word) { return q.includes(word); }) ||
+                            aliases.some(function(alias) { return q === alias; }) ||
+                            q === site ||
+                            q === 'open ' + site ||
+                            q === 'ओपन ' + site;
+
+                        if (wantsOpen) {
+                            return {
+                                type: 'open_website',
+                                value: site
+                            };
+                        }
+                    }
+                }
+                return null;
+            }
+
+            function openWebsiteDirectly(siteName) {
+                var url = WEBSITE_MAP[siteName];
+                if (!url) {
+                    addToolMessage('Website not found: ' + siteName);
+                    return false;
+                }
+
+                addToolMessage('Opening ' + siteName + '...');
+                try {
+                    window.location.assign(url);
+                    return true;
+                } catch (error) {
+                    try {
+                        window.location.href = url;
+                        return true;
+                    } catch (error2) {
+                        try {
+                            var a = document.createElement('a');
+                            a.href = url;
+                            a.target = '_blank';
+                            a.rel = 'noopener noreferrer';
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            return true;
+                        } catch (error3) {
+                            addToolMessage('Could not open ' + siteName);
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            function setOrbState(newState) {
+                state = newState;
+                orbWrapper.className = newState;
+
+                var statusMap = {
+                    idle: ['Tap Orb to start', 'First tap to enable microphone'],
+                    listening: ['Listening...', 'Speak now'],
+                    thinking: ['Thinking...', 'Processing your request'],
+                    speaking: ['Speaking...', 'Tap orb to stop']
+                };
+                var statuses = statusMap[newState] || statusMap.idle;
+                orbStatus.textContent = statuses[0];
+                orbSub.textContent = statuses[1];
+            }
+
+            orbWrapper.addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                if (isSpeakingNow || state === STATE.SPEAKING || isProcessing) {
+                    stopCurrentResponse();
+                    return;
+                }
+
+                toggleListening();
+            });
+
+            function toggleListening() {
+                if (isProcessing) {
+                    orbSub.textContent = 'Please wait...';
+                    return;
+                }
+
+                if (state === STATE.IDLE || state === STATE.SPEAKING) {
+                    startListening();
+                } else if (state === STATE.LISTENING) {
+                    stopListening();
+                    setOrbState(STATE.IDLE);
+                }
+            }
+
+            function stopCurrentResponse() {
+                isStopped = true;
+                isSpeakingNow = false;
+
+                try {
+                    if (window.speechSynthesis) {
+                        window.speechSynthesis.cancel();
+                    }
+                    if (currentUtterance) {
+                        currentUtterance = null;
+                    }
+                } catch (e) {}
+
+                if (utteranceResolve) {
+                    utteranceResolve();
+                    utteranceResolve = null;
+                }
+
+                isProcessing = false;
+
+                var stopDiv = document.createElement('div');
+                stopDiv.className = 'zishu-stop-msg';
+                stopDiv.textContent = 'Stopped. Listening again...';
+                chatContainer.appendChild(stopDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+
+                setOrbState(STATE.IDLE);
+
+                setTimeout(function() {
+                    isStopped = false;
+                    if (state === STATE.IDLE) {
+                        startListening();
+                    }
+                }, 400);
+            }
+
+            function isStopCommand(query) {
+                var q = query.toLowerCase().trim();
+                return STOP_WORDS.some(function(word) {
+                    if (q === word) return true;
+                    if (q.includes(word)) return true;
+                    if (word.includes(q) && q.length > 2) return true;
+                    return false;
+                });
+            }
+
+            function initSpeechRecognition() {
+                var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SR) {
+                    orbStatus.textContent = 'Browser not supported';
+                    return null;
+                }
+
+                var rec = new SR();
+                rec.lang = 'hi-IN';
+                rec.continuous = false;
+                rec.interimResults = false;
+                rec.maxAlternatives = 1;
+
+                rec.onstart = function() {
+                    clearRestartTimer();
+                    setOrbState(STATE.LISTENING);
+                    if (isFirstActivation) {
+                        isFirstActivation = false;
+                        orbSub.textContent = 'Listening...';
+                    }
+                };
+
+                rec.onresult = function(event) {
+                    var transcript = event.results[0][0].transcript.trim();
+                    if (transcript.length > 0) {
+                        if (isWakeWord(transcript) && state === STATE.IDLE) {
+                            if (!isProcessing) {
+                                stopListening();
+                                setTimeout(function() {
+                                    startListening();
+                                }, 200);
+                                addToolMessage('"Zishu" sun liya! Ab bolen...');
+                                return;
+                            }
+                        }
+
+                        if (isStopCommand(transcript)) {
+                            if (isSpeakingNow || isProcessing || state === STATE.SPEAKING) {
+                                stopCurrentResponse();
+                                return;
+                            }
+                        }
+
+                        stopListening();
+                        handleUserQuery(transcript);
+                    }
+                };
+
+                rec.onerror = function(event) {
+                    if (event.error === 'not-allowed') {
+                        orbStatus.textContent = 'Microphone access denied';
+                        orbSub.textContent = 'Please allow microphone access';
+                        setOrbState(STATE.IDLE);
+                    } else if (event.error === 'no-speech') {
+                        orbSub.textContent = 'No speech detected. Try again.';
+                        scheduleRestart(800);
+                    } else {
+                        orbSub.textContent = 'Error: ' + event.error;
+                        scheduleRestart(1000);
+                    }
+                };
+
+                rec.onend = function() {
+                    if (state === STATE.LISTENING && !isProcessing && !isRestartScheduled) {
+                        scheduleRestart(300);
+                    } else if (!isProcessing && state !== STATE.SPEAKING) {
+                        setOrbState(STATE.IDLE);
+                    }
+                };
+
+                return rec;
+            }
+
+            function startListening() {
+                clearRestartTimer();
+                if (!recognition) {
+                    recognition = initSpeechRecognition();
+                    if (!recognition) return;
+                }
+                try {
+                    recognition.start();
+                    setOrbState(STATE.LISTENING);
+                } catch (e) {
+                    setOrbState(STATE.IDLE);
+                }
+            }
+
+            function stopListening() {
+                clearRestartTimer();
+                if (recognition) {
+                    try { recognition.stop(); } catch (e) {}
+                }
+                if (!isProcessing) {
+                    setOrbState(STATE.IDLE);
+                }
+            }
+
+            function scheduleRestart(delay) {
+                clearRestartTimer();
+                isRestartScheduled = true;
+                restartTimer = setTimeout(function() {
+                    isRestartScheduled = false;
+                    if (state === STATE.IDLE || state === STATE.LISTENING) {
+                        startListening();
+                    }
+                }, delay);
+            }
+
+            function clearRestartTimer() {
+                isRestartScheduled = false;
+                if (restartTimer) {
+                    clearTimeout(restartTimer);
+                    restartTimer = null;
+                }
+            }
+
+            function addToolMessage(text) {
+                var div = document.createElement('div');
+                div.className = 'zishu-tool-msg';
+                div.textContent = text;
+                chatContainer.appendChild(div);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            function addActionMessage(text) {
+                var div = document.createElement('div');
+                div.className = 'zishu-action-msg';
+                div.textContent = text;
+                chatContainer.appendChild(div);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            function speakText(text) {
+                var cleanText = cleanTextForSpeech(text);
+
+                if (isStopped) {
+                    return Promise.resolve();
+                }
+
+                if (!cleanText || cleanText.trim().length === 0) {
+                    if (!isProcessing) {
+                        setOrbState(STATE.IDLE);
+                        scheduleRestart(1000);
+                    }
+                    return Promise.resolve();
+                }
+
+                return new Promise(function(resolve) {
+                    try {
+                        if (!window.speechSynthesis) {
+                            resolve();
+                            return;
+                        }
+
+                        try {
+                            window.speechSynthesis.cancel();
+                        } catch (e) {}
+
+                        var voices = window.speechSynthesis.getVoices();
+                        if (voices.length === 0) {
+                            var voiceTimeout = setTimeout(function() {
+                                if (!isStopped) {
+                                    proceedWithSpeech();
+                                } else {
+                                    resolve();
+                                }
+                            }, 2000);
+
+                            window.speechSynthesis.onvoiceschanged = function() {
+                                clearTimeout(voiceTimeout);
+                                if (!isStopped) {
+                                    proceedWithSpeech();
+                                } else {
+                                    resolve();
+                                }
+                            };
+                            return;
+                        }
+
+                        proceedWithSpeech();
+
+                        function proceedWithSpeech() {
+                            if (isStopped) {
+                                resolve();
+                                return;
+                            }
+
+                            var utterance = new SpeechSynthesisUtterance(cleanText);
+                            utterance.lang = 'hi-IN';
+                            utterance.rate = 0.95;
+                            utterance.pitch = 1.05;
+                            utterance.volume = 1;
+
+                            try {
+                                var voices = window.speechSynthesis.getVoices();
+                                var femaleHindi = voices.filter(function(v) {
+                                    return v.lang.startsWith('hi') &&
+                                        (v.name.toLowerCase().includes('female') ||
+                                            v.name.toLowerCase().includes('swara') ||
+                                            v.name.toLowerCase().includes('lekh') ||
+                                            v.name.toLowerCase().includes('google'));
+                                });
+
+                                if (femaleHindi.length > 0) {
+                                    utterance.voice = femaleHindi[0];
+                                } else {
+                                    var anyHindi = voices.find(function(v) { return v.lang.startsWith('hi'); });
+                                    if (anyHindi) {
+                                        utterance.voice = anyHindi;
+                                    }
+                                }
+                            } catch (e) {}
+
+                            var isEnded = false;
+                            var safetyTimer = null;
+
+                            utterance.onstart = function() {
+                                isSpeakingNow = true;
+                                if (!isStopped) {
+                                    setOrbState(STATE.SPEAKING);
+                                }
+
+                                safetyTimer = setTimeout(function() {
+                                    if (!isEnded && !isStopped) {
+                                        // safety timeout
+                                    }
+                                }, Math.max(cleanText.length * 40 + 5000, 8000));
+                            };
+
+                            utterance.onend = function() {
+                                if (!isEnded) {
+                                    isEnded = true;
+                                    isSpeakingNow = false;
+                                    currentUtterance = null;
+                                    if (safetyTimer) {
+                                        clearTimeout(safetyTimer);
+                                        safetyTimer = null;
+                                    }
+                                    if (!isStopped && !isProcessing) {
+                                        setOrbState(STATE.IDLE);
+                                        scheduleRestart(1000);
+                                    }
+                                    resolve();
+                                }
+                            };
+
+                            utterance.onerror = function() {
+                                if (!isEnded) {
+                                    isEnded = true;
+                                    isSpeakingNow = false;
+                                    currentUtterance = null;
+                                    if (safetyTimer) {
+                                        clearTimeout(safetyTimer);
+                                        safetyTimer = null;
+                                    }
+                                    if (!isStopped && !isProcessing) {
+                                        setOrbState(STATE.IDLE);
+                                        scheduleRestart(1000);
+                                    }
+                                    resolve();
+                                }
+                            };
+
+                            currentUtterance = utterance;
+                            utteranceResolve = resolve;
+
+                            try {
+                                window.speechSynthesis.speak(utterance);
+                            } catch (e) {
+                                isSpeakingNow = false;
+                                if (!isStopped && !isProcessing) {
+                                    setOrbState(STATE.IDLE);
+                                    scheduleRestart(1000);
+                                }
+                                resolve();
+                            }
+                        }
+
+                    } catch (error) {
+                        isSpeakingNow = false;
+                        if (!isStopped && !isProcessing) {
+                            setOrbState(STATE.IDLE);
+                            scheduleRestart(1000);
+                        }
+                        resolve();
+                    }
+                });
+            }
+
+            function forceLoadVoices() {
+                if (!window.speechSynthesis) return;
+
+                try {
+                    var attempts = 0;
+                    var maxAttempts = 5;
+
+                    function tryLoadVoices() {
+                        attempts++;
+                        var voices = window.speechSynthesis.getVoices();
+                        if (voices.length > 0) {
+                            return true;
+                        }
+                        if (attempts < maxAttempts) {
+                            setTimeout(tryLoadVoices, 500 * attempts);
+                        }
+                        return false;
+                    }
+
+                    tryLoadVoices();
+
+                    window.speechSynthesis.onvoiceschanged = function() {
+                        var voices = window.speechSynthesis.getVoices();
+                    };
+
+                } catch (e) {}
+            }
+
+            function streamResponse(text) {
+                if (isStopped) {
+                    return null;
+                }
+
+                setOrbState(STATE.SPEAKING);
+
+                var msgDiv = document.createElement('div');
+                msgDiv.className = 'zishu-message zishu-assistant-msg';
+                var senderSpan = document.createElement('span');
+                senderSpan.className = 'zishu-sender';
+                senderSpan.textContent = 'Zishu';
+                var contentSpan = document.createElement('span');
+                contentSpan.className = 'zishu-content';
+                msgDiv.appendChild(senderSpan);
+                msgDiv.appendChild(contentSpan);
+                chatContainer.appendChild(msgDiv);
+
+                var accumulatedText = '';
+                var chunkSize = 3;
+                var index = 0;
+
+                function streamNextChunk() {
+                    if (isStopped) {
+                        contentSpan.textContent = accumulatedText + '... [stopped]';
+                        return;
+                    }
+
+                    if (index >= text.length) {
+                        if (!isStopped) {
+                            setTimeout(function() {
+                                if (!isStopped) {
+                                    speakText(text);
+                                }
+                            }, 300);
+                        }
+                        return;
+                    }
+
+                    var chunk = text.substring(index, Math.min(index + chunkSize, text.length));
+                    accumulatedText += chunk;
+                    contentSpan.textContent = accumulatedText;
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+                    index += chunkSize;
+
+                    requestAnimationFrame(function() {
+                        setTimeout(streamNextChunk, 15);
+                    });
+                }
+
+                streamNextChunk();
+
+                return msgDiv;
+            }
+
+            function handleUserQuery(query) {
+                if (isProcessing) return;
+                isProcessing = true;
+                isStopped = false;
+                isSpeakingNow = false;
+                clearRestartTimer();
+                setOrbState(STATE.THINKING);
+
+                var userDiv = document.createElement('div');
+                userDiv.className = 'zishu-message zishu-user-msg';
+                var senderSpan = document.createElement('span');
+                senderSpan.className = 'zishu-sender';
+                senderSpan.textContent = 'You';
+                var contentSpan = document.createElement('span');
+                contentSpan.className = 'zishu-content';
+                contentSpan.textContent = query;
+                userDiv.appendChild(senderSpan);
+                userDiv.appendChild(contentSpan);
+                chatContainer.appendChild(userDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+
+                var actionResult = handleActions(query);
+                if (actionResult) {
+                    addActionMessage(actionResult);
+                    speakText(actionResult).then(function() {
+                        isProcessing = false;
+                        if (!isStopped) {
+                            setOrbState(STATE.IDLE);
+                            scheduleRestart(1000);
+                        }
+                    });
+                    return;
+                }
+
+                var localAnswer = getLocalAnswer(query);
+                if (localAnswer) {
+                    streamResponse(localAnswer);
+                    isProcessing = false;
+                    if (!isStopped) {
+                        setOrbState(STATE.IDLE);
+                        scheduleRestart(1000);
+                    }
+                    return;
+                }
+
+                var localCommand = detectLocalCommand(query);
+                if (localCommand && localCommand.type === 'open_website') {
+                    openWebsiteDirectly(localCommand.value);
+                    isProcessing = false;
+                    setOrbState(STATE.IDLE);
+                    scheduleRestart(1200);
+                    return;
+                }
+
+                try {
+                    var timestampedQuery = query + ' (Current date: ' + new Date().toISOString().split('T')[0] + ')';
+
+                    fetch(BACKEND_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                query: timestampedQuery,
+                                history: conversationHistory
+                            })
+                        })
+                        .then(function(response) {
+                            if (!response.ok) {
+                                throw new Error('Server error: ' + response.status);
+                            }
+                            return response.json();
+                        })
+                        .then(function(data) {
+                            conversationHistory = data.history || [];
+                            if (isStopped) {
+                                isProcessing = false;
+                                return;
+                            }
+                            streamResponse(data.response);
+                            isProcessing = false;
+                            if (!isStopped && state !== STATE.LISTENING && !isSpeakingNow) {
+                                setTimeout(function() {
+                                    if (state !== STATE.SPEAKING && !isStopped && !isSpeakingNow) {
+                                        setOrbState(STATE.IDLE);
+                                        scheduleRestart(1000);
+                                    }
+                                }, 500);
+                            }
+                        })
+                        .catch(function(error) {
+                            addToolMessage('Error: ' + error.message);
+                            setOrbState(STATE.IDLE);
+                            isProcessing = false;
+                        });
+
+                } catch (error) {
+                    addToolMessage('Error: ' + error.message);
+                    setOrbState(STATE.IDLE);
+                    isProcessing = false;
+                }
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if (e.code === 'Space' && !e.repeat && !e.target.matches('input, textarea, button, a')) {
+                    e.preventDefault();
+                    if (isSpeakingNow || state === STATE.SPEAKING || isProcessing) {
+                        stopCurrentResponse();
+                    } else {
+                        toggleListening();
+                    }
+                }
+            });
+
+            // INIT
+            setTimeout(forceLoadVoices, 100);
+            setTimeout(forceLoadVoices, 500);
+            setTimeout(forceLoadVoices, 1000);
+
+            setOrbState(STATE.IDLE);
+            setTimeout(checkAlarms, 1000);
+
+            var welcomeDiv = document.createElement('div');
+            welcomeDiv.className = 'zishu-message zishu-assistant-msg';
+            var ws = document.createElement('span');
+            ws.className = 'zishu-sender';
+            ws.textContent = 'Zishu';
+            var wc = document.createElement('span');
+            wc.className = 'zishu-content';
+            wc.textContent = 'Namaste! Main Zishu hoon. "Zishu" bole ya orb tap karein. Main alarm, reminder, notes save kar sakta hoon! 200+ websites bhi open kar sakta hoon.';
+            welcomeDiv.appendChild(ws);
+            welcomeDiv.appendChild(wc);
+            chatContainer.appendChild(welcomeDiv);
+
+            var currentTheme = document.documentElement.getAttribute('data-theme');
+            if (currentTheme === 'dark') {
+                assistantRoot.classList.add('dark-mode');
+            }
+
+            console.log('Zishu AI v2.8 — UI/UX Improved');
+            console.log('Chat area enlarged');
+            console.log('Tap Orb to start');
+            console.log('First-time voice notice added');
+            console.log('Support Zishu page added (replaces Premium)');
+            console.log('Customer Support page added (renamed from Support)');
+            console.log('Language & Customer Support pages added');
+            console.log('Privacy & Terms linked to real files');
+            console.log('About Us page added with full language support');
+            console.log('Hash-based navigation enabled');
+            console.log('Support email is now a clickable button');
+            console.log('Login system removed - Zishu is now fully free to use');
+        })();
+    </script>
+
 </body>
 </html>
