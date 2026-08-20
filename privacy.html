@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy — Zishu AI</title>
+    <meta name="description" content="Privacy Policy for Zishu AI Voice Assistant. Learn how we handle your data, voice inputs, and protect your privacy." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #F7F9FC;
+            --surface: #FFFFFF;
+            --surface2: #f1f4f9;
+            --text: #111827;
+            --text-secondary: #64748B;
+            --border: #E5E7EB;
+            --accent: #3B82F6;
+            --accent-secondary: #6366F1;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+            --radius: 20px;
+            --max-width: 860px;
+            --nav-bg: rgba(247, 249, 252, 0.85);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0B0F14;
+            --surface: #111827;
+            --surface2: #172033;
+            --text: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --border: #253044;
+            --accent: #60A5FA;
+            --accent-secondary: #818CF8;
+            --nav-bg: rgba(11, 15, 20, 0.88);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            transition: background 0.2s, color 0.2s;
+            min-height: 100vh;
+        }
+
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--nav-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.6rem 0;
+            transition: background 0.2s;
+        }
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.3px;
+            color: var(--text);
+            text-decoration: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .logo span {
+            color: var(--accent);
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+        }
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+        .nav-links a:hover {
+            color: var(--text);
+        }
+        .theme-toggle {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 60px;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover {
+            background: var(--border);
+        }
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .page-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 2rem 1.5rem 3rem;
+        }
+
+        .policy-header {
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5rem;
+        }
+        .policy-header h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            letter-spacing: -0.8px;
+            color: var(--text);
+        }
+        .policy-header h1 span {
+            color: var(--accent);
+        }
+        .policy-header .meta {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+        .policy-header .meta span {
+            display: inline-block;
+            margin-right: 1.5rem;
+        }
+
+        .policy-section {
+            margin: 2rem 0;
+        }
+        .policy-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            margin-bottom: 0.8rem;
+            color: var(--text);
+        }
+        .policy-section h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 1.2rem;
+            margin-bottom: 0.4rem;
+            color: var(--text);
+        }
+        .policy-section p {
+            color: var(--text-secondary);
+            margin-bottom: 0.8rem;
+            line-height: 1.8;
+        }
+        .policy-section ul {
+            color: var(--text-secondary);
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+            list-style-type: disc;
+        }
+        .policy-section ul li {
+            margin-bottom: 0.4rem;
+            line-height: 1.7;
+        }
+        .policy-section .highlight-box {
+            background: var(--surface2);
+            border-left: 4px solid var(--accent);
+            padding: 1.2rem 1.5rem;
+            border-radius: 8px;
+            margin: 1.2rem 0;
+        }
+        .policy-section .highlight-box p {
+            margin-bottom: 0;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 1.5rem;
+            transition: gap 0.2s;
+        }
+        .back-link:hover {
+            gap: 0.8rem;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 2rem 0 1.5rem;
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        footer .footer-links {
+            display: flex;
+            gap: 1.8rem;
+            flex-wrap: wrap;
+        }
+        footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        footer a:hover {
+            color: var(--text);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            .policy-header h1 {
+                font-size: 1.8rem;
+            }
+            .page-container {
+                padding: 1rem 1rem 2rem;
+            }
+            .policy-section h2 {
+                font-size: 1.3rem;
+            }
+            footer {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            footer .footer-links {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .policy-header h1 {
+                font-size: 1.5rem;
+            }
+            .policy-section ul {
+                padding-left: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <a class="logo" href="index.html">ZISH<span>U</span></a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="index.html#explore-page">Explore</a>
+                <a href="index.html#about-page">About Us</a>
+                <a href="privacy.html" style="color:var(--accent);font-weight:500;">Privacy</a>
+                <a href="terms.html">Terms</a>
+            </div>
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">☀️</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-container">
+        <div class="policy-header">
+            <h1>Privacy <span>Policy</span></h1>
+            <div class="meta">
+                <span>Effective Date: 21 August 2026</span>
+                <span>Last Updated: 21 August 2026</span>
+            </div>
+        </div>
+
+        <div class="policy-section">
+            <p>Zishu AI ("Zishu", "we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our voice assistant services, website, and related applications (collectively, the "Service").</p>
+            <p>Please read this Privacy Policy carefully. By using the Service, you consent to the data practices described in this policy.</p>
+        </div>
+
+        <div class="policy-section">
+            <h2>Information We Collect</h2>
+            <p>We collect information to provide, improve, and personalize the Zishu experience. The types of information we collect include:</p>
+
+            <h3>1. Voice Input and Audio Data</h3>
+            <p>When you interact with Zishu using voice commands, we process your voice input to understand your request and provide a response. This audio data is:</p>
+            <ul>
+                <li>Processed in real-time to generate responses</li>
+                <li>Not stored permanently on our servers after processing</li>
+                <li>Not used for any purpose other than responding to your immediate request</li>
+                <li>Not shared with third parties except as necessary to provide the Service</li>
+            </ul>
+
+            <h3>2. Text Input</h3>
+            <p>When you type commands or questions, we process this text to understand your request. Text inputs are:</p>
+            <ul>
+                <li>Used solely to generate appropriate responses</li>
+                <li>Not stored permanently unless required for functionality</li>
+                <li>Not used for marketing or profiling purposes</li>
+            </ul>
+
+            <h3>3. Conversation History</h3>
+            <p>Zishu maintains a temporary conversation history to provide context for ongoing interactions. This history is:</p>
+            <ul>
+                <li>Stored locally in your browser for the duration of your session</li>
+                <li>Cleared when you close your browser or refresh the page</li>
+                <li>Not stored on our servers unless necessary for service functionality</li>
+                <li>Not accessible to other users</li>
+            </ul>
+
+            <h3>4. Local Storage Data</h3>
+            <p>Zishu uses your browser's local storage to save:</p>
+            <ul>
+                <li>Language preferences</li>
+                <li>Theme preferences (light/dark mode)</li>
+                <li>Notes and reminders you create (stored locally)</li>
+                <li>Alarms you set (stored locally)</li>
+            </ul>
+            <p>This data is stored only on your device and is not transmitted to our servers.</p>
+
+            <h3>5. Technical Information</h3>
+            <p>When you use the Service, we may automatically collect certain technical information such as:</p>
+            <ul>
+                <li>Browser type and version</li>
+                <li>Device type and operating system</li>
+                <li>IP address (for service delivery and security)</li>
+                <li>Usage statistics and interaction patterns</li>
+            </ul>
+        </div>
+
+        <div class="policy-section">
+            <h2>How We Use Your Information</h2>
+            <p>We use the information we collect for the following purposes:</p>
+            <ul>
+                <li><strong>To provide and maintain the Service:</strong> Processing voice commands, generating responses, and ensuring the Service functions as intended.</li>
+                <li><strong>To improve the Service:</strong> Analyzing usage patterns to enhance user experience, fix bugs, and develop new features.</li>
+                <li><strong>To protect the Service:</strong> Monitoring for security threats, preventing fraud, and maintaining the integrity of the platform.</li>
+                <li><strong>To communicate with you:</strong> Responding to support inquiries and providing service-related announcements.</li>
+                <li><strong>To comply with legal obligations:</strong> Meeting applicable laws, regulations, and legal processes.</li>
+            </ul>
+        </div>
+
+        <div class="policy-section">
+            <h2>Data Storage and Security</h2>
+            <p>We implement appropriate technical and organizational measures to protect your data. These include:</p>
+            <ul>
+                <li><strong>Encryption:</strong> Data transmitted between your device and our servers is encrypted using industry-standard protocols.</li>
+                <li><strong>Access Controls:</strong> Access to user data is restricted to authorized personnel who require it for service operation.</li>
+                <li><strong>Data Minimization:</strong> We collect only the data necessary to provide the Service.</li>
+                <li><strong>Regular Security Reviews:</strong> We conduct periodic assessments to identify and address potential vulnerabilities.</li>
+            </ul>
+            <div class="highlight-box">
+                <p><strong>Important Note:</strong> Voice inputs are processed in real-time and are not permanently stored. Notes, reminders, and alarms are stored only in your browser's local storage and are not transmitted to our servers unless explicitly required for functionality.</p>
+            </div>
+        </div>
+
+        <div class="policy-section">
+            <h2>Third-Party Services</h2>
+            <p>Zishu integrates with certain third-party services to provide core functionality:</p>
+            <ul>
+                <li><strong>AI Backend Services:</strong> We use cloud-based AI services to process voice commands and generate responses. These services may process your data temporarily to fulfill your requests.</li>
+                <li><strong>Firebase:</strong> We use Firebase for certain backend functionality. Firebase may collect technical information in accordance with Google's privacy policies.</li>
+                <li><strong>Speech Recognition:</strong> Browser-based speech recognition is used to convert voice to text. This is processed locally in your browser.</li>
+                <li><strong>Text-to-Speech:</strong> Browser-based text-to-speech is used to convert responses to voice. This is processed locally in your browser.</li>
+            </ul>
+            <p>These third-party services have their own privacy policies, and we encourage you to review them. We do not share your personal information with third parties except as necessary to provide the Service.</p>
+        </div>
+
+        <div class="policy-section">
+            <h2>Data Retention</h2>
+            <p>We retain your data only for as long as necessary to provide the Service. Specifically:</p>
+            <ul>
+                <li><strong>Voice Input:</strong> Processed in real-time and not stored permanently.</li>
+                <li><strong>Conversation History:</strong> Stored temporarily in your browser session and cleared when you close your browser.</li>
+                <li><strong>Local Storage Data:</strong> Stored on your device and remains until you clear your browser data.</li>
+                <li><strong>Usage Statistics:</strong> Aggregated and anonymized data may be retained for service improvement.</li>
+            </ul>
+            <p>You can clear all locally stored data at any time by clearing your browser's local storage or using your browser's privacy settings.</p>
+        </div>
+
+        <div class="policy-section">
+            <h2>Your Rights and Choices</h2>
+            <p>You have certain rights regarding your data. Subject to applicable law, these may include:</p>
+            <ul>
+                <li><strong>Access:</strong> You can request access to the data we hold about you.</li>
+                <li><strong>Correction:</strong> You can request corrections to inaccurate or incomplete data.</li>
+                <li><strong>Deletion:</strong> You can request deletion of your data, subject to legal obligations.</li>
+                <li><strong>Opt-Out:</strong> You can opt out of certain data collection practices.</li>
+            </ul>
+            <p>To exercise any of these rights, please contact us at <a href="mailto:support.stardustofficial@gmail.com" style="color:var(--accent);">support.stardustofficial@gmail.com</a>.</p>
+        </div>
+
+        <div class="policy-section">
+            <h2>Children's Privacy</h2>
+            <p>Zishu is not intended for use by children under the age of 13. We do not knowingly collect personal information from children under 13. If we become aware that we have collected personal information from a child under 13, we will take steps to delete such information promptly.</p>
+        </div>
+
+        <div class="policy-section">
+            <h2>International Data Transfers</h2>
+            <p>Your data may be processed in countries other than your country of residence. When we transfer data internationally, we take steps to ensure appropriate safeguards are in place to protect your data in accordance with applicable laws.</p>
+        </div>
+
+        <div class="policy-section">
+            <h2>Changes to This Privacy Policy</h2>
+            <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date. We encourage you to review this Privacy Policy periodically to stay informed about our data practices.</p>
+            <p>If we make material changes to this Privacy Policy, we will provide a more prominent notice on our website or through other appropriate channels.</p>
+        </div>
+
+        <div class="policy-section">
+            <h2>Contact Us</h2>
+            <p>If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:</p>
+            <p>
+                <strong>Email:</strong> <a href="mailto:support.stardustofficial@gmail.com" style="color:var(--accent);">support.stardustofficial@gmail.com</a><br />
+                <strong>Brand:</strong> StardustOfficial<br />
+                <strong>Service:</strong> Zishu AI Voice Assistant
+            </p>
+        </div>
+
+        <a href="index.html" class="back-link">← Back to Zishu</a>
+    </div>
+
+    <footer>
+        <div><span style="font-weight:700;">ZISHU</span> <span style="color:var(--text-secondary)">Your voice. Your assistant.</span></div>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="privacy.html" style="color:var(--accent);font-weight:500;">Privacy</a>
+            <a href="terms.html">Terms</a>
+        </div>
+        <div style="color:var(--text-secondary);">© 2026 Zishu. All rights reserved.</div>
+    </footer>
+
+    <script>
+        // Theme Toggle
+        (function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const html = document.documentElement;
+            const savedTheme = localStorage.getItem('zishu-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            html.setAttribute('data-theme', savedTheme);
+            themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '☾';
+
+            themeToggle.addEventListener('click', function() {
+                const current = html.getAttribute('data-theme');
+                const next = current === 'dark' ? 'light' : 'dark';
+                html.setAttribute('data-theme', next);
+                localStorage.setItem('zishu-theme', next);
+                themeToggle.textContent = next === 'dark' ? '☀️' : '☾';
+            });
+        })();
+    </script>
+</body>
+</html>
